@@ -190,18 +190,16 @@ def run_opencode() -> int:
             CODING_PROMPT,
         ],
         env=env,
-        timeout=240,
+        timeout=75,
     )
-    if rc != 0:
-        print(f"AGENT_CODE_TASK=failed rc={rc}")
-        return rc
+    print(f"AGENT_CODE_TOOL_RC={rc}")
 
     print_diff()
-    if expected_change_ready():
+    if rc == 0 and expected_change_ready():
         print("AGENT_CODE_APPLY=agent-edit")
     else:
         print("AGENT_CODE_APPLY=guided-patch")
-        print("reason=The provider returned guidance instead of file edits.")
+        print("reason=The provider did not complete file edits in this lab run.")
         apply_guided_patch()
         print_diff()
 
