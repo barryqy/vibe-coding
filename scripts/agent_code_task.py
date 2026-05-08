@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import signal
 import shutil
 import subprocess
@@ -51,6 +52,7 @@ python3 scripts/quality_gate.py
 Output:
 Summarize the files changed and the verification result.
 """
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
 
 def add_tool_dirs_to_path() -> None:
@@ -62,13 +64,40 @@ def log(line: str) -> None:
     print(line, flush=True)
 
 
-def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 240) -> int:
+def clean_output(text: str) -> str:
+    text = ANSI_RE.sub("", text)
+    return "".join(ch for ch in text if ch == "\n" or ch == "\t" or ord(ch) >= 32)
+
+
+def print_captured_output(text: str) -> None:
+    lines = clean_output(text).splitlines()
+    if not lines:
+        return
+
+    log("AGENT_CODE_TOOL_OUTPUT=begin")
+    if len(lines) > 80:
+        log(f"... omitted {len(lines) - 80} earlier lines ...")
+        lines = lines[-80:]
+    for line in lines:
+        print(line, flush=True)
+    log("AGENT_CODE_TOOL_OUTPUT=end")
+
+
+def run(
+    cmd: list[str],
+    *,
+    env: dict[str, str] | None = None,
+    timeout: int = 240,
+    capture: bool = False,
+) -> int:
     try:
         process = subprocess.Popen(
             cmd,
             cwd=ROOT,
             env=env,
             stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE if capture else None,
+            stderr=subprocess.STDOUT if capture else None,
             text=True,
             start_new_session=True,
         )
@@ -77,17 +106,31 @@ def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 240
         return 1
 
     try:
+        if capture:
+            output, _ = process.communicate(timeout=timeout)
+            print_captured_output(output or "")
+            return process.returncode
         return process.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
         log("RUN_STATUS=timeout")
         try:
             os.killpg(process.pid, signal.SIGTERM)
-            process.wait(timeout=5)
+            if capture:
+                output, _ = process.communicate(timeout=5)
+                print_captured_output(output or "")
+            else:
+                process.wait(timeout=5)
         except (ProcessLookupError, subprocess.TimeoutExpired):
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
+            if capture:
+                try:
+                    output, _ = process.communicate(timeout=5)
+                    print_captured_output(output or "")
+                except subprocess.TimeoutExpired:
+                    pass
         return 1
 
 
@@ -189,6 +232,9 @@ def run_opencode() -> int:
     prompt_file = write_prompt()
     env = dict(os.environ)
     env["OPENCODE_CONFIG"] = str(config)
+    env["CI"] = "1"
+    env["NO_COLOR"] = "1"
+    env["TERM"] = "dumb"
     env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")
     env.setdefault("OPENCODE_DISABLE_LSP_DOWNLOAD", "true")
 
@@ -213,6 +259,7 @@ def run_opencode() -> int:
         ],
         env=env,
         timeout=25,
+        capture=True,
     )
     log(f"AGENT_CODE_TOOL_RC={rc}")
 
