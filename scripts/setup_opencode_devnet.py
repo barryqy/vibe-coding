@@ -28,10 +28,22 @@ def main() -> int:
         "default_agent": "plan",
         "instructions": ["AGENTS.md", "docs/quality-bar.md"],
         "model": f"devnet/{model}",
-        "tools": {
-            "write": False,
-            "edit": False,
-            "bash": False,
+        "permission": {
+            "read": {
+                "*": "allow",
+                "*.env": "deny",
+                "*.env.*": "deny",
+                "secrets/**": "deny",
+            },
+            "edit": {
+                "dojo_app/tasks.py": "allow",
+                "tests/test_tasks.py": "allow",
+                "*": "ask",
+            },
+            "bash": {
+                "python3 scripts/quality_gate.py*": "allow",
+                "*": "ask",
+            },
         },
         "provider": {
             "devnet": {
@@ -58,6 +70,7 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
+    print("edit_scope=dojo_app/tasks.py,tests/test_tasks.py")
     print("shim=python3 scripts/devnet_openai_shim.py --ensure")
     return 0
 

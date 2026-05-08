@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import signal
 import shutil
 import subprocess
 import sys
@@ -57,16 +58,36 @@ def add_tool_dirs_to_path() -> None:
     os.environ["PATH"] = os.pathsep.join([*paths, os.environ.get("PATH", "")])
 
 
+def log(line: str) -> None:
+    print(line, flush=True)
+
+
 def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 240) -> int:
     try:
-        result = subprocess.run(cmd, cwd=ROOT, env=env, text=True, timeout=timeout, check=False)
-    except subprocess.TimeoutExpired:
-        print("RUN_STATUS=timeout")
-        return 1
+        process = subprocess.Popen(
+            cmd,
+            cwd=ROOT,
+            env=env,
+            text=True,
+            start_new_session=True,
+        )
     except OSError as exc:
-        print(f"RUN_STATUS=error:{exc.__class__.__name__}")
+        log(f"RUN_STATUS=error:{exc.__class__.__name__}")
         return 1
-    return result.returncode
+
+    try:
+        return process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        log("RUN_STATUS=timeout")
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+            process.wait(timeout=5)
+        except (ProcessLookupError, subprocess.TimeoutExpired):
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        return 1
 
 
 def write_prompt() -> Path:
@@ -137,17 +158,17 @@ def list_high_priority_open_tasks(tasks: list[dict]) -> list[dict]:
 
 
 def print_diff() -> int:
-    print("AGENT_CODE_DIFF=begin")
+    log("AGENT_CODE_DIFF=begin")
     rc = run(["git", "diff", "--", "dojo_app/tasks.py", "tests/test_tasks.py"], timeout=20)
-    print("AGENT_CODE_DIFF=end")
+    log("AGENT_CODE_DIFF=end")
     return rc
 
 
 def run_opencode() -> int:
     add_tool_dirs_to_path()
     if not shutil.which("opencode"):
-        print("AGENT_CODE_TASK=skipped")
-        print("reason=opencode is not installed")
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=opencode is not installed")
         return 0
 
     setup_rc = run([sys.executable, "scripts/setup_opencode_devnet.py"], timeout=20)
@@ -156,8 +177,8 @@ def run_opencode() -> int:
 
     config = ROOT / ".lab-state" / "opencode-devnet.json"
     if not config.exists():
-        print("AGENT_CODE_TASK=skipped")
-        print("reason=No OpenCode provider is configured")
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=No OpenCode provider is configured")
         return 0
 
     shim_rc = run([sys.executable, "scripts/devnet_openai_shim.py", "--ensure"], timeout=20)
@@ -170,8 +191,8 @@ def run_opencode() -> int:
     env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")
     env.setdefault("OPENCODE_DISABLE_LSP_DOWNLOAD", "true")
 
-    print("AGENT_CODE_TASK=starting")
-    print(f"prompt_file={prompt_file.relative_to(ROOT)}")
+    log("AGENT_CODE_TASK=starting")
+    log(f"prompt_file={prompt_file.relative_to(ROOT)}")
     rc = run(
         [
             "opencode",
@@ -190,33 +211,33 @@ def run_opencode() -> int:
             CODING_PROMPT,
         ],
         env=env,
-        timeout=75,
+        timeout=25,
     )
-    print(f"AGENT_CODE_TOOL_RC={rc}")
+    log(f"AGENT_CODE_TOOL_RC={rc}")
 
     print_diff()
     if rc == 0 and expected_change_ready():
-        print("AGENT_CODE_APPLY=agent-edit")
+        log("AGENT_CODE_APPLY=agent-edit")
     else:
-        print("AGENT_CODE_APPLY=guided-patch")
-        print("reason=The provider did not complete file edits in this lab run.")
+        log("AGENT_CODE_APPLY=guided-patch")
+        log("reason=The provider did not complete file edits in this lab run.")
         apply_guided_patch()
         print_diff()
 
-    print("AGENT_CODE_VERIFY=starting")
+    log("AGENT_CODE_VERIFY=starting")
     verify_rc = run([sys.executable, "scripts/quality_gate.py"], timeout=120)
     if verify_rc != 0:
         return verify_rc
 
-    print("AGENT_CODE_TASK=pass")
+    log("AGENT_CODE_TASK=pass")
     return 0
 
 
 def run_claude() -> int:
     add_tool_dirs_to_path()
     if not shutil.which("claude"):
-        print("AGENT_CODE_TASK=skipped")
-        print("reason=claude is not installed")
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=claude is not installed")
         return 0
 
     auth = subprocess.run(
@@ -228,14 +249,14 @@ def run_claude() -> int:
         check=False,
     )
     if auth.returncode != 0:
-        print("AGENT_CODE_TASK=skipped")
-        print("reason=Claude Code is installed but not signed in")
-        print("next_step=claude auth login")
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=Claude Code is installed but not signed in")
+        log("next_step=claude auth login")
         return 0
 
     prompt_file = write_prompt()
-    print("AGENT_CODE_TASK=starting")
-    print(f"prompt_file={prompt_file.relative_to(ROOT)}")
+    log("AGENT_CODE_TASK=starting")
+    log(f"prompt_file={prompt_file.relative_to(ROOT)}")
     rc = run(["claude", "-p", "--max-turns", "8", CODING_PROMPT], timeout=240)
     if rc != 0:
         return rc
@@ -251,8 +272,8 @@ def main(argv: list[str]) -> int:
 
     if args.print_prompt:
         path = write_prompt()
-        print(f"AGENT_CODE_PROMPT={path.relative_to(ROOT)}")
-        print(CODING_PROMPT)
+        log(f"AGENT_CODE_PROMPT={path.relative_to(ROOT)}")
+        print(CODING_PROMPT, flush=True)
         return 0
 
     if args.tool == "opencode":
