@@ -68,6 +68,7 @@ def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 240
             cmd,
             cwd=ROOT,
             env=env,
+            stdin=subprocess.DEVNULL,
             text=True,
             start_new_session=True,
         )
