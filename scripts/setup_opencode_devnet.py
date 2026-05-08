@@ -43,6 +43,10 @@ def main() -> int:
                 "models": {
                     model: {
                         "name": f"DevNet {model}",
+                        "limit": {
+                            "context": 128000,
+                            "output": 4096,
+                        },
                     }
                 },
             }
