@@ -38,10 +38,10 @@ def main() -> int:
     print(f"opencode={has_cmd('opencode')}")
     print(f"ollama={has_cmd('ollama')}")
     print(f"model_route={choose_route()}")
+    print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("recommendation=run deterministic gates every time; add an LLM coach only when a provider is available")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

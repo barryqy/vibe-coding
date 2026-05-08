@@ -12,6 +12,7 @@ REQUIRED_FILES = [
     Path("opencode.json"),
     Path(".claude/settings.json"),
     Path("docs/quality-bar.md"),
+    Path("scripts/agent_compare.py"),
 ]
 
 
@@ -32,6 +33,8 @@ def main() -> int:
 
     require("scripts/quality_gate.py" in agents, "AGENTS.md must require the quality gate", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
+    require("Claude Code" in agents or "CLAUDE.md" in agents, "AGENTS.md must mention Claude Code or CLAUDE.md", errors)
+    require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     agents_lower = agents.lower()
     require(
         "second brain" in agents_lower or ".second-brain" in agents_lower,
