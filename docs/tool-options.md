@@ -35,6 +35,7 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/devnet_openai_shim.py --ensure` to start the local shim OpenCode streams from in the lab environment
 - `python3 scripts/first_agent_result.py --tool opencode` for a first visible answer from OpenCode
+- `python3 scripts/agent_code_task.py --tool opencode` for a real Build-mode patch in the dojo
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass

@@ -57,6 +57,7 @@ def main() -> int:
     print("verify_tools=python3 scripts/verify_ai_tools.py")
     print("opencode_shim=python3 scripts/devnet_openai_shim.py --ensure")
     print("first_opencode_result=python3 scripts/first_agent_result.py --tool opencode")
+    print("real_opencode_patch=python3 scripts/agent_code_task.py --tool opencode")
     print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("recommendation=run deterministic gates every time; add an LLM coach only when a provider is available")
     return 0
