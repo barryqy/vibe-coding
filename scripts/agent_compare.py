@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -19,11 +20,18 @@ KNOWN_TOOL_DIRS = [
     "~/.claude/bin",
     "~/.claude/local",
 ]
+ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\].*?(?:\x07|\x1b\\))")
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
 def add_tool_dirs_to_path() -> None:
     paths = [os.path.expanduser(path) for path in KNOWN_TOOL_DIRS]
     os.environ["PATH"] = os.pathsep.join([*paths, os.environ.get("PATH", "")])
+
+
+def clean_cli_text(text: str) -> str:
+    plain = ANSI_RE.sub("", text)
+    return CONTROL_RE.sub("", plain)
 
 
 TASK_PROMPT = """Context:
@@ -135,7 +143,7 @@ def auth_ready(tool: str) -> tuple[bool, str]:
     if result.returncode == 0:
         return True, "ready"
 
-    message = (result.stderr or result.stdout).strip().splitlines()
+    message = clean_cli_text(result.stderr or result.stdout).strip().splitlines()
     detail = message[0] if message else "not-authenticated"
     return False, detail
 

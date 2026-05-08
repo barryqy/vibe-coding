@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
+import re
 import shutil
 import subprocess
-import os
 
 
 KNOWN_TOOL_DIRS = [
@@ -13,6 +14,8 @@ KNOWN_TOOL_DIRS = [
     "~/.claude/bin",
     "~/.claude/local",
 ]
+ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\].*?(?:\x07|\x1b\\))")
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
 def add_tool_dirs_to_path() -> None:
@@ -20,12 +23,27 @@ def add_tool_dirs_to_path() -> None:
     os.environ["PATH"] = os.pathsep.join([*paths, os.environ.get("PATH", "")])
 
 
+def clean_cli_text(text: str) -> str:
+    plain = ANSI_RE.sub("", text)
+    return CONTROL_RE.sub("", plain)
+
+
 def run(cmd: list[str], timeout: int = 10) -> tuple[int, str]:
+    env = dict(os.environ)
+    env.setdefault("NO_COLOR", "1")
+    env.setdefault("CLICOLOR", "0")
     try:
-        result = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout, check=False)
+        result = subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+            env=env,
+        )
     except (OSError, subprocess.TimeoutExpired) as exc:
         return 1, exc.__class__.__name__
-    output = (result.stdout or result.stderr).strip()
+    output = clean_cli_text(result.stdout or result.stderr).strip()
     return result.returncode, output.splitlines()[0] if output else ""
 
 
