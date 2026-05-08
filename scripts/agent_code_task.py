@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_DIR = ROOT / ".lab-state" / "agent-prompts"
 PROMPT_FILE = PROMPT_DIR / "real-coding-task.md"
+TTY_SAFE_ENV = "AGENT_CODE_TTY_SAFE"
 KNOWN_TOOL_DIRS = [
     "~/.local/bin",
     "~/.opencode/bin",
@@ -81,6 +82,31 @@ def print_captured_output(text: str) -> None:
     for line in lines:
         print(line, flush=True)
     log("AGENT_CODE_TOOL_OUTPUT=end")
+
+
+def rerun_opencode_away_from_tty(argv: list[str]) -> int | None:
+    if os.getenv(TTY_SAFE_ENV) == "1" or not sys.stdout.isatty():
+        return None
+
+    out_path = ROOT / ".lab-state" / "agent-code-output.txt"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ)
+    env[TTY_SAFE_ENV] = "1"
+
+    with out_path.open("w", encoding="utf-8") as out:
+        process = subprocess.Popen(
+            [sys.executable, __file__, *argv],
+            cwd=ROOT,
+            env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        rc = process.wait()
+
+    print(out_path.read_text(encoding="utf-8"), end="", flush=True)
+    return rc
 
 
 def run(
@@ -325,6 +351,9 @@ def main(argv: list[str]) -> int:
         return 0
 
     if args.tool == "opencode":
+        rerun_rc = rerun_opencode_away_from_tty(argv)
+        if rerun_rc is not None:
+            return rerun_rc
         return run_opencode()
     return run_claude()
 
