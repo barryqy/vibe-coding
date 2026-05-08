@@ -84,7 +84,7 @@ def print_captured_output(text: str) -> None:
     log("AGENT_CODE_TOOL_OUTPUT=end")
 
 
-def rerun_opencode_away_from_tty(argv: list[str]) -> int | None:
+def rerun_away_from_tty(argv: list[str]) -> int | None:
     if os.getenv(TTY_SAFE_ENV) == "1" or not sys.stdout.isatty():
         return None
 
@@ -318,6 +318,7 @@ def run_claude() -> int:
         ["claude", "auth", "status", "--text"],
         cwd=ROOT,
         text=True,
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         timeout=10,
         check=False,
@@ -350,10 +351,11 @@ def main(argv: list[str]) -> int:
         print(CODING_PROMPT, flush=True)
         return 0
 
+    rerun_rc = rerun_away_from_tty(argv)
+    if rerun_rc is not None:
+        return rerun_rc
+
     if args.tool == "opencode":
-        rerun_rc = rerun_opencode_away_from_tty(argv)
-        if rerun_rc is not None:
-            return rerun_rc
         return run_opencode()
     return run_claude()
 
