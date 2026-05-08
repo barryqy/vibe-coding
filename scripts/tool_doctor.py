@@ -7,6 +7,20 @@ import shutil
 import urllib.request
 
 
+KNOWN_TOOL_DIRS = [
+    "~/.local/bin",
+    "~/.opencode/bin",
+    "~/.bun/bin",
+    "~/.claude/bin",
+    "~/.claude/local",
+]
+
+
+def add_tool_dirs_to_path() -> None:
+    paths = [os.path.expanduser(path) for path in KNOWN_TOOL_DIRS]
+    os.environ["PATH"] = os.pathsep.join([*paths, os.environ.get("PATH", "")])
+
+
 def has_cmd(name: str) -> str:
     path = shutil.which(name)
     return path if path else "not found"
@@ -33,11 +47,15 @@ def choose_route() -> str:
 
 
 def main() -> int:
+    add_tool_dirs_to_path()
     print("TOOL_DOCTOR=ready")
     print(f"claude={has_cmd('claude')}")
     print(f"opencode={has_cmd('opencode')}")
     print(f"ollama={has_cmd('ollama')}")
     print(f"model_route={choose_route()}")
+    print("install_tools=./scripts/install_ai_tools.sh")
+    print("verify_tools=python3 scripts/verify_ai_tools.py")
+    print("first_opencode_result=python3 scripts/first_agent_result.py --tool opencode")
     print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("recommendation=run deterministic gates every time; add an LLM coach only when a provider is available")
     return 0
