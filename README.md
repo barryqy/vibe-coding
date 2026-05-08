@@ -36,6 +36,7 @@ Then continue with the DevNet guide. The lab walks through installing Claude Cod
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly OpenCode or Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Claude Code and OpenCode with the same repo rules.
+- `scripts/agent_code_task.py` lets OpenCode or Claude Code make a real small patch, then shows the diff and reruns the quality gate.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `.claude/settings.json`, `CLAUDE.md`, `AGENTS.md`, and `opencode.json` show one repo-level way to keep AI coding tools inside the same boundaries.
 - `.second-brain/` is a small durable-memory starter for reusable decisions and workflows.
@@ -86,6 +87,13 @@ After that first result, compare both agents with one shared prompt:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules
+```
+
+Then let OpenCode make a real patch in the dojo:
+
+```bash
+python3 scripts/agent_code_task.py --tool opencode
+git diff -- dojo_app/tasks.py tests/test_tasks.py
 ```
 
 On a machine where the tools are installed and authenticated, this runs a plan-only/read-only pass:

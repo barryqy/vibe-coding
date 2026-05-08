@@ -56,9 +56,6 @@ def call_devnet(body: dict) -> dict:
     clean_body = dict(body)
     clean_body["stream"] = False
     clean_body.pop("stream_options", None)
-    clean_body.pop("tools", None)
-    clean_body.pop("tool_choice", None)
-    clean_body.pop("parallel_tool_calls", None)
 
     try:
         clean_body["max_tokens"] = min(int(clean_body.get("max_tokens", 1024)), 2048)
@@ -85,7 +82,9 @@ def event_chunk(payload: dict) -> bytes:
 
 
 def stream_response(handler: BaseHTTPRequestHandler, request_body: dict, payload: dict) -> None:
-    content = payload.get("choices", [{}])[0].get("message", {}).get("content", "")
+    message = payload.get("choices", [{}])[0].get("message", {})
+    content = message.get("content") or ""
+    tool_calls = message.get("tool_calls") or []
     model = request_body.get("model") or route()["model"]
     response_id = payload.get("id", "chatcmpl-devnet-shim")
 
@@ -94,19 +93,51 @@ def stream_response(handler: BaseHTTPRequestHandler, request_body: dict, payload
     handler.send_header("Cache-Control", "no-cache")
     handler.end_headers()
 
-    first = {
-        "id": response_id,
-        "object": "chat.completion.chunk",
-        "model": model,
-        "choices": [{"index": 0, "delta": {"content": content}, "finish_reason": None}],
-    }
+    if tool_calls:
+        for index, tool_call in enumerate(tool_calls):
+            function = tool_call.get("function") or {}
+            chunk = {
+                "id": response_id,
+                "object": "chat.completion.chunk",
+                "model": model,
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {
+                            "tool_calls": [
+                                {
+                                    "index": index,
+                                    "id": tool_call.get("id"),
+                                    "type": tool_call.get("type", "function"),
+                                    "function": {
+                                        "name": function.get("name", ""),
+                                        "arguments": function.get("arguments", ""),
+                                    },
+                                }
+                            ]
+                        },
+                        "finish_reason": None,
+                    }
+                ],
+            }
+            handler.wfile.write(event_chunk(chunk))
+        finish_reason = "tool_calls"
+    else:
+        first = {
+            "id": response_id,
+            "object": "chat.completion.chunk",
+            "model": model,
+            "choices": [{"index": 0, "delta": {"content": content}, "finish_reason": None}],
+        }
+        handler.wfile.write(event_chunk(first))
+        finish_reason = "stop"
+
     done = {
         "id": response_id,
         "object": "chat.completion.chunk",
         "model": model,
-        "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+        "choices": [{"index": 0, "delta": {}, "finish_reason": finish_reason}],
     }
-    handler.wfile.write(event_chunk(first))
     handler.wfile.write(event_chunk(done))
 
     stream_options = request_body.get("stream_options") or {}

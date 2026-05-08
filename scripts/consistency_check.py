@@ -13,6 +13,7 @@ REQUIRED_FILES = [
     Path(".claude/settings.json"),
     Path("docs/quality-bar.md"),
     Path("scripts/agent_compare.py"),
+    Path("scripts/agent_code_task.py"),
     Path("scripts/install_ai_tools.sh"),
     Path("scripts/devnet_openai_shim.py"),
     Path("scripts/setup_opencode_devnet.py"),

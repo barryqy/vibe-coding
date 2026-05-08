@@ -32,6 +32,12 @@ python3 scripts/verify_ai_tools.py
 python3 scripts/agent_compare.py --tool both --show-rules
 ```
 
+- To let a coding agent make the small lab patch, run:
+
+```bash
+python3 scripts/agent_code_task.py --tool opencode
+```
+
 - Before handing work back, run:
 
 ```bash
