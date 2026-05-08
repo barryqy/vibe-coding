@@ -4,11 +4,12 @@ Student helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 
 The lab teaches a practical loop for AI-assisted coding:
 
-1. give the agent real project context
-2. keep edits small enough to review
-3. run quality and security checks every time
-4. save useful decisions in a small second brain
-5. use a local or hosted model only when it improves the loop
+1. install Claude Code and OpenCode
+2. get a first visible result from a coding agent
+3. give the agent real project context
+4. keep edits small enough to review
+5. run quality and security checks before trusting the result
+6. save useful decisions in a small second brain
 
 ## Quick Start
 
@@ -19,7 +20,7 @@ cd vibe-coding
 ./scripts/setup_dojo.sh
 ```
 
-Then continue with the DevNet guide.
+Then continue with the DevNet guide. The lab walks through installing Claude Code and OpenCode before it asks you to compare them.
 
 ## What Is Here
 
@@ -29,6 +30,10 @@ Then continue with the DevNet guide.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/tool_doctor.py` checks for Claude Code, OpenCode, Ollama, and OpenAI-compatible model routes.
+- `scripts/install_ai_tools.sh` installs Claude Code and OpenCode with their official install scripts.
+- `scripts/verify_ai_tools.py` shows versions and sign-in state.
+- `scripts/setup_opencode_devnet.py` configures OpenCode to use the DevNet Learning Lab LLM proxy when those environment variables are present.
+- `scripts/first_agent_result.py` runs a first beginner-friendly OpenCode or Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Claude Code and OpenCode with the same repo rules.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `.claude/settings.json`, `CLAUDE.md`, `AGENTS.md`, and `opencode.json` show one repo-level way to keep AI coding tools inside the same boundaries.
@@ -54,9 +59,29 @@ export VIBE_LLM_API_KEY="your-api-key"
 
 In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` variables.
 
-## Compare Claude Code and OpenCode
+## Install and Use Claude Code and OpenCode
 
-The DevNet pod may not have either CLI installed, but you can still create the shared prompt and see the exact commands:
+Install the tools first:
+
+```bash
+./scripts/install_ai_tools.sh
+python3 scripts/verify_ai_tools.py
+```
+
+In a DevNet lab environment, OpenCode can use the built-in model proxy and produce a first answer without a personal model key:
+
+```bash
+python3 scripts/setup_opencode_devnet.py
+python3 scripts/first_agent_result.py --tool opencode
+```
+
+Claude Code usually needs a personal Claude Code sign-in. If you are signed in, this runs a read-only planning pass. If you are not signed in, it prints the login command and exits cleanly:
+
+```bash
+python3 scripts/first_agent_result.py --tool claude
+```
+
+After that first result, compare both agents with one shared prompt:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules

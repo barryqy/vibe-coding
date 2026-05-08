@@ -22,6 +22,10 @@
       "python3 scripts/consistency_check.py*": "allow",
       "python3 scripts/tool_doctor.py*": "allow",
       "python3 scripts/ai_coach.py*": "allow",
+      "python3 scripts/verify_ai_tools.py*": "allow",
+      "python3 scripts/setup_opencode_devnet.py*": "allow",
+      "python3 scripts/first_agent_result.py*": "ask",
+      "./scripts/install_ai_tools.sh*": "ask",
       "git status*": "allow",
       "rm *": "deny",
       "curl *": "ask"
@@ -32,4 +36,3 @@
     "doom_loop": "ask"
   }
 }
-

@@ -19,6 +19,13 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
 - When a requirement is fuzzy, ask one focused question before changing code.
+- To install and verify the coding agents, run:
+
+```bash
+./scripts/install_ai_tools.sh
+python3 scripts/verify_ai_tools.py
+```
+
 - To compare Claude Code and OpenCode on the same scoped task, run:
 
 ```bash
