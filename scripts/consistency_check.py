@@ -14,6 +14,7 @@ REQUIRED_FILES = [
     Path("docs/quality-bar.md"),
     Path("scripts/agent_compare.py"),
     Path("scripts/install_ai_tools.sh"),
+    Path("scripts/devnet_openai_shim.py"),
     Path("scripts/setup_opencode_devnet.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),

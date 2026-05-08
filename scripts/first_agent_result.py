@@ -64,6 +64,10 @@ def run_opencode() -> int:
         print("reason=No OpenCode provider is configured")
         return 0
 
+    shim_rc = run([sys.executable, "scripts/devnet_openai_shim.py", "--ensure"], timeout=20)
+    if shim_rc != 0:
+        return shim_rc
+
     env = dict(os.environ)
     env["OPENCODE_CONFIG"] = str(config)
     env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")

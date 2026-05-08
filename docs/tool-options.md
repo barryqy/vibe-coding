@@ -33,6 +33,7 @@ In this dojo, the OpenCode path uses:
 - `./scripts/install_ai_tools.sh` to install the CLI with the official shell installer
 - `python3 scripts/verify_ai_tools.py` to show the version and credential state
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
+- `python3 scripts/devnet_openai_shim.py --ensure` to start the local shim OpenCode streams from in the lab environment
 - `python3 scripts/first_agent_result.py --tool opencode` for a first visible answer from OpenCode
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
