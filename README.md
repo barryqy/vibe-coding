@@ -29,6 +29,7 @@ Then continue with the DevNet guide.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/tool_doctor.py` checks for Claude Code, OpenCode, Ollama, and OpenAI-compatible model routes.
+- `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Claude Code and OpenCode with the same repo rules.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `.claude/settings.json`, `CLAUDE.md`, `AGENTS.md`, and `opencode.json` show one repo-level way to keep AI coding tools inside the same boundaries.
 - `.second-brain/` is a small durable-memory starter for reusable decisions and workflows.
@@ -53,9 +54,23 @@ export VIBE_LLM_API_KEY="your-api-key"
 
 In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` variables.
 
+## Compare Claude Code and OpenCode
+
+The DevNet pod may not have either CLI installed, but you can still create the shared prompt and see the exact commands:
+
+```bash
+python3 scripts/agent_compare.py --tool both --show-rules
+```
+
+On a machine where the tools are installed and authenticated, this runs a plan-only/read-only pass:
+
+```bash
+python3 scripts/agent_compare.py --tool claude --run
+python3 scripts/agent_compare.py --tool opencode --run
+```
+
 ## Safety Notes
 
 - Do not put real secrets in this repo.
 - The unsafe sample under `samples/` is intentionally bad and exists only so the scanner has something obvious to catch.
 - The quality gate is deliberately simple. It is a teaching harness, not a replacement for a full CI system.
-

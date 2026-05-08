@@ -8,6 +8,8 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and quality gates.
 - `docs/quality-bar.md` is the shared definition of good work.
+- `CLAUDE.md` and `.claude/settings.json` are the Claude Code path.
+- `opencode.json` and `AGENTS.md` are the OpenCode path.
 - `.second-brain/` stores durable decisions and reusable workflow notes.
 
 ## Working Rules
@@ -17,6 +19,12 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
 - When a requirement is fuzzy, ask one focused question before changing code.
+- To compare Claude Code and OpenCode on the same scoped task, run:
+
+```bash
+python3 scripts/agent_compare.py --tool both --show-rules
+```
+
 - Before handing work back, run:
 
 ```bash
@@ -41,4 +49,3 @@ python3 scripts/security_review.py dojo_app scripts
 - The security review passes.
 - Agent instructions still match the quality bar.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
-
