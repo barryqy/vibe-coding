@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / ".lab-state" / "opencode-devnet.json"
+SHIM_BASE_URL = "http://127.0.0.1:8765/v1"
 
 
 def main() -> int:
@@ -37,8 +38,8 @@ def main() -> int:
                 "npm": "@ai-sdk/openai-compatible",
                 "name": "DevNet Learning Lab LLM",
                 "options": {
-                    "baseURL": base_url,
-                    "apiKey": api_key,
+                    "baseURL": SHIM_BASE_URL,
+                    "apiKey": "devnet-shim",
                 },
                 "models": {
                     model: {
@@ -57,6 +58,7 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
+    print("shim=python3 scripts/devnet_openai_shim.py --ensure")
     return 0
 
 

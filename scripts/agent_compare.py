@@ -151,6 +151,15 @@ def run_tool(tool: str, prompt_file: Path) -> int:
     print(f"{tool.upper()}_RUN=starting")
     env = dict(os.environ)
     if tool == "opencode" and devnet_config().exists():
+        shim = subprocess.run(
+            [sys.executable, "scripts/devnet_openai_shim.py", "--ensure"],
+            cwd=ROOT,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+        if shim.returncode != 0:
+            return shim.returncode
         env["OPENCODE_CONFIG"] = str(devnet_config())
         env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")
         env.setdefault("OPENCODE_DISABLE_LSP_DOWNLOAD", "true")

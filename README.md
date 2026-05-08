@@ -32,7 +32,8 @@ Then continue with the DevNet guide. The lab walks through installing Claude Cod
 - `scripts/tool_doctor.py` checks for Claude Code, OpenCode, Ollama, and OpenAI-compatible model routes.
 - `scripts/install_ai_tools.sh` installs Claude Code and OpenCode with their official install scripts.
 - `scripts/verify_ai_tools.py` shows versions and sign-in state.
-- `scripts/setup_opencode_devnet.py` configures OpenCode to use the DevNet Learning Lab LLM proxy when those environment variables are present.
+- `scripts/devnet_openai_shim.py` gives OpenCode a local OpenAI-compatible route backed by the DevNet Learning Lab LLM proxy.
+- `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly OpenCode or Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Claude Code and OpenCode with the same repo rules.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
