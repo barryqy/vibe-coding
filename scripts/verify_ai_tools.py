@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import re
+import signal
 import shutil
 import subprocess
 
@@ -11,8 +12,6 @@ KNOWN_TOOL_DIRS = [
     "~/.local/bin",
     "~/.opencode/bin",
     "~/.bun/bin",
-    "~/.claude/bin",
-    "~/.claude/local",
 ]
 ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\].*?(?:\x07|\x1b\\))")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -32,19 +31,36 @@ def run(cmd: list[str], timeout: int = 10) -> tuple[int, str]:
     env = dict(os.environ)
     env.setdefault("NO_COLOR", "1")
     env.setdefault("CLICOLOR", "0")
+    env.setdefault("CI", "1")
+    env.setdefault("TERM", "dumb")
     try:
-        result = subprocess.run(
+        process = subprocess.Popen(
             cmd,
-            text=True,
-            capture_output=True,
-            timeout=timeout,
-            check=False,
             env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except OSError as exc:
         return 1, exc.__class__.__name__
-    output = clean_cli_text(result.stdout or result.stderr).strip()
-    return result.returncode, output.splitlines()[0] if output else ""
+
+    try:
+        output, _ = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+            process.communicate(timeout=2)
+        except (ProcessLookupError, subprocess.TimeoutExpired):
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        return 1, "TimeoutExpired"
+
+    output = clean_cli_text(output or "").strip()
+    return process.returncode, output.splitlines()[0] if output else ""
 
 
 def version(name: str, args: list[str]) -> str:
@@ -58,18 +74,13 @@ def version(name: str, args: list[str]) -> str:
 def main() -> int:
     add_tool_dirs_to_path()
     print("AI_TOOL_CHECK=ready")
-    print(f"claude_path={shutil.which('claude') or 'not-installed'}")
-    print(f"claude_version={version('claude', ['--version'])}")
-
-    if shutil.which("claude"):
-        rc, output = run(["claude", "auth", "status", "--text"])
-        print(f"claude_auth={'ready' if rc == 0 else 'needs-login'}")
-        if output:
-            print(f"claude_auth_message={output}")
-        if rc != 0:
-            print("claude_next=claude auth login")
+    print(f"codex_path={shutil.which('codex') or 'not-installed'}")
+    print(f"codex_version={version('codex', ['--version'])}")
+    if shutil.which("codex"):
+        print("codex_auth=not-required-for-devnet-shim")
+        print("codex_next=python3 scripts/setup_codex_devnet.py")
     else:
-        print("claude_auth=not-installed")
+        print("codex_auth=not-installed")
 
     print(f"opencode_path={shutil.which('opencode') or 'not-installed'}")
     print(f"opencode_version={version('opencode', ['--version'])}")

@@ -16,8 +16,6 @@ KNOWN_TOOL_DIRS = [
     "~/.local/bin",
     "~/.opencode/bin",
     "~/.bun/bin",
-    "~/.claude/bin",
-    "~/.claude/local",
 ]
 
 
@@ -96,6 +94,70 @@ def run_opencode() -> int:
     )
 
 
+def run_codex() -> int:
+    add_tool_dirs_to_path()
+    if not shutil.which("codex"):
+        print("CODEX_FIRST_RESULT=skipped")
+        print("reason=codex is not installed")
+        return 0
+
+    config = ROOT / ".lab-state" / "codex" / "home" / "config.toml"
+    if not config.exists():
+        setup_rc = run([sys.executable, "scripts/setup_codex_devnet.py"])
+        if setup_rc != 0:
+            return setup_rc
+
+    if not config.exists():
+        print("CODEX_FIRST_RESULT=skipped")
+        print("reason=No Codex DevNet provider is configured")
+        return 0
+
+    shim_rc = run([sys.executable, "scripts/devnet_codex_shim.py", "--ensure"], timeout=20)
+    if shim_rc != 0:
+        return shim_rc
+
+    env = dict(os.environ)
+    env["CODEX_HOME"] = str(config.parent)
+    env.setdefault("NO_COLOR", "1")
+    env.setdefault("TERM", "dumb")
+
+    model = os.getenv("LLM_MODEL", "gpt-4o")
+    print("CODEX_FIRST_RESULT=starting")
+    print(f"model=devnet/{model}")
+    result = subprocess.run(
+        [
+            "codex",
+            "exec",
+            "--disable",
+            "plugin_sharing",
+            "--ephemeral",
+            "--skip-git-repo-check",
+            "--cd",
+            str(ROOT),
+            "--sandbox",
+            "read-only",
+            "--color",
+            "never",
+            prompt_for_first_result(),
+        ],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=90,
+        check=False,
+    )
+    output = (result.stdout or "").strip()
+    if output:
+        print(output)
+    if result.returncode != 0:
+        print("CODEX_FIRST_RESULT=failed")
+        detail = (result.stderr or "").strip().splitlines()
+        if detail:
+            print(f"reason={detail[-1]}")
+    return result.returncode
+
+
 def run_claude() -> int:
     add_tool_dirs_to_path()
     if not shutil.which("claude"):
@@ -135,11 +197,13 @@ def run_claude() -> int:
 def main(argv: list[str]) -> int:
     add_tool_dirs_to_path()
     parser = argparse.ArgumentParser(description="Run the first beginner AI-agent result.")
-    parser.add_argument("--tool", choices=["opencode", "claude"], default="opencode")
+    parser.add_argument("--tool", choices=["opencode", "codex", "claude"], default="codex")
     args = parser.parse_args(argv)
 
     if args.tool == "opencode":
         return run_opencode()
+    if args.tool == "codex":
+        return run_codex()
     return run_claude()
 
 

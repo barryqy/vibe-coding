@@ -19,8 +19,6 @@ KNOWN_TOOL_DIRS = [
     "~/.local/bin",
     "~/.opencode/bin",
     "~/.bun/bin",
-    "~/.claude/bin",
-    "~/.claude/local",
 ]
 
 CODING_PROMPT = """Context:
@@ -234,6 +232,14 @@ def print_diff() -> int:
     return rc
 
 
+def codex_home() -> Path:
+    return ROOT / ".lab-state" / "codex" / "home"
+
+
+def codex_config() -> Path:
+    return codex_home() / "config.toml"
+
+
 def run_opencode() -> int:
     add_tool_dirs_to_path()
     if not shutil.which("opencode"):
@@ -307,6 +313,75 @@ def run_opencode() -> int:
     return 0
 
 
+def run_codex() -> int:
+    add_tool_dirs_to_path()
+    if not shutil.which("codex"):
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=codex is not installed")
+        return 0
+
+    setup_rc = run([sys.executable, "scripts/setup_codex_devnet.py"], timeout=20)
+    if setup_rc != 0:
+        return setup_rc
+
+    if not codex_config().exists():
+        log("AGENT_CODE_TASK=skipped")
+        log("reason=No Codex DevNet provider is configured")
+        return 0
+
+    shim_rc = run([sys.executable, "scripts/devnet_codex_shim.py", "--ensure"], timeout=20)
+    if shim_rc != 0:
+        return shim_rc
+
+    prompt_file = write_prompt()
+    env = dict(os.environ)
+    env["CODEX_HOME"] = str(codex_home())
+    env["NO_COLOR"] = "1"
+    env["TERM"] = "dumb"
+
+    log("AGENT_CODE_TASK=starting")
+    log("tool=codex")
+    log(f"prompt_file={prompt_file.relative_to(ROOT)}")
+    rc = run(
+        [
+            "codex",
+            "exec",
+            "--disable",
+            "plugin_sharing",
+            "--ephemeral",
+            "--skip-git-repo-check",
+            "--cd",
+            str(ROOT),
+            "--sandbox",
+            "workspace-write",
+            "--color",
+            "never",
+            CODING_PROMPT,
+        ],
+        env=env,
+        timeout=35,
+        capture=True,
+    )
+    log(f"AGENT_CODE_TOOL_RC={rc}")
+
+    print_diff()
+    if rc == 0 and expected_change_ready():
+        log("AGENT_CODE_APPLY=agent-edit")
+    else:
+        log("AGENT_CODE_APPLY=guided-patch")
+        log("reason=The provider did not complete file edits in this lab run.")
+        apply_guided_patch()
+        print_diff()
+
+    log("AGENT_CODE_VERIFY=starting")
+    verify_rc = run([sys.executable, "scripts/quality_gate.py"], timeout=120)
+    if verify_rc != 0:
+        return verify_rc
+
+    log("AGENT_CODE_TASK=pass")
+    return 0
+
+
 def run_claude() -> int:
     add_tool_dirs_to_path()
     if not shutil.which("claude"):
@@ -341,7 +416,7 @@ def run_claude() -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Let a coding agent make a small real patch.")
-    parser.add_argument("--tool", choices=["opencode", "claude"], default="opencode")
+    parser.add_argument("--tool", choices=["opencode", "codex", "claude"], default="codex")
     parser.add_argument("--print-prompt", action="store_true")
     args = parser.parse_args(argv)
 
@@ -357,6 +432,8 @@ def main(argv: list[str]) -> int:
 
     if args.tool == "opencode":
         return run_opencode()
+    if args.tool == "codex":
+        return run_codex()
     return run_claude()
 
 

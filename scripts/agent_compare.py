@@ -17,8 +17,6 @@ KNOWN_TOOL_DIRS = [
     "~/.local/bin",
     "~/.opencode/bin",
     "~/.bun/bin",
-    "~/.claude/bin",
-    "~/.claude/local",
 ]
 ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\].*?(?:\x07|\x1b\\))")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -73,6 +71,14 @@ def devnet_config() -> Path:
     return ROOT / ".lab-state" / "opencode-devnet.json"
 
 
+def codex_home() -> Path:
+    return ROOT / ".lab-state" / "codex" / "home"
+
+
+def codex_config() -> Path:
+    return codex_home() / "config.toml"
+
+
 def devnet_model() -> str:
     return os.getenv("LLM_MODEL", "gpt-4o")
 
@@ -110,10 +116,34 @@ def opencode_command(prompt_file: Path) -> list[str]:
     return cmd
 
 
+def codex_command(prompt_file: Path) -> list[str]:
+    prompt = prompt_file.read_text(encoding="utf-8")
+    return [
+        "codex",
+        "exec",
+        "--disable",
+        "plugin_sharing",
+        "--ephemeral",
+        "--skip-git-repo-check",
+        "--cd",
+        str(ROOT),
+        "--sandbox",
+        "read-only",
+        "--color",
+        "never",
+        prompt,
+    ]
+
+
 def shell_preview(tool: str, prompt_file: Path) -> str:
     rel_prompt = prompt_file.relative_to(ROOT)
     if tool == "claude":
         return f'claude -p --permission-mode plan --max-turns 1 "$(cat {rel_prompt})"'
+    if tool == "codex":
+        return (
+            f"CODEX_HOME={codex_home().relative_to(ROOT)} "
+            f'codex exec --disable plugin_sharing --ephemeral --sandbox read-only "$(cat {rel_prompt})"'
+        )
     prefix = ""
     model = ""
     if devnet_config().exists():
@@ -128,6 +158,10 @@ def auth_ready(tool: str) -> tuple[bool, str]:
 
     if tool == "claude":
         cmd = ["claude", "auth", "status", "--text"]
+    elif tool == "codex":
+        if codex_config().exists():
+            return True, "ready-devnet-config"
+        return False, "no-codex-devnet-config"
     else:
         if devnet_config().exists():
             return True, "ready-devnet-config"
@@ -149,13 +183,29 @@ def auth_ready(tool: str) -> tuple[bool, str]:
 
 
 def run_tool(tool: str, prompt_file: Path) -> int:
+    if tool == "codex" and not codex_config().exists():
+        setup = subprocess.run(
+            [sys.executable, "scripts/setup_codex_devnet.py"],
+            cwd=ROOT,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+        if setup.returncode != 0:
+            return setup.returncode
+
     ready, reason = auth_ready(tool)
     if not ready:
         print(f"{tool.upper()}_RUN=skipped")
         print(f"reason={reason}")
         return 0
 
-    cmd = claude_command(prompt_file) if tool == "claude" else opencode_command(prompt_file)
+    if tool == "claude":
+        cmd = claude_command(prompt_file)
+    elif tool == "codex":
+        cmd = codex_command(prompt_file)
+    else:
+        cmd = opencode_command(prompt_file)
     print(f"{tool.upper()}_RUN=starting")
     env = dict(os.environ)
     if tool == "opencode" and devnet_config().exists():
@@ -171,6 +221,19 @@ def run_tool(tool: str, prompt_file: Path) -> int:
         env["OPENCODE_CONFIG"] = str(devnet_config())
         env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")
         env.setdefault("OPENCODE_DISABLE_LSP_DOWNLOAD", "true")
+    if tool == "codex" and codex_config().exists():
+        shim = subprocess.run(
+            [sys.executable, "scripts/devnet_codex_shim.py", "--ensure"],
+            cwd=ROOT,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+        if shim.returncode != 0:
+            return shim.returncode
+        env["CODEX_HOME"] = str(codex_home())
+        env.setdefault("NO_COLOR", "1")
+        env.setdefault("TERM", "dumb")
     result = subprocess.run(cmd, cwd=ROOT, env=env, text=True, timeout=120, check=False)
     print(f"{tool.upper()}_RUN_RC={result.returncode}")
     return 0 if result.returncode == 0 else result.returncode
@@ -178,26 +241,27 @@ def run_tool(tool: str, prompt_file: Path) -> int:
 
 def print_rules() -> None:
     print("AGENT_RULES=loaded")
-    print("Claude Code reads CLAUDE.md and project settings under .claude/settings.json.")
+    print("Codex CLI reads AGENTS.md and uses the repo-local CODEX_HOME config for this lab.")
     print("OpenCode reads AGENTS.md and combines configured instruction files from opencode.json.")
     print("Both tools should use the same verification command: python3 scripts/quality_gate.py")
 
 
 def main(argv: list[str]) -> int:
     add_tool_dirs_to_path()
-    parser = argparse.ArgumentParser(description="Compare Claude Code and OpenCode on the same scoped task.")
-    parser.add_argument("--tool", choices=["both", "claude", "opencode"], default="both")
+    parser = argparse.ArgumentParser(description="Compare Codex CLI and OpenCode on the same scoped task.")
+    parser.add_argument("--tool", choices=["both", "codex", "opencode", "claude"], default="both")
     parser.add_argument("--run", action="store_true", help="Run the selected tool only if it is installed and authenticated.")
     parser.add_argument("--show-rules", action="store_true", help="Print the rule files each tool uses.")
     args = parser.parse_args(argv)
 
     prompt_file = write_prompt()
-    tools = ["claude", "opencode"] if args.tool == "both" else [args.tool]
+    tools = ["codex", "opencode"] if args.tool == "both" else [args.tool]
 
     print("AGENT_COMPARE=ready")
     print(f"prompt_file={prompt_file.relative_to(ROOT)}")
-    print(f"claude={command_path('claude')}")
+    print(f"codex={command_path('codex')}")
     print(f"opencode={command_path('opencode')}")
+    print(f"claude_optional={command_path('claude')}")
 
     if args.show_rules:
         print_rules()
