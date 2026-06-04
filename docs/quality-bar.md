@@ -23,15 +23,15 @@ Verification: exact command the agent must run before it stops.
 Memory: what decision should be saved if the result matters later.
 ```
 
-## Quality Gate
+## Repo Check Command
 
-Run this before trusting a patch:
+Run this check before trusting a patch:
 
 ```bash
 python3 scripts/quality_gate.py
 ```
 
-The gate checks:
+The command checks:
 
 - Python files compile
 - unit tests pass
@@ -39,7 +39,7 @@ The gate checks:
 - agent instructions and tool configs still point at the same workflow
 - Codex and OpenCode model-route helpers stay repo-local under `.lab-state/`
 
-## DefenseClaw Admission Gate
+## DefenseClaw Admission Check
 
 Run this before trusting a new agent skill:
 

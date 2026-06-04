@@ -28,7 +28,7 @@ def run_step(name: str, cmd: list[str]) -> bool:
 
 
 def main() -> int:
-    print("== Vibe Coding Quality Gate ==")
+    print("== Vibe Coding Repo Check ==")
 
     compiled = compileall.compile_dir(ROOT / "dojo_app", quiet=1)
     compiled = compileall.compile_dir(ROOT / "scripts", quiet=1) and compiled
@@ -56,4 +56,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

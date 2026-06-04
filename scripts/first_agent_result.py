@@ -38,9 +38,12 @@ def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 180
 
 def prompt_for_first_result() -> str:
     return (
-        "Read AGENTS.md and docs/quality-bar.md, then explain this dojo repo in five bullets. "
-        "After that, propose one small beginner-friendly code change. "
-        "Do not edit files. End with the exact verification command."
+        "Read AGENTS.md and docs/quality-bar.md briefly. Do not edit files. "
+        "This is a quick tool check for a beginner lab. Reply with four short bullets: "
+        "1) give the tiny task app a fun nickname, "
+        "2) say what the app does in one plain sentence, "
+        "3) suggest one tiny safe code change, "
+        "4) end with the exact verification command: python3 scripts/quality_gate.py."
     )
 
 

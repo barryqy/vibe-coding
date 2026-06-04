@@ -73,4 +73,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result and coding patch. Use OpenCode as the comparison agent with the same repo rules and quality gate. Keep Claude Code as an optional follow-up only when the learner already has sign-in.
+Use Codex CLI with the DevNet model proxy for the required first result and coding patch. Use OpenCode as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.

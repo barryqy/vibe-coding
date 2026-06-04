@@ -39,7 +39,7 @@ Then continue with the DevNet guide. The lab walks through installing Codex CLI 
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly Codex, OpenCode, or optional Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Codex and OpenCode with the same repo rules.
-- `scripts/agent_code_task.py` lets Codex or OpenCode make a real small patch, then shows the diff and reruns the quality gate.
+- `scripts/agent_code_task.py` lets Codex or OpenCode make a real small patch, then shows the diff and reruns the repo check.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
@@ -136,4 +136,4 @@ DEFENSECLAW_MINI=pass
 
 - Do not put real secrets in this repo.
 - The unsafe sample under `samples/` is intentionally bad and exists only so the scanner has something obvious to catch.
-- The quality gate is deliberately simple. It is a teaching harness, not a replacement for a full CI system.
+- The repo check is deliberately simple. It is a teaching harness, not a replacement for a full CI system.

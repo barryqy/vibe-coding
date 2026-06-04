@@ -63,7 +63,7 @@ def mock_review(text: str) -> str:
     lower_text = text.lower()
     points = [
         "Keep the patch small enough for a human review.",
-        "Run the quality gate before trusting the result.",
+        "Run the repo check command before trusting the result.",
         "Save the decision if the same rule should guide future sessions.",
     ]
 

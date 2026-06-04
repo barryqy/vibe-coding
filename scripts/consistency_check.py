@@ -43,10 +43,10 @@ def main() -> int:
     agents = (root / "AGENTS.md").read_text(encoding="utf-8") if (root / "AGENTS.md").exists() else ""
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
 
-    require("scripts/quality_gate.py" in agents, "AGENTS.md must require the quality gate", errors)
+    require("scripts/quality_gate.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
-    require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission gate", errors)
+    require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     agents_lower = agents.lower()
