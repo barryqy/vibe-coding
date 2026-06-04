@@ -15,10 +15,16 @@ REQUIRED_FILES = [
     Path("scripts/agent_compare.py"),
     Path("scripts/agent_code_task.py"),
     Path("scripts/install_ai_tools.sh"),
+    Path("scripts/devnet_codex_shim.py"),
+    Path("scripts/setup_codex_devnet.py"),
     Path("scripts/devnet_openai_shim.py"),
     Path("scripts/setup_opencode_devnet.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
+    Path("scripts/install_defenseclaw_cli.sh"),
+    Path("scripts/defenseclaw_skill_demo.py"),
+    Path("samples/skills/workspace-migration-assistant/SKILL.md"),
+    Path("samples/skills/release-brief-helper/SKILL.md"),
 ]
 
 
@@ -39,7 +45,9 @@ def main() -> int:
 
     require("scripts/quality_gate.py" in agents, "AGENTS.md must require the quality gate", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
-    require("Claude Code" in agents or "CLAUDE.md" in agents, "AGENTS.md must mention Claude Code or CLAUDE.md", errors)
+    require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
+    require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission gate", errors)
+    require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     agents_lower = agents.lower()
     require(
@@ -63,6 +71,23 @@ def main() -> int:
     instructions = opencode.get("instructions", [])
     require("AGENTS.md" in instructions, "opencode.json must load AGENTS.md", errors)
     require("docs/quality-bar.md" in instructions, "opencode.json must load docs/quality-bar.md", errors)
+
+    bash_perms = ((opencode.get("permission") or {}).get("bash") or {})
+    require(
+        "python3 scripts/defenseclaw_skill_demo.py*" in bash_perms,
+        "opencode.json must allow the DefenseClaw skill demo",
+        errors,
+    )
+    require(
+        "python3 scripts/setup_codex_devnet.py*" in bash_perms,
+        "opencode.json must allow the Codex DevNet setup helper",
+        errors,
+    )
+    require(
+        "python3 scripts/devnet_codex_shim.py*" in bash_perms,
+        "opencode.json must allow the Codex DevNet shim helper",
+        errors,
+    )
 
     if errors:
         print("CONSISTENCY_CHECK=fail")

@@ -7,9 +7,14 @@
       "Bash(python3 scripts/consistency_check.py*)",
       "Bash(python3 scripts/tool_doctor.py*)",
       "Bash(python3 scripts/ai_coach.py*)",
+      "Bash(python3 scripts/setup_codex_devnet.py*)",
+      "Bash(python3 scripts/devnet_codex_shim.py*)",
+      "Bash(python3 scripts/setup_opencode_devnet.py*)",
+      "Bash(python3 scripts/defenseclaw_skill_demo.py*)",
       "Bash(git status*)"
     ],
     "ask": [
+      "Bash(./scripts/install_defenseclaw_cli.sh*)",
       "Bash(git commit*)",
       "Bash(git push*)",
       "Bash(curl *)"
@@ -22,4 +27,3 @@
     ]
   }
 }
-

@@ -1,6 +1,8 @@
-# Claude Code Notes
+# Optional Claude Code Notes
 
 Read `AGENTS.md` first. The same quality bar applies here.
+
+Claude Code is optional for this DevNet lab because it normally needs personal sign-in. The required attendee path uses Codex CLI and OpenCode through the supplied DevNet model route.
 
 Use a planning pass before risky edits, especially changes that affect command execution, file deletion, authentication, or model routing.
 
@@ -8,7 +10,15 @@ Good default loop:
 
 ```bash
 python3 scripts/tool_doctor.py
+python3 scripts/setup_codex_devnet.py
 python3 scripts/quality_gate.py
+```
+
+For the DefenseClaw mini-module, keep the scanner path explicit:
+
+```bash
+./scripts/install_defenseclaw_cli.sh
+python3 scripts/defenseclaw_skill_demo.py
 ```
 
 For this lab, do not approve commands that read `.env`, `.env.*`, `secrets/`, browser profiles, SSH keys, or cloud credentials. Use fake sample data only.
@@ -18,4 +28,3 @@ When you finish a meaningful fix or decision, create a short note:
 ```bash
 python3 scripts/make_second_brain_note.py --title "Decision title" --why "Why this will matter later"
 ```
-
