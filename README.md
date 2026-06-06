@@ -5,11 +5,11 @@ Student helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI and OpenCode
-2. get a first visible result from a coding agent
-3. give the agent real project context
-4. keep edits small enough to review
+2. learn which LLM route the lab is using
+3. build a small BarryBot prompt-and-answer agent
+4. compare Codex CLI and OpenCode on the same scoped task
 5. run quality and security checks before trusting the result
-6. scan agent skills before trusting them
+6. scan credentials, PII, keys, and agent skills before trusting them
 7. save useful decisions in a small second brain
 
 ## Quick Start
@@ -26,10 +26,13 @@ Then continue with the DevNet guide. The lab walks through installing Codex CLI 
 ## What Is Here
 
 - `dojo_app/` is a tiny task tracker used for code-quality exercises.
+- `dojo_app/barrybot.py` is the starter prompt-and-answer agent learners build during the lab.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/quality_gate.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
+- `scripts/model_resource_walkthrough.py` prints the active LLM route and model-governance resources.
+- `scripts/barrybot_demo.py` runs the BarryBot mini-agent with a prompt.
 - `scripts/tool_doctor.py` checks for Codex CLI, OpenCode, Ollama, DefenseClaw, and OpenAI-compatible model routes.
 - `scripts/install_ai_tools.sh` installs Codex CLI and OpenCode with their official install scripts.
 - `scripts/verify_ai_tools.py` shows versions and credential state.
@@ -39,7 +42,7 @@ Then continue with the DevNet guide. The lab walks through installing Codex CLI 
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly Codex, OpenCode, or optional Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Codex and OpenCode with the same repo rules.
-- `scripts/agent_code_task.py` lets Codex or OpenCode make a real small patch, then shows the diff and reruns the repo check.
+- `scripts/agent_code_task.py` lets Codex or OpenCode build BarryBot, then shows the diff and reruns the repo check.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
@@ -96,14 +99,20 @@ After that first result, compare both agents with one shared prompt:
 python3 scripts/agent_compare.py --tool both --show-rules
 ```
 
-Then let Codex make a real patch in the dojo:
+See which model route the lab will use:
+
+```bash
+python3 scripts/model_resource_walkthrough.py
+```
+
+Then let Codex build BarryBot in the dojo:
 
 ```bash
 python3 scripts/agent_code_task.py --tool codex
-git diff -- dojo_app/tasks.py tests/test_tasks.py
+python3 scripts/barrybot_demo.py --prompt "What should I check before trusting generated code?"
 ```
 
-From a fresh clone or after resetting the two dojo files, OpenCode can run the same patch:
+From a fresh clone or after resetting the two BarryBot files, OpenCode can run the same patch:
 
 ```bash
 python3 scripts/agent_code_task.py --tool opencode
@@ -132,8 +141,14 @@ DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
 ```
 
+You can also scan the intentionally leaky BarryBot sample:
+
+```bash
+python3 scripts/security_review.py samples/leaky_barrybot_patch.py || true
+```
+
 ## Safety Notes
 
 - Do not put real secrets in this repo.
-- The unsafe sample under `samples/` is intentionally bad and exists only so the scanner has something obvious to catch.
+- The unsafe samples under `samples/` are intentionally bad and exist only so scanners have something obvious to catch.
 - The repo check is deliberately simple. It is a teaching harness, not a replacement for a full CI system.

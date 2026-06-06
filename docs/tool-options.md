@@ -13,7 +13,8 @@ In this dojo, the Codex path uses:
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/devnet_codex_shim.py --ensure` to start the local Responses API shim
 - `python3 scripts/first_agent_result.py --tool codex` for a first visible answer from Codex
-- `python3 scripts/agent_code_task.py --tool codex` for a real patch in the dojo
+- `python3 scripts/agent_code_task.py --tool codex` to build BarryBot in the dojo
+- `python3 scripts/barrybot_demo.py --prompt "What should I check before trusting generated code?"` to run the mini-agent
 - `AGENTS.md` for shared project guidance
 - `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
@@ -32,7 +33,7 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/devnet_openai_shim.py --ensure` to start the local shim OpenCode streams from in the lab environment
 - `python3 scripts/first_agent_result.py --tool opencode` for a first visible answer from OpenCode
-- `python3 scripts/agent_code_task.py --tool opencode` for the same real patch when you want a comparison run
+- `python3 scripts/agent_code_task.py --tool opencode` for the same BarryBot build when you want a comparison run
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
@@ -73,4 +74,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result and coding patch. Use OpenCode as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.
+Use Codex CLI with the DevNet model proxy for the required first result and BarryBot build. Use OpenCode as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.

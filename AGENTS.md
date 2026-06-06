@@ -5,6 +5,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 ## Project Map
 
 - `dojo_app/` contains the app code.
+- `dojo_app/barrybot.py` is the small prompt-and-answer agent built in the lab.
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and repo checks.
 - `docs/quality-bar.md` is the shared definition of good work.
@@ -41,10 +42,22 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/agent_compare.py --tool both --show-rules
 ```
 
-- To let a coding agent make the small lab patch, run:
+- To inspect the lab model route and model resources, run:
+
+```bash
+python3 scripts/model_resource_walkthrough.py
+```
+
+- To let a coding agent build BarryBot, run:
 
 ```bash
 python3 scripts/agent_code_task.py --tool codex
+```
+
+- To run BarryBot after the build, run:
+
+```bash
+python3 scripts/barrybot_demo.py --prompt "What should I check before trusting generated code?"
 ```
 
 - To explore DefenseClaw admission checks, run:
@@ -72,6 +85,12 @@ If you touched code that runs commands, parses user input, or handles file paths
 python3 scripts/security_review.py dojo_app scripts
 ```
 
+If you touched BarryBot prompt handling, also scan the leaky sample so the expected detections still work:
+
+```bash
+python3 scripts/security_review.py samples/leaky_barrybot_patch.py || true
+```
+
 If you touched the skill samples or DefenseClaw helper, also run:
 
 ```bash
@@ -84,4 +103,5 @@ python3 scripts/defenseclaw_skill_demo.py
 - The security review passes.
 - The DefenseClaw mini-demo passes when skill samples or admission-gate code changed.
 - Agent instructions still match the quality bar.
+- BarryBot does not print secrets, email addresses, or SSN-shaped values in its final answer.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.

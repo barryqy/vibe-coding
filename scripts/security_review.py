@@ -18,6 +18,9 @@ PY_PATTERNS = [
 TEXT_PATTERNS = [
     ("HIGH", re.compile(r"-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----"), "contains a private key"),
     ("HIGH", re.compile(r"sk-[A-Za-z0-9]{20,}"), "looks like a live API key"),
+    ("HIGH", re.compile(r"\bAKIA[0-9A-Z]{16}\b"), "looks like an AWS access key"),
+    ("MEDIUM", re.compile(r"\b\d{3}-\d{2}-\d{4}\b"), "contains SSN-shaped data"),
+    ("MEDIUM", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), "contains email-like PII"),
 ]
 
 
