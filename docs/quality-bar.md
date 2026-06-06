@@ -8,6 +8,7 @@ Good vibe coding still has a quality bar.
 - The agent has project context before it edits.
 - Tests and checks are run after the edit.
 - Security-sensitive changes get an extra review.
+- Model routes and data sources are named before the app sends prompts.
 - Agent skills and extensions are scanned before they are trusted.
 - Durable decisions are written down once, then reused.
 
@@ -35,7 +36,7 @@ The command checks:
 
 - Python files compile
 - unit tests pass
-- unsafe code patterns are not present in the app or helper scripts
+- unsafe code, secret, and PII patterns are not present in the app or helper scripts
 - agent instructions and tool configs still point at the same workflow
 - Codex and OpenCode model-route helpers stay repo-local under `.lab-state/`
 

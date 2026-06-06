@@ -25,23 +25,26 @@ CODING_PROMPT = """Context:
 You are helping with the Vibe Coding 101 dojo repo. Read AGENTS.md and docs/quality-bar.md first.
 
 Goal:
-Make a real, small code change. Add a helper that lists only high-priority tasks that are still open.
+Build BarryBot, a tiny prompt-and-answer agent that can use the lab LLM route when it is available.
 
 Allowed files:
-- dojo_app/tasks.py
-- tests/test_tasks.py
+- dojo_app/barrybot.py
+- tests/test_barrybot.py
 
 Implementation:
-- In dojo_app/tasks.py, add:
-  def list_high_priority_open_tasks(tasks: list[dict]) -> list[dict]
-- Return copies of matching task dictionaries, like list_tasks does.
-- A matching task has priority == "high" and done is false.
-- Do not change existing public functions.
+- In dojo_app/barrybot.py, add:
+  def route_from_env() -> dict[str, str]
+  def build_messages(prompt: str) -> list[dict[str, str]]
+  def redact_sensitive_text(text: str) -> str
+  def ask_barrybot(prompt: str) -> str
+- Prefer BARRYBOT_LLM_* env vars, then VIBE_LLM_*, then DevNet LLM_*.
+- Use the OpenAI-compatible /chat/completions shape when a model route exists.
+- Fall back to a deterministic local answer when no model route exists.
+- Redact obvious API keys, SSN-shaped values, and email addresses from the final answer.
 
 Tests:
-- In tests/test_tasks.py, import the new helper.
-- Add a unit test that creates a high open task, a high completed task, and a normal open task.
-- Assert that only the high open task is returned.
+- In tests/test_barrybot.py, test empty prompt rejection, message shape, route selection, deterministic fallback, and redaction.
+- Do not call a real network endpoint in tests.
 
 Verification:
 Run this command before you stop:
@@ -165,69 +168,188 @@ def write_prompt() -> Path:
 
 
 def expected_change_ready() -> bool:
-    tasks_py = (ROOT / "dojo_app/tasks.py").read_text(encoding="utf-8")
-    tests_py = (ROOT / "tests/test_tasks.py").read_text(encoding="utf-8")
-    return "def list_high_priority_open_tasks" in tasks_py and "list_high_priority_open_tasks" in tests_py
+    bot_py = (ROOT / "dojo_app/barrybot.py").read_text(encoding="utf-8")
+    tests_py = (ROOT / "tests/test_barrybot.py").read_text(encoding="utf-8")
+    return "def ask_barrybot" in bot_py and "test_redacts_sensitive_values" in tests_py
 
 
 def apply_guided_patch() -> None:
-    tasks_path = ROOT / "dojo_app/tasks.py"
-    tests_path = ROOT / "tests/test_tasks.py"
+    bot_path = ROOT / "dojo_app/barrybot.py"
+    tests_path = ROOT / "tests/test_barrybot.py"
 
-    tasks_py = tasks_path.read_text(encoding="utf-8")
-    if "def list_high_priority_open_tasks" not in tasks_py:
-        marker = "\n\ndef summarize(tasks: list[dict]) -> dict:\n"
-        helper = '''
+    bot_path.write_text(
+        '''from __future__ import annotations
 
-def list_high_priority_open_tasks(tasks: list[dict]) -> list[dict]:
-    found = []
-    for task in tasks:
-        if task.get("done"):
-            continue
-        if task.get("priority") != "high":
-            continue
-        found.append(dict(task))
-    return found
-'''
-        tasks_py = tasks_py.replace(marker, helper + marker, 1)
-        tasks_path.write_text(tasks_py, encoding="utf-8")
+import json
+import os
+import re
+import urllib.error
+import urllib.request
 
-    tests_py = tests_path.read_text(encoding="utf-8")
-    tests_changed = False
-    import_block = "\n".join(tests_py.split("\n", 5)[0:5])
-    if "list_high_priority_open_tasks" not in import_block:
-        tests_py = tests_py.replace(
-            "from dojo_app.tasks import add_task, complete_task, list_tasks, summarize\n",
-            "from dojo_app.tasks import add_task, complete_task, list_high_priority_open_tasks, list_tasks, summarize\n",
-            1,
-        )
-        tests_changed = True
 
-    if "test_list_high_priority_open_tasks_filters_done_and_normal_priority" not in tests_py:
-        marker = "\n    def test_summarize_counts_status(self):\n"
-        test_case = '''
-    def test_list_high_priority_open_tasks_filters_done_and_normal_priority(self):
-        tasks = []
-        high_open = add_task(tasks, "fix customer bug", priority="high")
-        high_done = add_task(tasks, "ship demo", priority="high")
-        add_task(tasks, "clean up notes", priority="normal")
-        complete_task(tasks, high_done["id"])
+SYSTEM_PROMPT = (
+    "You are BarryBot, a concise Cisco SE demo assistant. "
+    "Answer the user directly, avoid secrets, and keep the response practical."
+)
+LAB_CONTEXT = [
+    "The lab uses Codex CLI and OpenCode with a supplied DevNet model route.",
+    "The repo check command is python3 scripts/quality_gate.py.",
+    "DefenseClaw is introduced later to scan risky agent skills and extensions.",
+]
+SENSITIVE_PATTERNS = [
+    re.compile(r"sk-[A-Za-z0-9]{12,}"),
+    re.compile(r"\\bAKIA[0-9A-Z]{16}\\b"),
+    re.compile(r"\\b\\d{3}-\\d{2}-\\d{4}\\b"),
+    re.compile(r"\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"),
+]
 
-        found = list_high_priority_open_tasks(tasks)
 
-        self.assertEqual(found, [high_open])
-        self.assertIsNot(found[0], high_open)
-'''
-        tests_py = tests_py.replace(marker, test_case + marker, 1)
-        tests_changed = True
+def route_from_env() -> dict[str, str]:
+    routes = [
+        ("barrybot", "BARRYBOT_LLM_BASE_URL", "BARRYBOT_LLM_API_KEY", "BARRYBOT_LLM_MODEL"),
+        ("custom", "VIBE_LLM_BASE_URL", "VIBE_LLM_API_KEY", "VIBE_LLM_MODEL"),
+        ("devnet", "LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL"),
+    ]
 
-    if tests_changed:
-        tests_path.write_text(tests_py, encoding="utf-8")
+    for name, url_key, key_key, model_key in routes:
+        base_url = os.getenv(url_key, "").rstrip("/")
+        api_key = os.getenv(key_key, "")
+        if base_url and api_key:
+            return {
+                "name": name,
+                "base_url": base_url,
+                "api_key": api_key,
+                "model": os.getenv(model_key, "gpt-4o"),
+            }
+
+    return {"name": "deterministic", "base_url": "", "api_key": "", "model": "local-fallback"}
+
+
+def build_messages(prompt: str) -> list[dict[str, str]]:
+    clean = prompt.strip()
+    if not clean:
+        raise ValueError("prompt cannot be empty")
+
+    context = "\\n".join(f"- {item}" for item in LAB_CONTEXT)
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": f"Lab context:\\n{context}\\n\\nQuestion: {clean}"},
+    ]
+
+
+def redact_sensitive_text(text: str) -> str:
+    clean = text
+    for pattern in SENSITIVE_PATTERNS:
+        clean = pattern.sub("[redacted]", clean)
+    return clean
+
+
+def fallback_answer(prompt: str) -> str:
+    clean = prompt.strip()
+    if not clean:
+        raise ValueError("prompt cannot be empty")
+
+    return (
+        "BarryBot local answer: keep the prompt small, check the model route, "
+        f"then run python3 scripts/quality_gate.py. Question heard: {clean}"
+    )
+
+
+def call_model(route: dict[str, str], prompt: str, timeout: int = 20) -> str:
+    payload = {
+        "model": route["model"],
+        "messages": build_messages(prompt),
+        "temperature": 0.2,
+        "max_tokens": 300,
+    }
+    data = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        f"{route['base_url']}/chat/completions",
+        data=data,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {route['api_key']}",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        body = json.loads(response.read().decode("utf-8"))
+    content = body["choices"][0]["message"]["content"]
+    return content if isinstance(content, str) else str(content)
+
+
+def ask_barrybot(prompt: str) -> str:
+    route = route_from_env()
+    if route["name"] == "deterministic":
+        return redact_sensitive_text(fallback_answer(prompt))
+
+    try:
+        answer = call_model(route, prompt)
+    except (OSError, KeyError, TimeoutError, urllib.error.URLError, json.JSONDecodeError):
+        answer = fallback_answer(prompt)
+    return redact_sensitive_text(answer)
+''',
+        encoding="utf-8",
+    )
+
+    tests_path.write_text(
+        '''import os
+import unittest
+from unittest import mock
+
+from dojo_app import barrybot
+
+
+class BarryBotTests(unittest.TestCase):
+    def test_build_messages_requires_prompt(self):
+        with self.assertRaises(ValueError):
+            barrybot.build_messages("   ")
+
+    def test_build_messages_includes_identity_and_context(self):
+        messages = barrybot.build_messages("What is an agent?")
+
+        self.assertEqual(messages[0]["role"], "system")
+        self.assertIn("BarryBot", messages[0]["content"])
+        self.assertIn("Lab context", messages[1]["content"])
+
+    def test_route_prefers_barrybot_env(self):
+        env = {
+            "BARRYBOT_LLM_BASE_URL": "http://127.0.0.1:9999/v1",
+            "BARRYBOT_LLM_API_KEY": "local",
+            "BARRYBOT_LLM_MODEL": "gpt-4o",
+        }
+        with mock.patch.dict(os.environ, env, clear=True):
+            route = barrybot.route_from_env()
+
+        self.assertEqual(route["name"], "barrybot")
+        self.assertEqual(route["model"], "gpt-4o")
+
+    def test_fallback_answer_mentions_repo_check(self):
+        answer = barrybot.ask_barrybot("How do I verify?")
+
+        self.assertIn("python3 scripts/quality_gate.py", answer)
+
+    def test_redacts_sensitive_values(self):
+        text = "sk-thisIsFakeButLongEnough user@example.com 111-22-3333 AKIA1111111111111111"  # lab-scanner: ignore
+
+        clean = barrybot.redact_sensitive_text(text)
+
+        self.assertNotIn("sk-thisIsFake", clean)
+        self.assertNotIn("user@example.com", clean)  # lab-scanner: ignore
+        self.assertNotIn("111-22-3333", clean)  # lab-scanner: ignore
+        self.assertNotIn("AKIA1111111111111111", clean)  # lab-scanner: ignore
+
+
+if __name__ == "__main__":
+    unittest.main()
+''',
+        encoding="utf-8",
+    )
 
 
 def print_diff() -> int:
     log("AGENT_CODE_DIFF=begin")
-    rc = run(["git", "diff", "--", "dojo_app/tasks.py", "tests/test_tasks.py"], timeout=20)
+    rc = run(["git", "diff", "--", "dojo_app/barrybot.py", "tests/test_barrybot.py"], timeout=20)
     log("AGENT_CODE_DIFF=end")
     return rc
 
@@ -286,7 +408,7 @@ def run_opencode() -> int:
             "--file",
             "docs/quality-bar.md",
             "--title",
-            "vibe-coding-real-code",
+            "vibe-coding-barrybot",
             CODING_PROMPT,
         ],
         env=env,
