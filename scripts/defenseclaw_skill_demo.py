@@ -102,7 +102,11 @@ def parse_json(text: str) -> dict:
     start = text.find("{")
     if start < 0:
         raise ValueError("DefenseClaw did not return JSON")
-    return json.loads(text[start:])
+    decoder = json.JSONDecoder()
+    parsed, _ = decoder.raw_decode(text[start:])
+    if not isinstance(parsed, dict):
+        raise ValueError("DefenseClaw JSON result was not an object")
+    return parsed
 
 
 def scan_skill(cli: str, name: str, path: Path) -> dict:
