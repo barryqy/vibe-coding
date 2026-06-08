@@ -47,6 +47,7 @@ def main() -> int:
 
     agents = (root / "AGENTS.md").read_text(encoding="utf-8") if (root / "AGENTS.md").exists() else ""
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
+    install_script = (root / "scripts/install_ai_tools.sh").read_text(encoding="utf-8")
 
     require("scripts/quality_gate.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
@@ -58,6 +59,9 @@ def main() -> int:
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
+    require("--codex-only" in agents, "AGENTS.md must install Codex first with --codex-only", errors)
+    require("--opencode-only" in agents, "AGENTS.md must install OpenCode later with --opencode-only", errors)
+    require("--codex-only" in install_script and "--opencode-only" in install_script, "install_ai_tools.sh must support split install modes", errors)
     agents_lower = agents.lower()
     require(
         "second brain" in agents_lower or ".second-brain" in agents_lower,
