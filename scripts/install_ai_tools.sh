@@ -5,6 +5,23 @@ set -uo pipefail
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 CODEX_INSTALL_VERSION="${CODEX_INSTALL_VERSION:-0.137.0}"
 OPENCODE_INSTALL_VERSION="${OPENCODE_INSTALL_VERSION:-1.0.190}"
+install_mode="${1:-all}"
+
+case "$install_mode" in
+  all | --all)
+    install_mode="all"
+    ;;
+  codex | codex-only | --codex | --codex-only)
+    install_mode="codex"
+    ;;
+  opencode | opencode-only | --opencode | --opencode-only)
+    install_mode="opencode"
+    ;;
+  *)
+    echo "Usage: $0 [--codex-only|--opencode-only|--all]" >&2
+    exit 2
+    ;;
+esac
 
 file_sha256() {
   if command -v sha256sum >/dev/null 2>&1; then
@@ -177,8 +194,30 @@ show_versions() {
   fi
 }
 
-install_opencode
-install_codex
+case "$install_mode" in
+  codex)
+    install_codex
+    ;;
+  opencode)
+    install_opencode
+    ;;
+  all)
+    install_opencode
+    install_codex
+    ;;
+esac
+
 show_versions
 
-echo "NEXT_STEP=python3 scripts/verify_ai_tools.py"
+case "$install_mode" in
+  codex)
+    echo "NEXT_STEP=python3 scripts/verify_ai_tools.py"
+    echo "OPENCODE_LATER=./scripts/install_ai_tools.sh --opencode-only"
+    ;;
+  opencode)
+    echo "NEXT_STEP=python3 scripts/setup_opencode_devnet.py"
+    ;;
+  all)
+    echo "NEXT_STEP=python3 scripts/verify_ai_tools.py"
+    ;;
+esac

@@ -4,10 +4,10 @@ Student helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 
 The lab teaches a practical loop for AI-assisted coding:
 
-1. install Codex CLI and OpenCode
+1. install Codex CLI
 2. learn which LLM route the lab is using
 3. build a small BarryBot prompt-and-answer agent
-4. compare Codex CLI and OpenCode on the same scoped task
+4. compare OpenCode later on the same scoped task
 5. run quality and security checks before trusting the result
 6. scan credentials, PII, keys, and agent skills before trusting them
 7. save useful decisions in a small second brain
@@ -21,7 +21,7 @@ cd vibe-coding
 ./scripts/setup_dojo.sh
 ```
 
-Then continue with the DevNet guide. The lab walks through installing Codex CLI and OpenCode before it asks you to compare them.
+Then continue with the DevNet guide. The lab starts with Codex CLI, then brings in OpenCode later as a second tool to compare against the same rules.
 
 ## What Is Here
 
@@ -34,7 +34,7 @@ Then continue with the DevNet guide. The lab walks through installing Codex CLI 
 - `scripts/model_resource_walkthrough.py` prints the active LLM route and model-governance resources.
 - `scripts/barrybot_demo.py` runs the BarryBot mini-agent with a prompt.
 - `scripts/tool_doctor.py` checks for Codex CLI, OpenCode, Ollama, DefenseClaw, and OpenAI-compatible model routes.
-- `scripts/install_ai_tools.sh` installs Codex CLI and OpenCode with their official install scripts.
+- `scripts/install_ai_tools.sh` installs Codex CLI, OpenCode, or both, depending on the flag you pass.
 - `scripts/verify_ai_tools.py` shows versions and credential state.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
 - `scripts/devnet_codex_shim.py` gives Codex a local Responses API route backed by the DevNet Learning Lab LLM proxy.
@@ -70,12 +70,12 @@ export VIBE_LLM_API_KEY="your-api-key"
 
 In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` variables.
 
-## Install and Use Codex CLI and OpenCode
+## Install and Use Codex CLI First
 
-Install the tools first:
+Install Codex first:
 
 ```bash
-./scripts/install_ai_tools.sh
+./scripts/install_ai_tools.sh --codex-only
 python3 scripts/verify_ai_tools.py
 ```
 
@@ -86,14 +86,15 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/first_agent_result.py --tool codex
 ```
 
-OpenCode can use the same model route for comparison:
+Later in the lab, install OpenCode and point it at the same model route for comparison:
 
 ```bash
+./scripts/install_ai_tools.sh --opencode-only
 python3 scripts/setup_opencode_devnet.py
 python3 scripts/first_agent_result.py --tool opencode
 ```
 
-After that first result, compare both agents with one shared prompt:
+After that first OpenCode result, compare both agents with one shared prompt:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules

@@ -22,17 +22,23 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
 - When a requirement is fuzzy, ask one focused question before changing code.
-- To install and verify the coding agents, run:
+- To install and verify Codex for the first required path, run:
 
 ```bash
-./scripts/install_ai_tools.sh
+./scripts/install_ai_tools.sh --codex-only
 python3 scripts/verify_ai_tools.py
 ```
 
-- To configure the DevNet model route for Codex and OpenCode, run:
+- To configure the DevNet model route for Codex, run:
 
 ```bash
 python3 scripts/setup_codex_devnet.py
+```
+
+- Later, to install and configure OpenCode for comparison, run:
+
+```bash
+./scripts/install_ai_tools.sh --opencode-only
 python3 scripts/setup_opencode_devnet.py
 ```
 

@@ -2,7 +2,7 @@
 
 Read `AGENTS.md` first. The same quality bar applies here.
 
-Claude Code is optional for this DevNet lab because it normally needs personal sign-in. The required attendee path uses Codex CLI and OpenCode through the supplied DevNet model route.
+Claude Code is optional for this DevNet lab because it normally needs personal sign-in. The required attendee path starts with Codex CLI through the supplied DevNet model route, then uses OpenCode later as a comparison tool.
 
 Use a planning pass before risky edits, especially changes that affect command execution, file deletion, authentication, or model routing.
 

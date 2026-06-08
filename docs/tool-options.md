@@ -8,7 +8,7 @@ Codex CLI is the required account-free replacement for the old Claude Code lab p
 
 In this dojo, the Codex path uses:
 
-- `./scripts/install_ai_tools.sh` to install the CLI with the official shell installer
+- `./scripts/install_ai_tools.sh --codex-only` to install the CLI with the official shell installer or pinned fallback
 - `python3 scripts/verify_ai_tools.py` to show the version and lab credential state
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/devnet_codex_shim.py --ensure` to start the local Responses API shim
@@ -28,7 +28,7 @@ OpenCode is an open source coding agent with terminal, desktop, and IDE options.
 
 In this dojo, the OpenCode path uses:
 
-- `./scripts/install_ai_tools.sh` to install the CLI with the official shell installer
+- `./scripts/install_ai_tools.sh --opencode-only` to install the CLI with the official shell installer
 - `python3 scripts/verify_ai_tools.py` to show the version and credential state
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/devnet_openai_shim.py --ensure` to start the local shim OpenCode streams from in the lab environment
@@ -74,4 +74,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result and BarryBot build. Use OpenCode as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.
+Use Codex CLI with the DevNet model proxy for the required first result and BarryBot build. Bring in OpenCode later as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.
