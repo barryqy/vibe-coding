@@ -4,6 +4,7 @@ set -uo pipefail
 
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 CODEX_INSTALL_VERSION="${CODEX_INSTALL_VERSION:-0.137.0}"
+OPENCODE_INSTALL_VERSION="${OPENCODE_INSTALL_VERSION:-1.0.190}"
 
 file_sha256() {
   if command -v sha256sum >/dev/null 2>&1; then
@@ -151,7 +152,7 @@ install_opencode() {
   fi
 
   echo "OPENCODE_INSTALL=starting"
-  if curl -fsSL https://opencode.ai/install | bash; then
+  if curl -fsSL https://opencode.ai/install | bash -s -- --version "$OPENCODE_INSTALL_VERSION" --no-modify-path; then
     export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     echo "OPENCODE_INSTALL=complete"
