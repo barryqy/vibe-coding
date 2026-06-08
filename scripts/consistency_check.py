@@ -82,6 +82,8 @@ def main() -> int:
     require("docs/quality-bar.md" in instructions, "opencode.json must load docs/quality-bar.md", errors)
 
     bash_perms = ((opencode.get("permission") or {}).get("bash") or {})
+    devnet_setup = (root / "scripts/setup_opencode_devnet.py").read_text(encoding="utf-8")
+    agent_task = (root / "scripts/agent_code_task.py").read_text(encoding="utf-8")
     require(
         "python3 scripts/defenseclaw_skill_demo.py*" in bash_perms,
         "opencode.json must allow the DefenseClaw skill demo",
@@ -105,6 +107,21 @@ def main() -> int:
     require(
         "python3 scripts/devnet_codex_shim.py*" in bash_perms,
         "opencode.json must allow the Codex DevNet shim helper",
+        errors,
+    )
+    require(
+        "dojo_app/barrybot.py" in devnet_setup and "tests/test_barrybot.py" in devnet_setup,
+        "setup_opencode_devnet.py must scope edits to the BarryBot files",
+        errors,
+    )
+    require(
+        "dojo_app/tasks.py" not in devnet_setup and "tests/test_tasks.py" not in devnet_setup,
+        "setup_opencode_devnet.py still references the old tasks exercise",
+        errors,
+    )
+    require(
+        '"codex",\n            "exec",\n            "exec"' not in agent_task,
+        "agent_code_task.py must not invoke codex exec twice",
         errors,
     )
 
