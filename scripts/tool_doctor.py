@@ -65,7 +65,7 @@ def main() -> int:
     print("verify_tools=python3 scripts/verify_ai_tools.py")
     print("codex_shim=python3 scripts/devnet_codex_shim.py --ensure")
     print("opencode_shim=python3 scripts/devnet_openai_shim.py --ensure")
-    print("first_codex_result=direct codex exec BarryPong prompt")
+    print("first_codex_result=direct codex exec joke and risk meter")
     print("first_opencode_result=python3 scripts/first_agent_result.py --tool opencode")
     print("real_codex_patch=python3 scripts/agent_code_task.py --tool codex")
     print("real_opencode_patch=python3 scripts/agent_code_task.py --tool opencode")
