@@ -65,6 +65,32 @@ codex_target() {
   esac
 }
 
+ensure_codex_bubblewrap() {
+  local install_home bundled
+
+  if command -v bwrap >/dev/null 2>&1; then
+    echo "BUBBLEWRAP=system-present"
+    return 0
+  fi
+
+  install_home="${CODEX_STANDALONE_HOME:-$HOME/.codex}"
+  bundled="${install_home}/packages/standalone/current/codex-resources/bwrap"
+  if [ -f "$bundled" ]; then
+    mkdir -p "$HOME/.local/bin"
+    chmod 0755 "$bundled" 2>/dev/null || true
+    ln -sf "$bundled" "$HOME/.local/bin/bwrap"
+    export PATH="$HOME/.local/bin:$PATH"
+    hash -r 2>/dev/null || true
+    if command -v bwrap >/dev/null 2>&1; then
+      echo "BUBBLEWRAP=bundled-codex"
+      return 0
+    fi
+  fi
+
+  echo "BUBBLEWRAP=not-found"
+  return 0
+}
+
 install_codex_native_package() {
   local target digest asset url tmp_dir archive actual install_home standalone releases release_dir stage_dir current_link
 
@@ -130,6 +156,7 @@ install_codex_native_package() {
 install_codex() {
   if command -v codex >/dev/null 2>&1; then
     echo "CODEX_INSTALL=already-present"
+    ensure_codex_bubblewrap
     return 0
   fi
 
@@ -138,11 +165,13 @@ install_codex() {
     export PATH="$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     echo "CODEX_INSTALL=complete"
+    ensure_codex_bubblewrap
     return 0
   fi
 
   if install_codex_native_package; then
     echo "CODEX_INSTALL=complete"
+    ensure_codex_bubblewrap
     return 0
   fi
 
@@ -154,6 +183,7 @@ install_codex() {
       export PATH="$HOME/.local/bin:$PATH"
       hash -r 2>/dev/null || true
       echo "CODEX_INSTALL=complete"
+      ensure_codex_bubblewrap
       return 0
     fi
   fi
