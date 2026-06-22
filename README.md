@@ -18,7 +18,14 @@ The lab teaches a practical loop for AI-assisted coding:
 cd /home/developer/src
 git clone https://github.com/barryqy/vibe-coding.git
 cd vibe-coding
-./scripts/setup_dojo.sh
+if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
+  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
+else
+  npm config set prefix "$HOME/.local"
+  npm install -g @openai/codex
+fi
+export PATH="$HOME/.local/bin:$PATH"
+codex --version
 ```
 
 Then continue with the DevNet guide. The lab starts with Codex CLI, then brings in OpenCode later as a second tool to compare against the same rules.
@@ -32,13 +39,14 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
-- `scripts/tool_doctor.py` checks for Codex CLI, OpenCode, Ollama, DefenseClaw, and OpenAI-compatible model routes.
-- `scripts/install_ai_tools.sh` installs Codex CLI, OpenCode, or both, depending on the flag you pass.
+- `scripts/setup_dojo.sh` creates the tiny local state folders if you want a quick repo reset point.
+- `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
+- `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
 - `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
-- `scripts/first_agent_result.py` runs a first beginner-friendly Codex, OpenCode, or optional Claude Code prompt.
+- `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
 - `scripts/agent_compare.py` builds one shared Snake-game planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
@@ -69,27 +77,35 @@ In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LL
 
 ## Install and Use Codex CLI First
 
-Install Codex first:
+Install Codex first with the official standalone installer:
 
 ```bash
-./scripts/install_ai_tools.sh --codex-only
-command -v codex
+if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
+  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
+else
+  npm config set prefix "$HOME/.local"
+  npm install -g @openai/codex
+fi
+export PATH="$HOME/.local/bin:$PATH"
 codex --version
 ```
 
-In a DevNet lab environment, Codex can use the built-in model proxy and produce a first answer without a personal model key:
+In a DevNet lab environment, Codex can use the built-in model route without a personal model key:
 
 ```bash
 python3 scripts/setup_codex_devnet.py
-python3 scripts/first_agent_result.py --tool codex
+python3 scripts/start_codex_model_adapter.py
+CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "display a small ascii art"
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:
 
 ```bash
-./scripts/install_ai_tools.sh --opencode-only
+curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path
+export PATH="$HOME/.opencode/bin:$PATH"
+opencode --version
 python3 scripts/setup_opencode_devnet.py
-python3 scripts/first_agent_result.py --tool opencode
+python3 scripts/start_opencode_model_adapter.py
 ```
 
 Run the tiny Snake game:
@@ -107,7 +123,7 @@ python3 scripts/agent_compare.py --tool both --show-rules
 Claude Code remains optional for learners who already have sign-in on their own machine:
 
 ```bash
-python3 scripts/first_agent_result.py --tool claude
+claude "display a small ascii art"
 ```
 
 ## Explore DefenseClaw

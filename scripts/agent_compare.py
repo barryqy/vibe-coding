@@ -121,16 +121,10 @@ def codex_command(prompt_file: Path) -> list[str]:
     return [
         "codex",
         "exec",
-        "--disable",
-        "plugin_sharing",
-        "--ephemeral",
-        "--skip-git-repo-check",
         "--cd",
         str(ROOT),
         "--sandbox",
         "read-only",
-        "--color",
-        "never",
         prompt,
     ]
 
@@ -142,7 +136,7 @@ def shell_preview(tool: str, prompt_file: Path) -> str:
     if tool == "codex":
         return (
             f"CODEX_HOME={codex_home().relative_to(ROOT)} "
-            f'codex exec --disable plugin_sharing --ephemeral --sandbox read-only "$(cat {rel_prompt})"'
+            f'codex exec --cd "$PWD" --sandbox read-only "$(cat {rel_prompt})"'
         )
     prefix = ""
     model = ""
