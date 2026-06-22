@@ -21,7 +21,7 @@ class TaskTests(unittest.TestCase):
 
     def test_complete_task_is_idempotent(self):
         tasks = []
-        task = add_task(tasks, "run quality gate")
+        task = add_task(tasks, "run repo check")
 
         first = complete_task(tasks, task["id"])
         second = complete_task(tasks, task["id"])

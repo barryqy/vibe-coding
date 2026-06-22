@@ -29,7 +29,7 @@ Memory: what decision should be saved if the result matters later.
 Run this check before trusting a patch:
 
 ```bash
-python3 scripts/quality_gate.py
+python3 scripts/check_repo.py
 ```
 
 The command checks:

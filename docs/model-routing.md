@@ -24,7 +24,7 @@ The DevNet lab route currently defaults to `gpt-4o` when `LLM_MODEL` is not set.
 For coding-agent exercises, the repo-local helpers adapt the same DevNet variables to each tool:
 
 - `scripts/setup_codex_devnet.py` writes `.lab-state/codex/home/config.toml` and points Codex at `http://127.0.0.1:8776/v1`.
-- `scripts/devnet_codex_shim.py --ensure` exposes a small Responses API stream for Codex and forwards requests to the DevNet `/chat/completions` route.
+- `scripts/start_codex_model_adapter.py` exposes the local adapter Codex uses for the DevNet `/chat/completions` route.
 - `scripts/setup_opencode_devnet.py` writes `.lab-state/opencode-devnet.json`.
 - `scripts/devnet_openai_shim.py --ensure` exposes the OpenAI-compatible chat-completions route OpenCode expects.
 

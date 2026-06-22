@@ -43,7 +43,7 @@ def prompt_for_first_result() -> str:
         "1) give the BarryBot starter a fun nickname, "
         "2) say what a simple prompt-and-answer agent does in one plain sentence, "
         "3) suggest one tiny safe feature for BarryBot, "
-        "4) end with the exact verification command: python3 scripts/quality_gate.py."
+        "4) end with the exact verification command: python3 scripts/check_repo.py."
     )
 
 

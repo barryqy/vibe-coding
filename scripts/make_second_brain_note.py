@@ -18,7 +18,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Create a small second-brain decision note.")
     parser.add_argument("--title", required=True)
     parser.add_argument("--why", required=True)
-    parser.add_argument("--evidence", default="python3 scripts/quality_gate.py")
+    parser.add_argument("--evidence", default="python3 scripts/check_repo.py")
     args = parser.parse_args()
 
     folder = Path(".second-brain/decisions")

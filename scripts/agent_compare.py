@@ -47,7 +47,7 @@ Constraints:
 Verification:
 Before a patch can be trusted, the repo must pass:
 
-python3 scripts/quality_gate.py
+python3 scripts/check_repo.py
 
 Memory:
 If this becomes a real implementation decision, save it with scripts/make_second_brain_note.py.
@@ -243,7 +243,7 @@ def print_rules() -> None:
     print("AGENT_RULES=loaded")
     print("Codex CLI reads AGENTS.md and uses the repo-local CODEX_HOME config for this lab.")
     print("OpenCode reads AGENTS.md and combines configured instruction files from opencode.json.")
-    print("Both tools should use the same verification command: python3 scripts/quality_gate.py")
+    print("Both tools should use the same verification command: python3 scripts/check_repo.py")
 
 
 def main(argv: list[str]) -> int:

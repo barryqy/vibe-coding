@@ -188,8 +188,8 @@ def ready(host: str, port: int) -> bool:
 
 def ensure(host: str, port: int) -> int:
     if ready(host, port):
-        print("DEVNET_OPENAI_SHIM=ready")
-        print(f"base_url=http://{host}:{port}/v1")
+        print("OPENCODE_MODEL_ADAPTER=ready")
+        print(f"local_url=http://{host}:{port}/v1")
         return 0
 
     STATE.mkdir(parents=True, exist_ok=True)
@@ -205,12 +205,12 @@ def ensure(host: str, port: int) -> int:
 
     for _ in range(30):
         if ready(host, port):
-            print("DEVNET_OPENAI_SHIM=ready")
-            print(f"base_url=http://{host}:{port}/v1")
+            print("OPENCODE_MODEL_ADAPTER=ready")
+            print(f"local_url=http://{host}:{port}/v1")
             return 0
         time.sleep(0.25)
 
-    print("DEVNET_OPENAI_SHIM=failed")
+    print("OPENCODE_MODEL_ADAPTER=failed")
     print(f"log={LOG.relative_to(ROOT)}")
     return 1
 
@@ -218,11 +218,11 @@ def ensure(host: str, port: int) -> int:
 def serve(host: str, port: int) -> int:
     config = route()
     if not config["base_url"] or not config["api_key"]:
-        print("DEVNET_OPENAI_SHIM=missing-env", file=sys.stderr)
+        print("OPENCODE_MODEL_ADAPTER=missing-env", file=sys.stderr)
         return 1
 
     server = ThreadingHTTPServer((host, port), ShimHandler)
-    print(f"DEVNET_OPENAI_SHIM=serving http://{host}:{port}/v1", flush=True)
+    print(f"OPENCODE_MODEL_ADAPTER=serving http://{host}:{port}/v1", flush=True)
     server.serve_forever()
     return 0
 

@@ -49,7 +49,7 @@ Tests:
 Verification:
 Run this command before you stop:
 
-python3 scripts/quality_gate.py
+python3 scripts/check_repo.py
 
 Output:
 Summarize the files changed and the verification result.
@@ -193,7 +193,7 @@ SYSTEM_PROMPT = (
 )
 LAB_CONTEXT = [
     "The lab uses Codex CLI and OpenCode with a supplied DevNet model route.",
-    "The repo check command is python3 scripts/quality_gate.py.",
+    "The repo check command is python3 scripts/check_repo.py.",
     "DefenseClaw is introduced later to scan risky agent skills and extensions.",
 ]
 SENSITIVE_PATTERNS = [
@@ -251,7 +251,7 @@ def fallback_answer(prompt: str) -> str:
 
     return (
         "BarryBot local answer: keep the prompt small, check the model route, "
-        f"then run python3 scripts/quality_gate.py. Question heard: {clean}"
+        f"then run python3 scripts/check_repo.py. Question heard: {clean}"
     )
 
 
@@ -327,7 +327,7 @@ class BarryBotTests(unittest.TestCase):
     def test_fallback_answer_mentions_repo_check(self):
         answer = barrybot.ask_barrybot("How do I verify?")
 
-        self.assertIn("python3 scripts/quality_gate.py", answer)
+        self.assertIn("python3 scripts/check_repo.py", answer)
 
     def test_redacts_sensitive_values(self):
         text = "sk-thisIsFakeButLongEnough user@example.com 111-22-3333 AKIA1111111111111111"  # lab-scanner: ignore
@@ -427,7 +427,7 @@ def run_opencode() -> int:
         print_diff()
 
     log("AGENT_CODE_VERIFY=starting")
-    verify_rc = run([sys.executable, "scripts/quality_gate.py"], timeout=120)
+    verify_rc = run([sys.executable, "scripts/check_repo.py"], timeout=120)
     if verify_rc != 0:
         return verify_rc
 
@@ -496,7 +496,7 @@ def run_codex() -> int:
         print_diff()
 
     log("AGENT_CODE_VERIFY=starting")
-    verify_rc = run([sys.executable, "scripts/quality_gate.py"], timeout=120)
+    verify_rc = run([sys.executable, "scripts/check_repo.py"], timeout=120)
     if verify_rc != 0:
         return verify_rc
 
@@ -533,7 +533,7 @@ def run_claude() -> int:
     if rc != 0:
         return rc
     print_diff()
-    return run([sys.executable, "scripts/quality_gate.py"], timeout=120)
+    return run([sys.executable, "scripts/check_repo.py"], timeout=120)
 
 
 def main(argv: list[str]) -> int:
