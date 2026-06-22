@@ -19,9 +19,12 @@ REQUIRED_FILES = [
     Path("scripts/model_resource_walkthrough.py"),
     Path("scripts/barrybot_demo.py"),
     Path("scripts/install_ai_tools.sh"),
+    Path("scripts/check_repo.py"),
     Path("scripts/devnet_codex_shim.py"),
+    Path("scripts/start_codex_model_adapter.py"),
     Path("scripts/setup_codex_devnet.py"),
     Path("scripts/devnet_openai_shim.py"),
+    Path("scripts/start_opencode_model_adapter.py"),
     Path("scripts/setup_opencode_devnet.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
@@ -49,7 +52,7 @@ def main() -> int:
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
     install_script = (root / "scripts/install_ai_tools.sh").read_text(encoding="utf-8")
 
-    require("scripts/quality_gate.py" in agents, "AGENTS.md must require the repo check command", errors)
+    require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
     require("scripts/model_resource_walkthrough.py" in agents, "AGENTS.md must mention the model walkthrough", errors)
@@ -110,7 +113,22 @@ def main() -> int:
     )
     require(
         "python3 scripts/devnet_codex_shim.py*" in bash_perms,
-        "opencode.json must allow the Codex DevNet shim helper",
+        "opencode.json must allow the Codex model adapter helper",
+        errors,
+    )
+    require(
+        "python3 scripts/start_codex_model_adapter.py*" in bash_perms,
+        "opencode.json must allow the Codex model adapter command",
+        errors,
+    )
+    require(
+        "python3 scripts/check_repo.py*" in bash_perms,
+        "opencode.json must allow the repo check command",
+        errors,
+    )
+    require(
+        "python3 scripts/start_opencode_model_adapter.py*" in bash_perms,
+        "opencode.json must allow the OpenCode model adapter command",
         errors,
     )
     require(

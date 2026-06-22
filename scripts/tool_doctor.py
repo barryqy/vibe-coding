@@ -62,16 +62,19 @@ def main() -> int:
     print("install_codex=./scripts/install_ai_tools.sh --codex-only")
     print("install_opencode=./scripts/install_ai_tools.sh --opencode-only")
     print("install_all_tools=./scripts/install_ai_tools.sh")
-    print("verify_tools=python3 scripts/verify_ai_tools.py")
-    print("codex_shim=python3 scripts/devnet_codex_shim.py --ensure")
-    print("opencode_shim=python3 scripts/devnet_openai_shim.py --ensure")
+    print("check_codex=command -v codex && codex --version")
+    print("codex_model_route=python3 scripts/setup_codex_devnet.py")
+    print("opencode_model_route=python3 scripts/setup_opencode_devnet.py")
+    print("codex_model_adapter=python3 scripts/start_codex_model_adapter.py")
+    print("opencode_model_adapter=python3 scripts/start_opencode_model_adapter.py")
+    print("check_repo=python3 scripts/check_repo.py")
     print("first_codex_result=direct codex exec ascii art")
     print("first_opencode_result=python3 scripts/first_agent_result.py --tool opencode")
     print("real_codex_patch=python3 scripts/agent_code_task.py --tool codex")
     print("real_opencode_patch=python3 scripts/agent_code_task.py --tool opencode")
     print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("defenseclaw_demo=python3 scripts/defenseclaw_skill_demo.py")
-    print("recommendation=run deterministic gates every time; add an LLM coach only when a provider is available")
+    print("recommendation=start with Codex, then run simple repo checks after code changes")
     return 0
 
 

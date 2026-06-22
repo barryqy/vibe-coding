@@ -41,7 +41,7 @@ def main() -> int:
                 "*": "ask",
             },
             "bash": {
-                "python3 scripts/quality_gate.py*": "allow",
+                "python3 scripts/check_repo.py*": "allow",
                 "*": "ask",
             },
         },
@@ -71,7 +71,7 @@ def main() -> int:
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
     print("edit_scope=dojo_app/barrybot.py,tests/test_barrybot.py")
-    print("shim=python3 scripts/devnet_openai_shim.py --ensure")
+    print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 
 

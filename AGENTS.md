@@ -26,7 +26,8 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 ```bash
 ./scripts/install_ai_tools.sh --codex-only
-python3 scripts/verify_ai_tools.py
+command -v codex
+codex --version
 ```
 
 - To configure the DevNet model route for Codex, run:
@@ -76,7 +77,7 @@ python3 scripts/defenseclaw_skill_demo.py
 - Before handing work back, run:
 
 ```bash
-python3 scripts/quality_gate.py
+python3 scripts/check_repo.py
 ```
 
 If you touched agent instructions, docs, or model routing, also run:

@@ -241,13 +241,13 @@ show_versions
 
 case "$install_mode" in
   codex)
-    echo "NEXT_STEP=python3 scripts/verify_ai_tools.py"
+    echo "NEXT_STEP=codex --version"
     echo "OPENCODE_LATER=./scripts/install_ai_tools.sh --opencode-only"
     ;;
   opencode)
     echo "NEXT_STEP=python3 scripts/setup_opencode_devnet.py"
     ;;
   all)
-    echo "NEXT_STEP=python3 scripts/verify_ai_tools.py"
+    echo "NEXT_STEP=codex --version"
     ;;
 esac

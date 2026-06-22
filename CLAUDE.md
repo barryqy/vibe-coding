@@ -12,7 +12,7 @@ Good default loop:
 python3 scripts/tool_doctor.py
 python3 scripts/setup_codex_devnet.py
 python3 scripts/model_resource_walkthrough.py
-python3 scripts/quality_gate.py
+python3 scripts/check_repo.py
 ```
 
 For the BarryBot module, keep edits scoped to `dojo_app/barrybot.py` and `tests/test_barrybot.py`.

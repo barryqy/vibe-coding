@@ -22,7 +22,7 @@ def main() -> int:
     model = os.getenv("LLM_MODEL", "gpt-4o")
 
     if not base_url or not api_key:
-        print("CODEX_DEVNET_CONFIG=skipped")
+        print("CODEX_MODEL_ROUTE=skipped")
         print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
         return 0
 
@@ -48,11 +48,11 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print("CODEX_DEVNET_CONFIG=ready")
+    print("CODEX_MODEL_ROUTE=ready")
     print(f"codex_home={HOME.relative_to(ROOT)}")
-    print(f"path={CONFIG.relative_to(ROOT)}")
-    print(f"model=devnet/{model}")
-    print("shim=python3 scripts/devnet_codex_shim.py --ensure")
+    print(f"config={CONFIG.relative_to(ROOT)}")
+    print(f"model={model}")
+    print("adapter=python3 scripts/start_codex_model_adapter.py")
     return 0
 
 

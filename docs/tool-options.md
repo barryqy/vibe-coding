@@ -4,14 +4,14 @@ The lab keeps the tool choice flexible, but the required DevNet path avoids pers
 
 ## Codex CLI
 
-Codex CLI is the required account-free replacement for the old Claude Code lab path. The dojo gives Codex a repo-local `CODEX_HOME` and a tiny Responses API shim, so it can talk to the DevNet Learning Lab LLM proxy instead of asking each student to sign in.
+Codex CLI is the required account-free replacement for the old Claude Code lab path. The dojo gives Codex a repo-local `CODEX_HOME` and a tiny model adapter, so it can talk to the DevNet Learning Lab LLM proxy instead of asking each student to sign in.
 
 In this dojo, the Codex path uses:
 
 - `./scripts/install_ai_tools.sh --codex-only` to install the CLI with the official shell installer or pinned fallback
-- `python3 scripts/verify_ai_tools.py` to show the version and lab credential state
+- `command -v codex && codex --version` to confirm Codex is installed
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
-- `python3 scripts/devnet_codex_shim.py --ensure` to start the local Responses API shim
+- `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
 - `python3 scripts/first_agent_result.py --tool codex` for a first visible answer from Codex
 - `python3 scripts/agent_code_task.py --tool codex` to build BarryBot in the dojo
 - `python3 scripts/barrybot_demo.py --prompt "What should I check before trusting generated code?"` to run the mini-agent
@@ -29,9 +29,9 @@ OpenCode is an open source coding agent with terminal, desktop, and IDE options.
 In this dojo, the OpenCode path uses:
 
 - `./scripts/install_ai_tools.sh --opencode-only` to install the CLI with the official shell installer
-- `python3 scripts/verify_ai_tools.py` to show the version and credential state
+- `command -v opencode && opencode --version` to confirm OpenCode is installed
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
-- `python3 scripts/devnet_openai_shim.py --ensure` to start the local shim OpenCode streams from in the lab environment
+- `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
 - `python3 scripts/first_agent_result.py --tool opencode` for a first visible answer from OpenCode
 - `python3 scripts/agent_code_task.py --tool opencode` for the same BarryBot build when you want a comparison run
 - `AGENTS.md` for shared project guidance

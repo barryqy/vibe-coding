@@ -28,17 +28,16 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `dojo_app/` is a tiny task tracker used for code-quality exercises.
 - `dojo_app/barrybot.py` is the starter prompt-and-answer agent learners build during the lab.
 - `tests/` contains unit tests that prove the app still works.
-- `scripts/quality_gate.py` runs compile checks, unit tests, security review, and consistency checks.
+- `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/model_resource_walkthrough.py` prints the active LLM route and model-governance resources.
 - `scripts/barrybot_demo.py` runs the BarryBot mini-agent with a prompt.
 - `scripts/tool_doctor.py` checks for Codex CLI, OpenCode, Ollama, DefenseClaw, and OpenAI-compatible model routes.
 - `scripts/install_ai_tools.sh` installs Codex CLI, OpenCode, or both, depending on the flag you pass.
-- `scripts/verify_ai_tools.py` shows versions and credential state.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
-- `scripts/devnet_codex_shim.py` gives Codex a local Responses API route backed by the DevNet Learning Lab LLM proxy.
-- `scripts/devnet_openai_shim.py` gives OpenCode a local OpenAI-compatible route backed by the same proxy.
+- `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
+- `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly Codex, OpenCode, or optional Claude Code prompt.
 - `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Codex and OpenCode with the same repo rules.
@@ -76,7 +75,8 @@ Install Codex first:
 
 ```bash
 ./scripts/install_ai_tools.sh --codex-only
-python3 scripts/verify_ai_tools.py
+command -v codex
+codex --version
 ```
 
 In a DevNet lab environment, Codex can use the built-in model proxy and produce a first answer without a personal model key:
