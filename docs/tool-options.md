@@ -8,14 +8,15 @@ Codex CLI is the required account-free replacement for the old Claude Code lab p
 
 In this dojo, the Codex path uses:
 
-- `./scripts/install_ai_tools.sh --codex-only` to install the CLI with the official shell installer or pinned fallback
-- `command -v codex && codex --version` to confirm Codex is installed
+- `curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh` and `CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh` to install the CLI with the official standalone installer
+- `npm config set prefix "$HOME/.local"` and `npm install -g @openai/codex` as the visible fallback if the standalone installer is blocked
+- `codex --version` to confirm Codex is installed
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
-- `python3 scripts/first_agent_result.py --tool codex` for a first visible answer from Codex
+- `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "display a small ascii art"` for a first visible answer from Codex
 - `python3 -m dojo_app.snake_game` to run the tiny game used in the main exercise
 - `AGENTS.md` for shared project guidance
-- `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
+- `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
 Useful official docs:
 
@@ -27,11 +28,11 @@ OpenCode is an open source coding agent with terminal, desktop, and IDE options.
 
 In this dojo, the OpenCode path uses:
 
-- `./scripts/install_ai_tools.sh --opencode-only` to install the CLI with the official shell installer
-- `command -v opencode && opencode --version` to confirm OpenCode is installed
+- `curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path` to install the CLI with the OpenCode installer
+- `opencode --version` to confirm OpenCode is installed
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
-- `python3 scripts/first_agent_result.py --tool opencode` for a first visible answer from OpenCode
+- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o "display a small ascii art"` for a first visible answer from OpenCode
 - `python3 scripts/agent_compare.py --tool both --show-rules` for the same Snake-game prompt shape when you want a comparison run
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
@@ -51,7 +52,7 @@ Claude Code is useful when a learner already has Anthropic access, but it is not
 
 Optional commands:
 
-- `python3 scripts/first_agent_result.py --tool claude`
+- `claude "display a small ascii art"`
 
 If Claude Code is installed but not authenticated, the helpers print the sign-in command and exit cleanly.
 

@@ -9,7 +9,5 @@ if [ ! -f data/tasks.json ]; then
   printf '[]\n' > data/tasks.json
 fi
 
-python3 scripts/tool_doctor.py
-python3 scripts/vibe_score.py
-
 echo "SETUP_DOJO=ready"
+echo "NEXT=codex --version"

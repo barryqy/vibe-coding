@@ -26,8 +26,13 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - To install and verify Codex for the first required path, run:
 
 ```bash
-./scripts/install_ai_tools.sh --codex-only
-command -v codex
+if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
+  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
+else
+  npm config set prefix "$HOME/.local"
+  npm install -g @openai/codex
+fi
+export PATH="$HOME/.local/bin:$PATH"
 codex --version
 ```
 
@@ -35,13 +40,18 @@ codex --version
 
 ```bash
 python3 scripts/setup_codex_devnet.py
+python3 scripts/start_codex_model_adapter.py
+CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "display a small ascii art"
 ```
 
 - Later, to install and configure OpenCode for comparison, run:
 
 ```bash
-./scripts/install_ai_tools.sh --opencode-only
+curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path
+export PATH="$HOME/.opencode/bin:$PATH"
+opencode --version
 python3 scripts/setup_opencode_devnet.py
+python3 scripts/start_opencode_model_adapter.py
 ```
 
 - To run the tiny Snake game, run:

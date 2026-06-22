@@ -9,7 +9,6 @@ Use a planning pass before risky edits, especially changes that affect command e
 Good default loop:
 
 ```bash
-python3 scripts/tool_doctor.py
 python3 scripts/setup_codex_devnet.py
 python3 -m dojo_app.snake_game
 python3 scripts/check_repo.py
