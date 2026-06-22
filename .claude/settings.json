@@ -2,14 +2,17 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(python3 scripts/quality_gate.py*)",
+      "Bash(python3 scripts/check_repo.py*)",
       "Bash(python3 scripts/security_review.py*)",
       "Bash(python3 scripts/consistency_check.py*)",
       "Bash(python3 scripts/tool_doctor.py*)",
       "Bash(python3 scripts/ai_coach.py*)",
+      "Bash(python3 -m dojo_app.snake_game*)",
       "Bash(python3 scripts/setup_codex_devnet.py*)",
+      "Bash(python3 scripts/start_codex_model_adapter.py*)",
       "Bash(python3 scripts/devnet_codex_shim.py*)",
       "Bash(python3 scripts/setup_opencode_devnet.py*)",
+      "Bash(python3 scripts/start_opencode_model_adapter.py*)",
       "Bash(python3 scripts/defenseclaw_skill_demo.py*)",
       "Bash(git status*)"
     ],

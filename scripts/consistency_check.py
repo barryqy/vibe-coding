@@ -14,9 +14,10 @@ REQUIRED_FILES = [
     Path("docs/quality-bar.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
+    Path("dojo_app/snake_game.py"),
+    Path("tests/test_snake_game.py"),
     Path("scripts/agent_compare.py"),
     Path("scripts/agent_code_task.py"),
-    Path("scripts/model_resource_walkthrough.py"),
     Path("scripts/barrybot_demo.py"),
     Path("scripts/install_ai_tools.sh"),
     Path("scripts/check_repo.py"),
@@ -30,9 +31,10 @@ REQUIRED_FILES = [
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
     Path("scripts/defenseclaw_skill_demo.py"),
-    Path("samples/skills/workspace-migration-assistant/SKILL.md"),
-    Path("samples/skills/release-brief-helper/SKILL.md"),
-    Path("samples/leaky_barrybot_patch.py"),
+    Path("samples/skills/snake-score-booster/SKILL.md"),
+    Path("samples/skills/snake-score-booster/score_booster.py"),
+    Path("samples/skills/snake-game-coach/SKILL.md"),
+    Path("samples/leaky_snake_patch.py"),
 ]
 
 
@@ -55,9 +57,8 @@ def main() -> int:
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
-    require("scripts/model_resource_walkthrough.py" in agents, "AGENTS.md must mention the model walkthrough", errors)
-    require("scripts/barrybot_demo.py" in agents, "AGENTS.md must mention the BarryBot demo", errors)
-    require("dojo_app/barrybot.py" in agents, "AGENTS.md must mention BarryBot", errors)
+    require("dojo_app/snake_game.py" in agents, "AGENTS.md must mention the Snake game", errors)
+    require("python3 -m dojo_app.snake_game" in agents, "AGENTS.md must mention the Snake game command", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
@@ -102,16 +103,6 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 scripts/model_resource_walkthrough.py*" in bash_perms,
-        "opencode.json must allow the model walkthrough",
-        errors,
-    )
-    require(
-        "python3 scripts/barrybot_demo.py*" in bash_perms,
-        "opencode.json must allow the BarryBot demo",
-        errors,
-    )
-    require(
         "python3 scripts/devnet_codex_shim.py*" in bash_perms,
         "opencode.json must allow the Codex model adapter helper",
         errors,
@@ -127,13 +118,18 @@ def main() -> int:
         errors,
     )
     require(
+        "python3 -m dojo_app.snake_game*" in bash_perms,
+        "opencode.json must allow the Snake game command",
+        errors,
+    )
+    require(
         "python3 scripts/start_opencode_model_adapter.py*" in bash_perms,
         "opencode.json must allow the OpenCode model adapter command",
         errors,
     )
     require(
-        "dojo_app/barrybot.py" in devnet_setup and "tests/test_barrybot.py" in devnet_setup,
-        "setup_opencode_devnet.py must scope edits to the BarryBot files",
+        "dojo_app/snake_game.py" in devnet_setup and "tests/test_snake_game.py" in devnet_setup,
+        "setup_opencode_devnet.py must scope edits to the Snake files",
         errors,
     )
     require(

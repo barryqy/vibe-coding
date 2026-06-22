@@ -25,7 +25,7 @@ def main() -> int:
     print("resource_security_leaderboard=https://leaderboard.aidefense.cisco.com/")
     print("resource_model_ancestry=https://cs.co/ma")
     print("model_ancestry_example=Cursor Composer 2 and China-based Moonshot AI Kimi K2.5")
-    print("barrybot_next=python3 scripts/agent_code_task.py --tool codex")
+    print("snake_next=python3 -m dojo_app.snake_game")
     return 0
 
 

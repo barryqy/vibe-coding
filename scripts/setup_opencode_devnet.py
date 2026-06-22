@@ -36,8 +36,8 @@ def main() -> int:
                 "secrets/**": "deny",
             },
             "edit": {
-                "dojo_app/barrybot.py": "allow",
-                "tests/test_barrybot.py": "allow",
+                "dojo_app/snake_game.py": "allow",
+                "tests/test_snake_game.py": "allow",
                 "*": "ask",
             },
             "bash": {
@@ -70,7 +70,7 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
-    print("edit_scope=dojo_app/barrybot.py,tests/test_barrybot.py")
+    print("edit_scope=dojo_app/snake_game.py,tests/test_snake_game.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 
