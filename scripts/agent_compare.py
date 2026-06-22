@@ -36,7 +36,7 @@ TASK_PROMPT = """Context:
 You are helping with the Vibe Coding 101 dojo repo. Read AGENTS.md and docs/quality-bar.md before proposing changes.
 
 Goal:
-Build BarryBot without making broad rewrites. Propose one small change: turn the starter in dojo_app/barrybot.py into a prompt-and-answer agent that can use the lab model route.
+Improve the tiny terminal Snake game without making broad rewrites. Propose one small change to dojo_app/snake_game.py that keeps the game deterministic and beginner friendly.
 
 Constraints:
 - Plan only. Do not edit files during this pass.
@@ -53,7 +53,7 @@ Memory:
 If this becomes a real implementation decision, save it with scripts/make_second_brain_note.py.
 
 Output:
-Return a short plan with the files you would touch, how BarryBot should call the LLM, the test you would add, and the verification command.
+Return a short plan with the files you would touch, the tiny game change you would make, the test you would add, and the verification command.
 """
 
 

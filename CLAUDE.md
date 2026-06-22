@@ -11,11 +11,11 @@ Good default loop:
 ```bash
 python3 scripts/tool_doctor.py
 python3 scripts/setup_codex_devnet.py
-python3 scripts/model_resource_walkthrough.py
+python3 -m dojo_app.snake_game
 python3 scripts/check_repo.py
 ```
 
-For the BarryBot module, keep edits scoped to `dojo_app/barrybot.py` and `tests/test_barrybot.py`.
+For the Snake game module, keep edits scoped to `dojo_app/snake_game.py` and `tests/test_snake_game.py`.
 
 For the DefenseClaw mini-module, keep the scanner path explicit:
 

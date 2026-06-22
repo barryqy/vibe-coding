@@ -5,10 +5,10 @@ Student helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
-2. learn which LLM route the lab is using
-3. build a small BarryBot prompt-and-answer agent
-4. compare OpenCode later on the same scoped task
-5. run quality and security checks before trusting the result
+2. connect Codex to the supplied DevNet model route
+3. use a live BarryFlights MCP demo to check flight status
+4. install a clean local skill and build a tiny Snake game
+5. compare OpenCode later on the same rules
 6. scan credentials, PII, keys, and agent skills before trusting them
 7. save useful decisions in a small second brain
 
@@ -25,14 +25,13 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 
 ## What Is Here
 
-- `dojo_app/` is a tiny task tracker used for code-quality exercises.
-- `dojo_app/barrybot.py` is the starter prompt-and-answer agent learners build during the lab.
+- `dojo_app/` is a tiny code dojo used for agent and security exercises.
+- `dojo_app/snake_game.py` is the tiny terminal game learners run and improve during the lab.
+- `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
-- `scripts/model_resource_walkthrough.py` prints the active LLM route and model-governance resources.
-- `scripts/barrybot_demo.py` runs the BarryBot mini-agent with a prompt.
 - `scripts/tool_doctor.py` checks for Codex CLI, OpenCode, Ollama, DefenseClaw, and OpenAI-compatible model routes.
 - `scripts/install_ai_tools.sh` installs Codex CLI, OpenCode, or both, depending on the flag you pass.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
@@ -40,8 +39,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` runs a first beginner-friendly Codex, OpenCode, or optional Claude Code prompt.
-- `scripts/agent_compare.py` builds one shared coding task and shows how to hand it to Codex and OpenCode with the same repo rules.
-- `scripts/agent_code_task.py` lets Codex or OpenCode build BarryBot, then shows the diff and reruns the repo check.
+- `scripts/agent_compare.py` builds one shared Snake-game planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
@@ -94,29 +92,16 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/first_agent_result.py --tool opencode
 ```
 
-After that first OpenCode result, compare both agents with one shared prompt:
+Run the tiny Snake game:
+
+```bash
+python3 -m dojo_app.snake_game
+```
+
+After that, compare both agents with one shared prompt:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules
-```
-
-See which model route the lab will use:
-
-```bash
-python3 scripts/model_resource_walkthrough.py
-```
-
-Then let Codex build BarryBot in the dojo:
-
-```bash
-python3 scripts/agent_code_task.py --tool codex
-python3 scripts/barrybot_demo.py --prompt "What should I check before trusting generated code?"
-```
-
-From a fresh clone or after resetting the two BarryBot files, OpenCode can run the same patch:
-
-```bash
-python3 scripts/agent_code_task.py --tool opencode
 ```
 
 Claude Code remains optional for learners who already have sign-in on their own machine:
@@ -142,10 +127,10 @@ DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
 ```
 
-You can also scan the intentionally leaky BarryBot sample:
+You can also scan the intentionally leaky Snake sample:
 
 ```bash
-python3 scripts/security_review.py samples/leaky_barrybot_patch.py || true
+python3 scripts/security_review.py samples/leaky_snake_patch.py || true
 ```
 
 ## Safety Notes
