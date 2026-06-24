@@ -2,7 +2,11 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
     "AGENTS.md",
-    "docs/quality-bar.md"
+    "docs/quality-bar.md",
+    ".second-brain/RESOLVER.md",
+    ".second-brain/schema.md",
+    ".second-brain/projects/vibe-coding-dojo.md",
+    ".second-brain/sessions/current-agent-handoff.md"
   ],
   "permission": {
     "*": "ask",
@@ -27,6 +31,7 @@
       "python3 scripts/devnet_codex_shim.py*": "allow",
       "python3 scripts/setup_opencode_devnet.py*": "allow",
       "python3 scripts/start_opencode_model_adapter.py*": "allow",
+      "python3 scripts/opencode_kb_pong_feature.py*": "allow",
       "python3 scripts/defenseclaw_skill_demo.py*": "allow",
       "python3 scripts/agent_compare.py*": "ask",
       "python3 scripts/agent_code_task.py*": "ask",

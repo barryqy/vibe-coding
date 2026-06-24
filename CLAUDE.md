@@ -1,6 +1,6 @@
 # Optional Claude Code Notes
 
-Read `AGENTS.md` first. The same quality bar applies here.
+Read `AGENTS.md` first. Then read `.second-brain/RESOLVER.md` and `.second-brain/sessions/current-agent-handoff.md`. The same quality bar applies here.
 
 Claude Code is optional for this DevNet lab because it normally needs personal sign-in. The required attendee path starts with Codex CLI through the supplied DevNet model route, then uses OpenCode later as a comparison tool.
 
@@ -15,6 +15,12 @@ python3 scripts/check_repo.py
 ```
 
 For the Pong game module, keep edits scoped to `dojo_app/pong_game.py` and `tests/test_pong_game.py`.
+
+OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py`. The handoff file should explain the next small Pong task before OpenCode runs:
+
+```bash
+python3 scripts/opencode_kb_pong_feature.py
+```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:
 

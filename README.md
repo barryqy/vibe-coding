@@ -7,10 +7,10 @@ The lab teaches a practical loop for AI-assisted coding:
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
 3. use a live BarryFlights MCP demo to check flight status
-4. ask Codex for a tiny Pong strategy and run a human-vs-CPU CLI game
-5. compare OpenCode later on the same rules
-6. scan credentials, PII, keys, and agent skills before trusting them
-7. save useful decisions in a small second brain
+4. create a small second brain that Codex and OpenCode can both read
+5. ask Codex for a tiny Pong strategy and run a human-vs-CPU CLI game
+6. attach OpenCode to the same KB and add a small Pong feature
+7. scan credentials, PII, keys, and agent skills before trusting them
 
 ## Quick Start
 
@@ -55,6 +55,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
+- `scripts/opencode_kb_pong_feature.py` lets OpenCode read the second-brain handoff before applying the bounded Pong feature exercise.
 - `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
 - `scripts/agent_compare.py` builds one shared Pong planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
@@ -62,7 +63,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/skills/` contains the DefenseClaw admission-gate examples.
-- `.second-brain/` is a small durable-memory starter for reusable decisions and workflows.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, and cross-tool session handoffs.
 
 ## Optional Model Routes
 
@@ -130,6 +131,13 @@ export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
+```
+
+Then let OpenCode read the same second brain and apply the bounded Pong feature:
+
+```bash
+python3 scripts/opencode_kb_pong_feature.py
+python3 scripts/check_repo.py
 ```
 
 Run the tiny Pong game:
