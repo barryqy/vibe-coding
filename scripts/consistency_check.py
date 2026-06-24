@@ -12,6 +12,10 @@ REQUIRED_FILES = [
     Path("opencode.json"),
     Path(".claude/settings.json"),
     Path("docs/quality-bar.md"),
+    Path(".second-brain/RESOLVER.md"),
+    Path(".second-brain/schema.md"),
+    Path(".second-brain/projects/vibe-coding-dojo.md"),
+    Path(".second-brain/sessions/current-agent-handoff.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/pong_game.py"),
@@ -27,6 +31,7 @@ REQUIRED_FILES = [
     Path("scripts/devnet_openai_shim.py"),
     Path("scripts/start_opencode_model_adapter.py"),
     Path("scripts/setup_opencode_devnet.py"),
+    Path("scripts/opencode_kb_pong_feature.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
@@ -63,6 +68,7 @@ def main() -> int:
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
+    require("current-agent-handoff.md" in agents, "AGENTS.md must mention the current second-brain handoff", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
     require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
@@ -90,6 +96,12 @@ def main() -> int:
     instructions = opencode.get("instructions", [])
     require("AGENTS.md" in instructions, "opencode.json must load AGENTS.md", errors)
     require("docs/quality-bar.md" in instructions, "opencode.json must load docs/quality-bar.md", errors)
+    require(".second-brain/RESOLVER.md" in instructions, "opencode.json must load the second-brain resolver", errors)
+    require(
+        ".second-brain/sessions/current-agent-handoff.md" in instructions,
+        "opencode.json must load the current second-brain handoff",
+        errors,
+    )
 
     bash_perms = ((opencode.get("permission") or {}).get("bash") or {})
     edit_perm = (opencode.get("permission") or {}).get("edit")
@@ -131,13 +143,23 @@ def main() -> int:
         errors,
     )
     require(
+        "python3 scripts/opencode_kb_pong_feature.py*" in bash_perms,
+        "opencode.json must allow the OpenCode KB Pong feature helper",
+        errors,
+    )
+    require(
         edit_perm == "ask",
         "opencode.json must require approval for edits",
         errors,
     )
     require(
-        '"edit": "ask"' in devnet_setup and '"webfetch": "deny"' in devnet_setup,
-        "setup_opencode_devnet.py must keep OpenCode edit/network permissions simple",
+        '"edit": "allow"' in devnet_setup and '"webfetch": "deny"' in devnet_setup,
+        "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping network permissions denied",
+        errors,
+    )
+    require(
+        ".second-brain/sessions/current-agent-handoff.md" in devnet_setup,
+        "setup_opencode_devnet.py must attach the current second-brain handoff",
         errors,
     )
     require(

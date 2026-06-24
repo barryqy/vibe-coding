@@ -1,16 +1,14 @@
 # Second Brain Starter
 
-Use this folder for durable notes that should survive a long agent session.
+This folder is the repo-local knowledge base for the lab. Codex and OpenCode can both read it.
 
-Good notes are short:
+Start here:
 
-- a decision
-- why it matters
-- what command or file proved it
-- when to revisit it
+1. Read `RESOLVER.md`.
+2. Read `schema.md`.
+3. Read `sessions/current-agent-handoff.md`.
+4. Read the project note under `projects/`.
 
-Run this helper during the lab:
+Use durable notes for decisions, project facts, and handoffs that a future coding tool should not have to rediscover.
 
-```bash
-python3 scripts/make_second_brain_note.py --title "Codex uses the lab model route" --why "Students should not need personal model accounts for this lab."
-```
+Do not store secrets, raw tokens, cookies, private keys, or one-time lab credentials here.

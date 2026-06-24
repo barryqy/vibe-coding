@@ -9,6 +9,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / ".lab-state" / "opencode-devnet.json"
 SHIM_BASE_URL = "http://127.0.0.1:8765/v1"
+INSTRUCTIONS = [
+    "AGENTS.md",
+    "docs/quality-bar.md",
+    ".second-brain/RESOLVER.md",
+    ".second-brain/schema.md",
+    ".second-brain/projects/vibe-coding-dojo.md",
+    ".second-brain/sessions/current-agent-handoff.md",
+]
 
 
 def main() -> int:
@@ -25,11 +33,11 @@ def main() -> int:
     config = {
         "$schema": "https://opencode.ai/config.json",
         "autoupdate": False,
-        "default_agent": "plan",
-        "instructions": ["AGENTS.md", "docs/quality-bar.md"],
+        "default_agent": "build",
+        "instructions": INSTRUCTIONS,
         "model": f"devnet/{model}",
         "permission": {
-            "edit": "ask",
+            "edit": "allow",
             "bash": "ask",
             "webfetch": "deny",
             "websearch": "deny",
@@ -59,7 +67,8 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
-    print("edit_permission=ask")
+    print("kb=.second-brain")
+    print("edit_permission=allow")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 
