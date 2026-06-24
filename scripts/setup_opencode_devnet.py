@@ -29,21 +29,10 @@ def main() -> int:
         "instructions": ["AGENTS.md", "docs/quality-bar.md"],
         "model": f"devnet/{model}",
         "permission": {
-            "read": {
-                "*": "allow",
-                "*.env": "deny",
-                "*.env.*": "deny",
-                "secrets/**": "deny",
-            },
-            "edit": {
-                "dojo_app/snake_game.py": "allow",
-                "tests/test_snake_game.py": "allow",
-                "*": "ask",
-            },
-            "bash": {
-                "python3 scripts/check_repo.py*": "allow",
-                "*": "ask",
-            },
+            "edit": "ask",
+            "bash": "ask",
+            "webfetch": "deny",
+            "websearch": "deny",
         },
         "provider": {
             "devnet": {
@@ -70,7 +59,7 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
-    print("edit_scope=dojo_app/snake_game.py,tests/test_snake_game.py")
+    print("edit_permission=ask")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 

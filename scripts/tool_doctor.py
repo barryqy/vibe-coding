@@ -61,7 +61,7 @@ def main() -> int:
     print(f"model_route={choose_route()}")
     print("install_codex=curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh && CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh")
     print("install_codex_fallback=npm config set prefix \"$HOME/.local\" && npm install -g @openai/codex")
-    print("install_opencode=curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path")
+    print("install_opencode=download https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz")
     print("check_codex=codex --version")
     print("check_opencode=opencode --version")
     print("codex_model_route=python3 scripts/setup_codex_devnet.py")

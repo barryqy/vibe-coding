@@ -28,7 +28,8 @@ OpenCode is an open source coding agent with terminal, desktop, and IDE options.
 
 In this dojo, the OpenCode path uses:
 
-- `curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path` to install the CLI with the OpenCode installer
+- `curl -fL --max-time 180 --progress-bar -o .lab-state/opencode-download/opencode-linux-x64.tar.gz https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz` to download the pinned DevNet Linux CLI archive
+- `tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download && install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"` to install the CLI
 - `opencode --version` to confirm OpenCode is installed
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment

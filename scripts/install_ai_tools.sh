@@ -5,6 +5,7 @@ set -uo pipefail
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 CODEX_INSTALL_VERSION="${CODEX_INSTALL_VERSION:-0.137.0}"
 OPENCODE_INSTALL_VERSION="${OPENCODE_INSTALL_VERSION:-1.0.190}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 install_mode="${1:-all}"
 
 case "$install_mode" in
@@ -199,7 +200,13 @@ install_opencode() {
   fi
 
   echo "OPENCODE_INSTALL=starting"
-  if curl -fsSL https://opencode.ai/install | bash -s -- --version "$OPENCODE_INSTALL_VERSION" --no-modify-path; then
+  mkdir -p "$HOME/.opencode/bin" "$ROOT/.lab-state/opencode-download"
+  archive="$ROOT/.lab-state/opencode-download/opencode-linux-x64.tar.gz"
+  url="https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_INSTALL_VERSION}/opencode-linux-x64.tar.gz"
+
+  if curl -fL --max-time 180 --progress-bar -o "$archive" "$url"; then
+    tar -xzf "$archive" -C "$ROOT/.lab-state/opencode-download"
+    install -m 755 "$ROOT/.lab-state/opencode-download/opencode" "$HOME/.opencode/bin/opencode"
     export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     echo "OPENCODE_INSTALL=complete"
