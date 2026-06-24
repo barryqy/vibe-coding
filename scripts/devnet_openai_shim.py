@@ -29,6 +29,46 @@ def route() -> dict[str, str]:
     }
 
 
+def flatten_content(content) -> str:
+    if isinstance(content, str):
+        return content
+
+    if not isinstance(content, list):
+        return "" if content is None else str(content)
+
+    chunks = []
+    for part in content:
+        if isinstance(part, str):
+            chunks.append(part)
+            continue
+
+        if not isinstance(part, dict):
+            chunks.append(str(part))
+            continue
+
+        for key in ("text", "content", "input"):
+            value = part.get(key)
+            if isinstance(value, str) and value:
+                chunks.append(value)
+                break
+        else:
+            part_type = part.get("type", "attachment")
+            chunks.append(f"[{part_type} omitted]")
+
+    return "\n".join(chunks)
+
+
+def normalize_messages(messages) -> list[dict]:
+    clean = []
+    for message in messages or []:
+        if not isinstance(message, dict):
+            continue
+        item = dict(message)
+        item["content"] = flatten_content(item.get("content"))
+        clean.append(item)
+    return clean
+
+
 def json_response(handler: BaseHTTPRequestHandler, status: int, body: dict) -> None:
     data = json.dumps(body).encode("utf-8")
     handler.send_response(status)
@@ -55,6 +95,7 @@ def call_devnet(body: dict) -> dict:
 
     clean_body = dict(body)
     clean_body["stream"] = False
+    clean_body["messages"] = normalize_messages(clean_body.get("messages", []))
     clean_body.pop("stream_options", None)
 
     try:
