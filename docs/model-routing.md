@@ -8,7 +8,7 @@
 3. local Ollama on `http://127.0.0.1:11434/v1`
 4. deterministic mock output
 
-This keeps the lab from failing just because a learner does not have a model account.
+This keeps the lab from failing when a personal model account is not available.
 
 The optional API call uses the OpenAI-compatible `/chat/completions` shape so the same script can talk to a local server or a hosted provider.
 
@@ -28,7 +28,7 @@ For coding-agent exercises, the repo-local helpers adapt the same DevNet variabl
 - `scripts/setup_opencode_devnet.py` writes `.lab-state/opencode-devnet.json`.
 - `scripts/devnet_openai_shim.py --ensure` exposes the OpenAI-compatible chat-completions route OpenCode expects.
 
-Keep these files under `.lab-state/` so the lab does not change a learner's global tool configuration.
+Keep these files under `.lab-state/` so the lab does not change your global tool configuration.
 
 Useful model resources:
 

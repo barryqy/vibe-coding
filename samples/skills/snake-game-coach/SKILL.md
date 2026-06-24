@@ -1,12 +1,12 @@
 ---
 name: snake-game-coach
-description: Use when a learner wants a tiny terminal game idea that is fun, readable, and safe for a beginner lab.
+description: Use when someone wants a tiny terminal game idea that is fun, readable, and safe for a short lab.
 license: MIT
 ---
 
 # Snake Game Coach
 
-Help the learner keep the game small.
+Help keep the game small.
 
 Good game rules:
 

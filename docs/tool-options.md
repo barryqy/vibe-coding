@@ -4,7 +4,7 @@ The lab keeps the tool choice flexible, but the required DevNet path avoids pers
 
 ## Codex CLI
 
-Codex CLI is the required account-free replacement for the old Claude Code lab path. The dojo gives Codex a repo-local `CODEX_HOME` and a tiny model adapter, so it can talk to the DevNet Learning Lab LLM proxy instead of asking each student to sign in.
+Codex CLI is the required account-free replacement for the old Claude Code lab path. The dojo gives Codex a repo-local `CODEX_HOME` and a tiny model adapter, so it can talk to the DevNet Learning Lab LLM proxy instead of asking for a personal model sign-in.
 
 In this dojo, the Codex path uses:
 
@@ -49,7 +49,7 @@ Useful official docs:
 
 ## Claude Code
 
-Claude Code is useful when a learner already has Anthropic access, but it is not required for this DevNet lab. A 300-person event should not depend on personal Claude Code sign-in.
+Claude Code is useful when you already have Anthropic access, but it is not required for this DevNet lab. The required path should work without personal Claude Code sign-in.
 
 Optional commands:
 
@@ -74,4 +74,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, BarryFlights MCP check, clean skill install, and tiny Snake game exercise. Bring in OpenCode later as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when the learner already has sign-in.
+Use Codex CLI with the DevNet model proxy for the required first result, BarryFlights MCP check, clean skill install, and tiny Snake game exercise. Bring in OpenCode later as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when sign-in is already available.
