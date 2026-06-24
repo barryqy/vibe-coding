@@ -60,6 +60,16 @@ def load_maze(path: str | None = None) -> list[str]:
     return extract_maze_lines(Path(path).read_text(encoding="utf-8"))
 
 
+def load_lab_maze(path: str | None = None) -> tuple[list[str], str]:
+    if not path:
+        return list(DEFAULT_MAZE), "default"
+
+    try:
+        return load_maze(path), "generated"
+    except ValueError:
+        return list(DEFAULT_MAZE), "default-fallback"
+
+
 def find_cell(maze: list[str], marker: str) -> tuple[int, int]:
     for y, row in enumerate(maze):
         x = row.find(marker)
@@ -85,12 +95,19 @@ def render_maze(maze: list[str], mode: str = "tiles") -> str:
     return render_tiles(maze)
 
 
-def run_static_maze(maze: list[str], render: str = "tiles") -> None:
+def run_static_maze(
+    maze: list[str],
+    render: str = "tiles",
+    source: str = "generated",
+) -> None:
     start = find_cell(maze, "S")
     exit_cell = find_cell(maze, "E")
 
     print("MAZE=ready")
     print("mode=static")
+    print(f"source={source}")
+    if source == "default-fallback":
+        print("warning=generated-maze-invalid")
     print("size=12x12")
     print(f"start={start[0]},{start[1]}")
     print(f"exit={exit_cell[0]},{exit_cell[1]}")
@@ -111,7 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    run_static_maze(load_maze(args.maze_file), args.render)
+    maze, source = load_lab_maze(args.maze_file)
+    run_static_maze(maze, args.render, source)
     return 0
 
 
