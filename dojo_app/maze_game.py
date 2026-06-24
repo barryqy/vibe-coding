@@ -97,7 +97,7 @@ def run_static_maze(maze: list[str], render: str = "tiles") -> None:
     print(f"render={render}")
     print(render_maze(maze, render))
     print("MAZE=pass")
-    print("NEXT: python3 scripts/check_repo.py")
+    print("NEXT: install OpenCode")
 
 
 def main(argv: list[str] | None = None) -> int:
