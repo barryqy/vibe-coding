@@ -61,6 +61,7 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("render=tiles", text)
         self.assertIn("██", text)
         self.assertIn("MAZE=pass", text)
+        self.assertIn("NEXT: install OpenCode", text)
 
 
 if __name__ == "__main__":
