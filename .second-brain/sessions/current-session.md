@@ -7,11 +7,14 @@ status: active
 
 ## Current State
 
-The lab has not started yet.
+- Codex starts first with the supplied lab model route.
+- BarryFlights MCP evidence is saved before the Maze work.
+- Agents keep the session note current as task state changes.
 
 ## Next Action
 
-After Codex confirms the model route and MCP evidence, create a current session note for the Maze work.
+- Generate a 12x12 Maze.
+- Let OpenCode continue from this shared memory and make the Maze interactive.
 
 ## Boundaries
 

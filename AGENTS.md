@@ -24,6 +24,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
 - When a requirement is fuzzy, ask one focused question before changing code.
+- Keep `.second-brain/sessions/current-session.md` current when task state changes. Keep it short: current state, next action, boundaries, and verification.
 - To install and verify Codex for the first required path, run:
 
 ```bash
@@ -152,4 +153,4 @@ python3 scripts/defenseclaw_skill_demo.py
 - Agent instructions still match the quality bar.
 - The Maze game runs without hiding credentials, private keys, or network calls.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
-- The current session note in `.second-brain/sessions/current-session.md` is updated when task state changes.
+- The current session note in `.second-brain/sessions/current-session.md` reflects the latest task state.

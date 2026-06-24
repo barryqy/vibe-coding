@@ -7,6 +7,7 @@ Good vibe coding still has a quality bar.
 - The task is small enough to review.
 - The agent has project context before it edits.
 - The agent reads `.second-brain/RESOLVER.md` and the current session note before continuing someone else's work.
+- The agent updates `.second-brain/sessions/current-session.md` as normal task housekeeping when state changes.
 - Tests and checks are run after the edit.
 - Security-sensitive changes get an extra review.
 - Model routes and data sources are named before the app sends prompts.
@@ -36,6 +37,7 @@ Use `.second-brain/` when work moves across tools or sessions.
 - `decisions/` holds choices that should survive the lab.
 
 Do not put secrets, raw tokens, cookies, or private keys in memory.
+Treat session-note updates as part of finishing the work.
 
 ## Repo Check Command
 
