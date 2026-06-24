@@ -33,6 +33,10 @@ else
   npm install -g @openai/codex
 fi
 export PATH="$HOME/.local/bin:$PATH"
+codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
+if [ -x "$codex_bwrap" ] && ! command -v bwrap >/dev/null 2>&1; then
+  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+fi
 codex --version
 ```
 
@@ -41,7 +45,6 @@ codex --version
 ```bash
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
-CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "display a small ascii art"
 ```
 
 - Later, to install and configure OpenCode for comparison, run:
