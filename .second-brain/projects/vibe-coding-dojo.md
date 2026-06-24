@@ -11,7 +11,7 @@ This repo is a small AI coding dojo. Codex is used first with the supplied lab m
 
 ## Current Files
 
-- `dojo_app/pong_game.py` contains BarryPong.
+- `dojo_app/pong_game.py` contains Pong.
 - `tests/test_pong_game.py` contains the direct Pong tests.
 - `scripts/check_repo.py` is the repo-level verification command.
 
