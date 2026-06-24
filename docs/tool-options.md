@@ -14,7 +14,8 @@ In this dojo, the Codex path uses:
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from Codex
-- `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --output-last-message .lab-state/codex-output/maze.txt "Generate a 12x12 terminal maze..."` to create the first maze artifact
+- `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --output-last-message .lab-state/codex-output/maze.txt "Generate 12x12 maze data..."` to create the first maze artifact
+- `python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt` to render that maze data as a readable tile board
 - `AGENTS.md` for shared project guidance
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
