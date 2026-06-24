@@ -36,7 +36,7 @@ TASK_PROMPT = """Context:
 You are helping with the Vibe Coding 101 dojo repo. Read AGENTS.md and docs/quality-bar.md before proposing changes.
 
 Goal:
-Improve the tiny terminal Pong game without making broad rewrites. Propose one small change to dojo_app/pong_game.py that keeps the game deterministic and easy to review.
+Improve the tiny terminal Maze game without making broad rewrites. Propose one small change to dojo_app/maze_game.py that keeps the game deterministic and easy to review.
 
 Constraints:
 - Plan only. Do not edit files during this pass.

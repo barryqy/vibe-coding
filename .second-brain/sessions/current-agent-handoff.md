@@ -11,7 +11,7 @@ The lab has not started yet.
 
 ## Next Action
 
-After Codex confirms the model route and MCP evidence, create a current handoff for the Pong work.
+After Codex confirms the model route and MCP evidence, create a current handoff for the Maze work.
 
 ## Boundaries
 

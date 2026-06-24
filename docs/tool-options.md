@@ -14,7 +14,7 @@ In this dojo, the Codex path uses:
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from Codex
-- `python3 -m dojo_app.pong_game --play --turns 8` to play the tiny game used in the main exercise
+- `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --output-last-message .lab-state/codex-output/maze.txt "Generate a 12x12 terminal maze..."` to create the first maze artifact
 - `AGENTS.md` for shared project guidance
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
@@ -34,7 +34,7 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
 - `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from OpenCode
-- `python3 scripts/agent_compare.py --tool both --show-rules` for the same Pong prompt shape when you want a comparison run
+- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain. Make the maze interactive so I can play it with arrow keys."` for the direct Maze upgrade prompt
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
@@ -74,4 +74,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, BarryFlights MCP check, Pong controls prompt, and tiny Pong game exercise. Bring in OpenCode later as the comparison agent with the same repo rules and check command. Keep Claude Code as an optional follow-up only when sign-in is already available.
+Use Codex CLI with the DevNet model proxy for the required first result, BarryFlights MCP check, and 12x12 Maze generation. Bring in OpenCode later to read the second brain and make the Maze interactive with the same repo rules and check command. Keep Claude Code as an optional follow-up only when sign-in is already available.
