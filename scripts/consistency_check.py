@@ -14,8 +14,8 @@ REQUIRED_FILES = [
     Path("docs/quality-bar.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
-    Path("dojo_app/snake_game.py"),
-    Path("tests/test_snake_game.py"),
+    Path("dojo_app/pong_game.py"),
+    Path("tests/test_pong_game.py"),
     Path("scripts/agent_compare.py"),
     Path("scripts/agent_code_task.py"),
     Path("scripts/barrybot_demo.py"),
@@ -31,10 +31,10 @@ REQUIRED_FILES = [
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
     Path("scripts/defenseclaw_skill_demo.py"),
-    Path("samples/skills/snake-score-booster/SKILL.md"),
-    Path("samples/skills/snake-score-booster/score_booster.py"),
-    Path("samples/skills/snake-game-coach/SKILL.md"),
-    Path("samples/leaky_snake_patch.py"),
+    Path("samples/skills/pong-score-booster/SKILL.md"),
+    Path("samples/skills/pong-score-booster/score_booster.py"),
+    Path("samples/skills/pong-game-coach/SKILL.md"),
+    Path("samples/leaky_pong_patch.py"),
 ]
 
 
@@ -57,8 +57,8 @@ def main() -> int:
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
-    require("dojo_app/snake_game.py" in agents, "AGENTS.md must mention the Snake game", errors)
-    require("python3 -m dojo_app.snake_game" in agents, "AGENTS.md must mention the Snake game command", errors)
+    require("dojo_app/pong_game.py" in agents, "AGENTS.md must mention the Pong game", errors)
+    require("python3 -m dojo_app.pong_game" in agents, "AGENTS.md must mention the Pong game command", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
@@ -121,8 +121,8 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 -m dojo_app.snake_game*" in bash_perms,
-        "opencode.json must allow the Snake game command",
+        "python3 -m dojo_app.pong_game*" in bash_perms,
+        "opencode.json must allow the Pong game command",
         errors,
     )
     require(

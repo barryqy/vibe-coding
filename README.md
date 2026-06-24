@@ -1,13 +1,13 @@
 # Vibe Coding 101 Lab Helper
 
-Student helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
+Helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 
 The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
 3. use a live BarryFlights MCP demo to check flight status
-4. install a clean local skill and build a tiny Snake game
+4. ask Codex for a tiny Pong strategy and run a human-vs-CPU CLI game
 5. compare OpenCode later on the same rules
 6. scan credentials, PII, keys, and agent skills before trusting them
 7. save useful decisions in a small second brain
@@ -42,7 +42,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/snake_game.py` is the tiny terminal game used during the lab.
+- `dojo_app/pong_game.py` is the tiny terminal Pong game used during the lab.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
@@ -56,7 +56,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
 - `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
-- `scripts/agent_compare.py` builds one shared Snake-game planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
+- `scripts/agent_compare.py` builds one shared Pong planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
@@ -132,10 +132,16 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-Run the tiny Snake game:
+Run the tiny Pong game:
 
 ```bash
-python3 -m dojo_app.snake_game
+python3 -m dojo_app.pong_game
+```
+
+For a manual round against the CPU paddle, run:
+
+```bash
+python3 -m dojo_app.pong_game --play
 ```
 
 After that, compare both agents with one shared prompt:
@@ -167,10 +173,10 @@ DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
 ```
 
-You can also scan the intentionally leaky Snake sample:
+You can also scan the intentionally leaky Pong sample:
 
 ```bash
-python3 scripts/security_review.py samples/leaky_snake_patch.py || true
+python3 scripts/security_review.py samples/leaky_pong_patch.py || true
 ```
 
 ## Safety Notes

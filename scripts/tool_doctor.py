@@ -71,7 +71,7 @@ def main() -> int:
     print("check_repo=python3 scripts/check_repo.py")
     print("first_codex_result=CODEX_HOME=.lab-state/codex/home codex exec --cd \"$PWD\" \"Reply only with a tiny three-line ASCII cat.\"")
     print("first_opencode_result=OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o \"Reply only with a tiny three-line ASCII cat.\"")
-    print("snake_game=python3 -m dojo_app.snake_game")
+    print("pong_game=python3 -m dojo_app.pong_game")
     print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("defenseclaw_demo=python3 scripts/defenseclaw_skill_demo.py")
     print("recommendation=start with Codex, then run simple repo checks after code changes")
