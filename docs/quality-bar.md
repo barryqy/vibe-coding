@@ -6,7 +6,7 @@ Good vibe coding still has a quality bar.
 
 - The task is small enough to review.
 - The agent has project context before it edits.
-- The agent reads `.second-brain/RESOLVER.md` and the current handoff before continuing someone else's work.
+- The agent reads `.second-brain/RESOLVER.md` and the current session note before continuing someone else's work.
 - Tests and checks are run after the edit.
 - Security-sensitive changes get an extra review.
 - Model routes and data sources are named before the app sends prompts.
@@ -32,7 +32,7 @@ Use `.second-brain/` when work moves across tools or sessions.
 - `RESOLVER.md` tells the agent what to read first.
 - `schema.md` keeps notes predictable.
 - `projects/` holds durable project context.
-- `sessions/current-agent-handoff.md` holds the next action for the next tool.
+- `sessions/current-session.md` holds the current task state and next action.
 - `decisions/` holds choices that should survive the lab.
 
 Do not put secrets, raw tokens, cookies, or private keys in memory.

@@ -15,7 +15,7 @@ REQUIRED_FILES = [
     Path(".second-brain/RESOLVER.md"),
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
-    Path(".second-brain/sessions/current-agent-handoff.md"),
+    Path(".second-brain/sessions/current-session.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
@@ -67,7 +67,7 @@ def main() -> int:
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
-    require("current-agent-handoff.md" in agents, "AGENTS.md must mention the current second-brain handoff", errors)
+    require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
     require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
@@ -97,8 +97,8 @@ def main() -> int:
     require("docs/quality-bar.md" in instructions, "opencode.json must load docs/quality-bar.md", errors)
     require(".second-brain/RESOLVER.md" in instructions, "opencode.json must load the second-brain resolver", errors)
     require(
-        ".second-brain/sessions/current-agent-handoff.md" in instructions,
-        "opencode.json must load the current second-brain handoff",
+        ".second-brain/sessions/current-session.md" in instructions,
+        "opencode.json must load the current second-brain session note",
         errors,
     )
 
@@ -152,8 +152,8 @@ def main() -> int:
         errors,
     )
     require(
-        ".second-brain/sessions/current-agent-handoff.md" in devnet_setup,
-        "setup_opencode_devnet.py must attach the current second-brain handoff",
+        ".second-brain/sessions/current-session.md" in devnet_setup,
+        "setup_opencode_devnet.py must attach the current second-brain session note",
         errors,
     )
     require(

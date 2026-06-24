@@ -14,12 +14,12 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `opencode.json` and `AGENTS.md` are the OpenCode path.
 - `CLAUDE.md` and `.claude/settings.json` are the optional Claude Code path for signed-in machines.
 - `samples/skills/` contains clean and intentionally unsafe skills for the DefenseClaw admission-gate demo.
-- `.second-brain/` stores durable decisions and reusable workflow notes.
-- `.second-brain/sessions/current-agent-handoff.md` is the current handoff between Codex, OpenCode, and future sessions.
+- `.second-brain/` stores durable decisions, project notes, and short session notes.
+- `.second-brain/sessions/current-session.md` is the current task state shared by Codex, OpenCode, and future sessions.
 
 ## Working Rules
 
-- Start by reading `README.md`, this file, `docs/quality-bar.md`, `.second-brain/RESOLVER.md`, and `.second-brain/sessions/current-agent-handoff.md`.
+- Start by reading `README.md`, this file, `docs/quality-bar.md`, `.second-brain/RESOLVER.md`, and `.second-brain/sessions/current-session.md`.
 - Prefer small patches over sweeping rewrites.
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
@@ -69,7 +69,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode pick up the current second-brain handoff and make the Maze interactive, run a direct prompt:
+- To let OpenCode read the current second-brain notes and make the Maze interactive, run a direct prompt:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -143,4 +143,4 @@ python3 scripts/defenseclaw_skill_demo.py
 - Agent instructions still match the quality bar.
 - The Maze game runs without hiding credentials, private keys, or network calls.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
-- The current handoff in `.second-brain/sessions/current-agent-handoff.md` is updated when work moves between tools.
+- The current session note in `.second-brain/sessions/current-session.md` is updated when task state changes.

@@ -5,9 +5,9 @@ Read this before using the second brain.
 ## Order
 
 1. Read `schema.md` for the note shape.
-2. Read `sessions/current-agent-handoff.md` for the latest task state.
+2. Read `sessions/current-session.md` for the latest task state.
 3. Read the matching project note under `projects/`.
-4. Update `sessions/current-agent-handoff.md` when you hand work to another tool.
+4. Update `sessions/current-session.md` when the current task state changes.
 5. Add durable choices under `decisions/` when a future session should remember them.
 
 ## Rules

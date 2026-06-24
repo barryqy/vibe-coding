@@ -62,7 +62,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/skills/` contains the DefenseClaw admission-gate examples.
-- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, and cross-tool session handoffs.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, and cross-tool session notes.
 
 ## Optional Model Routes
 
