@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use a live BarryFlights MCP demo to check flight status
 4. create a small second brain that Codex and OpenCode can both read
-5. ask Codex to generate a 12x12 Maze
+5. ask Codex to generate 12x12 Maze data, then render it as a tile board
 6. attach OpenCode to the same KB and make the Maze interactive
 7. scan credentials, PII, keys, and agent skills before trusting them
 
@@ -42,7 +42,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
@@ -140,13 +140,19 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
+  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
 ```
 
-Print the tiny Maze:
+Print the tiny Maze as a readable board:
 
 ```bash
 python3 -m dojo_app.maze_game
+```
+
+Inspect the raw maze data:
+
+```bash
+python3 -m dojo_app.maze_game --render raw
 ```
 
 After the interactive change, play it with arrow keys:

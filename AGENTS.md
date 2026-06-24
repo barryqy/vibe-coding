@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and repo checks.
 - `docs/quality-bar.md` is the shared definition of good work.
@@ -77,16 +77,22 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Preserve run_static_maze and the existing static output. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py. Do not run shell commands during the edit; I will run the checks next. Do not add network calls, terminal clear codes, curses, or external packages." \
+  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py. Do not run shell commands during the edit; I will run the checks next. Do not add network calls, terminal clear codes, curses, or external packages." \
   --file dojo_app/maze_game.py \
   --file tests/test_maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
 
-- To print the tiny Maze game, run:
+- To print the tiny Maze game as a readable board, run:
 
 ```bash
 python3 -m dojo_app.maze_game
+```
+
+- To inspect the source maze data, run:
+
+```bash
+python3 -m dojo_app.maze_game --render raw
 ```
 
 - After OpenCode adds interaction, the play command should look like this:

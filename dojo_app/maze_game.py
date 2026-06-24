@@ -6,6 +6,12 @@ from pathlib import Path
 
 MAZE_SIZE = 12
 ALLOWED_CELLS = {"#", ".", "S", "E"}
+TILE_CELLS = {
+    "#": "██",
+    ".": "  ",
+    "S": "S ",
+    "E": "E ",
+}
 DEFAULT_MAZE = [
     "############",
     "#S.........#",
@@ -34,16 +40,18 @@ def valid_maze_lines(lines: list[str]) -> bool:
 
 
 def extract_maze_lines(text: str) -> list[str]:
-    rows = []
+    possible_rows = []
     for raw in text.splitlines():
         line = raw.strip()
         if len(line) == MAZE_SIZE and not (set(line) - ALLOWED_CELLS):
-            rows.append(line)
-        if len(rows) == MAZE_SIZE:
-            break
-    if not valid_maze_lines(rows):
-        raise ValueError("expected a 12x12 maze with one S and one E")
-    return rows
+            possible_rows.append(line)
+
+    for index in range(0, len(possible_rows) - MAZE_SIZE + 1):
+        rows = possible_rows[index : index + MAZE_SIZE]
+        if valid_maze_lines(rows):
+            return rows
+
+    raise ValueError("expected a 12x12 maze with one S and one E")
 
 
 def load_maze(path: str | None = None) -> list[str]:
@@ -60,11 +68,24 @@ def find_cell(maze: list[str], marker: str) -> tuple[int, int]:
     raise ValueError(f"missing {marker}")
 
 
-def render_maze(maze: list[str]) -> str:
+def render_raw(maze: list[str]) -> str:
     return "\n".join(maze)
 
 
-def run_static_maze(maze: list[str]) -> None:
+def render_tiles(maze: list[str]) -> str:
+    lines = []
+    for row in maze:
+        lines.append("".join(TILE_CELLS[cell] for cell in row))
+    return "\n".join(lines)
+
+
+def render_maze(maze: list[str], mode: str = "tiles") -> str:
+    if mode == "raw":
+        return render_raw(maze)
+    return render_tiles(maze)
+
+
+def run_static_maze(maze: list[str], render: str = "tiles") -> None:
     start = find_cell(maze, "S")
     exit_cell = find_cell(maze, "E")
 
@@ -73,7 +94,8 @@ def run_static_maze(maze: list[str]) -> None:
     print("size=12x12")
     print(f"start={start[0]},{start[1]}")
     print(f"exit={exit_cell[0]},{exit_cell[1]}")
-    print(render_maze(maze))
+    print(f"render={render}")
+    print(render_maze(maze, render))
     print("MAZE=pass")
     print("NEXT: python3 scripts/check_repo.py")
 
@@ -81,9 +103,15 @@ def run_static_maze(maze: list[str]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Print a tiny terminal maze.")
     parser.add_argument("--maze-file", help="Optional file containing a 12x12 maze")
+    parser.add_argument(
+        "--render",
+        choices=["tiles", "raw"],
+        default="tiles",
+        help="Use tiles for a readable board, or raw to inspect the source maze",
+    )
     args = parser.parse_args(argv)
 
-    run_static_maze(load_maze(args.maze_file))
+    run_static_maze(load_maze(args.maze_file), args.render)
     return 0
 
 
