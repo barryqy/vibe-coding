@@ -109,13 +109,14 @@ CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny 
 Later in the lab, install OpenCode and point it at the same model route for comparison:
 
 ```bash
-mkdir -p "$HOME/.opencode/bin" .lab-state/opencode-download
+mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" .lab-state/opencode-download
 curl -fL --max-time 180 --progress-bar \
   -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
   https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
 tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
 install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
-export PATH="$HOME/.opencode/bin:$PATH"
+ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py

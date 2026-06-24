@@ -200,13 +200,14 @@ install_opencode() {
   fi
 
   echo "OPENCODE_INSTALL=starting"
-  mkdir -p "$HOME/.opencode/bin" "$ROOT/.lab-state/opencode-download"
+  mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" "$ROOT/.lab-state/opencode-download"
   archive="$ROOT/.lab-state/opencode-download/opencode-linux-x64.tar.gz"
   url="https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_INSTALL_VERSION}/opencode-linux-x64.tar.gz"
 
   if curl -fL --max-time 180 --progress-bar -o "$archive" "$url"; then
     tar -xzf "$archive" -C "$ROOT/.lab-state/opencode-download"
     install -m 755 "$ROOT/.lab-state/opencode-download/opencode" "$HOME/.opencode/bin/opencode"
+    ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
     export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     echo "OPENCODE_INSTALL=complete"
