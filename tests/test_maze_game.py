@@ -34,6 +34,31 @@ class MazeGameTests(unittest.TestCase):
 
             self.assertEqual(maze_game.load_maze(str(path)), maze_game.DEFAULT_MAZE)
 
+    def test_lab_loader_falls_back_for_bad_model_output(self):
+        bad_model_text = "\n".join(
+            [
+                "#### ######",
+                "#S..#.....#",
+                "#..###.####",
+                "#.....#..E#",
+                "#.######.##",
+                "#..#....###",
+                "######.#..#",
+                "#...###.###",
+                "#.###...#..",
+                "##..###....",
+                "###### ####",
+            ]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "maze.txt"
+            path.write_text(bad_model_text, encoding="utf-8")
+
+            maze, source = maze_game.load_lab_maze(str(path))
+
+        self.assertEqual(maze, maze_game.DEFAULT_MAZE)
+        self.assertEqual(source, "default-fallback")
+
     def test_tile_render_is_readable(self):
         rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE)
 
@@ -62,6 +87,17 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("██", text)
         self.assertIn("MAZE=pass", text)
         self.assertIn("NEXT: install OpenCode", text)
+
+    def test_static_run_prints_fallback_marker(self):
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            maze_game.run_static_maze(maze_game.DEFAULT_MAZE, source="default-fallback")
+
+        text = output.getvalue()
+        self.assertIn("source=default-fallback", text)
+        self.assertIn("warning=generated-maze-invalid", text)
+        self.assertIn("MAZE=pass", text)
 
 
 if __name__ == "__main__":
