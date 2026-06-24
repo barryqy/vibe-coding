@@ -8,8 +8,8 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use a live BarryFlights MCP demo to check flight status
 4. create a small second brain that Codex and OpenCode can both read
-5. ask Codex for the Pong controls and play a human-vs-CPU CLI game
-6. attach OpenCode to the same KB and add a small Pong feature
+5. ask Codex to generate a 12x12 Maze
+6. attach OpenCode to the same KB and make the Maze interactive
 7. scan credentials, PII, keys, and agent skills before trusting them
 
 ## Quick Start
@@ -42,7 +42,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/pong_game.py` is the tiny terminal Pong game used during the lab.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
@@ -55,9 +55,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
 - `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
-- `scripts/opencode_kb_pong_feature.py` lets OpenCode read the second-brain handoff before applying the bounded Pong feature exercise.
 - `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
-- `scripts/agent_compare.py` builds one shared Pong planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
+- `scripts/agent_compare.py` builds one shared Maze planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
@@ -133,23 +132,27 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-Then let OpenCode read the same second brain and apply the bounded Pong feature:
+Then let OpenCode read the same second brain and make the Maze interactive:
 
 ```bash
-python3 scripts/opencode_kb_pong_feature.py
-python3 scripts/check_repo.py
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
+opencode run \
+  --title maze-interactive \
+  --agent build \
+  --model devnet/gpt-4o \
+  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
 ```
 
-Run the tiny Pong game in quick replay mode:
+Print the tiny Maze:
 
 ```bash
-python3 -m dojo_app.pong_game
+python3 -m dojo_app.maze_game
 ```
 
-Play a manual round against the CPU paddle:
+After the interactive change, play it with arrow keys:
 
 ```bash
-python3 -m dojo_app.pong_game --play --turns 8
+python3 -m dojo_app.maze_game --play
 ```
 
 After that, compare both agents with one shared prompt:
@@ -181,10 +184,10 @@ DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
 ```
 
-You can also scan the intentionally leaky Pong sample:
+You can also scan the intentionally leaky Maze sample:
 
 ```bash
-python3 scripts/security_review.py samples/leaky_pong_patch.py || true
+python3 scripts/security_review.py samples/leaky_maze_patch.py || true
 ```
 
 ## Safety Notes

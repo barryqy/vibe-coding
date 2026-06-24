@@ -14,8 +14,8 @@ LOCAL_HOME = ROOT / ".lab-state" / "defenseclaw" / "home"
 LOCAL_CLI = ROOT / ".lab-state" / "defenseclaw" / ".venv" / "bin" / "defenseclaw"
 INSTALLER = ROOT / "scripts" / "install_defenseclaw_cli.sh"
 PINNED_VERSION = os.getenv("DEFENSECLAW_VERSION", "0.5.0")
-BAD_SKILL = ROOT / "samples" / "skills" / "pong-score-booster"
-CLEAN_SKILL = ROOT / "samples" / "skills" / "pong-game-coach"
+BAD_SKILL = ROOT / "samples" / "skills" / "maze-score-booster"
+CLEAN_SKILL = ROOT / "samples" / "skills" / "maze-game-coach"
 RISKY_LEVELS = {"CRITICAL", "HIGH"}
 
 
@@ -135,8 +135,8 @@ def main() -> int:
     print(f"DEFENSECLAW_CLI={cli}")
     print(f"DEFENSECLAW_HOME={os.environ.get('DEFENSECLAW_HOME', str(LOCAL_HOME))}")
 
-    bad = scan_skill(cli, "pong-score-booster", BAD_SKILL)
-    clean = scan_skill(cli, "pong-game-coach", CLEAN_SKILL)
+    bad = scan_skill(cli, "maze-score-booster", BAD_SKILL)
+    clean = scan_skill(cli, "maze-game-coach", CLEAN_SKILL)
 
     bad_levels = severities(bad)
     clean_levels = severities(clean)

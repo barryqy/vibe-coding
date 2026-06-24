@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/pong_game.py` is the tiny terminal Pong game used for the main Codex exercise.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise.
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and repo checks.
 - `docs/quality-bar.md` is the shared definition of good work.
@@ -69,26 +69,30 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode pick up the current second-brain handoff and add the bounded Pong feature, run:
+- To let OpenCode pick up the current second-brain handoff and make the Maze interactive, run a direct prompt:
 
 ```bash
-python3 scripts/opencode_kb_pong_feature.py
-python3 scripts/check_repo.py
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
+opencode run \
+  --title maze-interactive \
+  --agent build \
+  --model devnet/gpt-4o \
+  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
 ```
 
-- To run the tiny Pong game in quick replay mode, run:
+- To print the tiny Maze game, run:
 
 ```bash
-python3 -m dojo_app.pong_game
+python3 -m dojo_app.maze_game
 ```
 
-- To play the interactive mode, run:
+- After OpenCode adds interaction, the play command should look like this:
 
 ```bash
-python3 -m dojo_app.pong_game --play --turns 8
+python3 -m dojo_app.maze_game --play
 ```
 
-- To compare Codex and OpenCode on the Pong prompt, run:
+- To compare Codex and OpenCode on the Maze prompt, run:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules
@@ -119,10 +123,10 @@ If you touched code that runs commands, parses user input, or handles file paths
 python3 scripts/security_review.py dojo_app scripts
 ```
 
-If you touched the Pong game or sample game patches, also scan the leaky sample so the expected detections still work:
+If you touched the Maze game or sample game patches, also scan the leaky sample so the expected detections still work:
 
 ```bash
-python3 scripts/security_review.py samples/leaky_pong_patch.py || true
+python3 scripts/security_review.py samples/leaky_maze_patch.py || true
 ```
 
 If you touched the skill samples or DefenseClaw helper, also run:
@@ -137,6 +141,6 @@ python3 scripts/defenseclaw_skill_demo.py
 - The security review passes.
 - The DefenseClaw mini-demo passes when skill samples or admission-gate code changed.
 - Agent instructions still match the quality bar.
-- The Pong game runs without hiding credentials, private keys, or network calls.
+- The Maze game runs without hiding credentials, private keys, or network calls.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
 - The current handoff in `.second-brain/sessions/current-agent-handoff.md` is updated when work moves between tools.

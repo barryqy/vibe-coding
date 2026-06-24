@@ -18,8 +18,8 @@ REQUIRED_FILES = [
     Path(".second-brain/sessions/current-agent-handoff.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
-    Path("dojo_app/pong_game.py"),
-    Path("tests/test_pong_game.py"),
+    Path("dojo_app/maze_game.py"),
+    Path("tests/test_maze_game.py"),
     Path("scripts/agent_compare.py"),
     Path("scripts/agent_code_task.py"),
     Path("scripts/barrybot_demo.py"),
@@ -31,15 +31,14 @@ REQUIRED_FILES = [
     Path("scripts/devnet_openai_shim.py"),
     Path("scripts/start_opencode_model_adapter.py"),
     Path("scripts/setup_opencode_devnet.py"),
-    Path("scripts/opencode_kb_pong_feature.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
     Path("scripts/defenseclaw_skill_demo.py"),
-    Path("samples/skills/pong-score-booster/SKILL.md"),
-    Path("samples/skills/pong-score-booster/score_booster.py"),
-    Path("samples/skills/pong-game-coach/SKILL.md"),
-    Path("samples/leaky_pong_patch.py"),
+    Path("samples/skills/maze-score-booster/SKILL.md"),
+    Path("samples/skills/maze-score-booster/score_booster.py"),
+    Path("samples/skills/maze-game-coach/SKILL.md"),
+    Path("samples/leaky_maze_patch.py"),
 ]
 
 
@@ -62,8 +61,8 @@ def main() -> int:
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
-    require("dojo_app/pong_game.py" in agents, "AGENTS.md must mention the Pong game", errors)
-    require("python3 -m dojo_app.pong_game" in agents, "AGENTS.md must mention the Pong game command", errors)
+    require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
+    require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
@@ -133,18 +132,13 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 -m dojo_app.pong_game*" in bash_perms,
-        "opencode.json must allow the Pong game command",
+        "python3 -m dojo_app.maze_game*" in bash_perms,
+        "opencode.json must allow the Maze game command",
         errors,
     )
     require(
         "python3 scripts/start_opencode_model_adapter.py*" in bash_perms,
         "opencode.json must allow the OpenCode model adapter command",
-        errors,
-    )
-    require(
-        "python3 scripts/opencode_kb_pong_feature.py*" in bash_perms,
-        "opencode.json must allow the OpenCode KB Pong feature helper",
         errors,
     )
     require(
