@@ -112,7 +112,7 @@ def parse_moves(raw: str) -> list[str]:
 
 def run_scripted_match(moves: list[str]) -> None:
     state = GameState()
-    print("BARRYPONG=ready")
+    print("PONG=ready")
     print("mode=scripted-human-vs-cpu")
 
     for turn, move in enumerate(moves, start=1):
@@ -120,13 +120,13 @@ def run_scripted_match(moves: list[str]) -> None:
         print(f"FRAME={turn}")
         print(draw_frame(state, turn, move))
 
-    print("BARRYPONG=pass")
+    print("PONG=pass")
     print("NEXT: python3 scripts/check_repo.py")
 
 
 def run_interactive_match(turns: int) -> None:
     state = GameState()
-    print("BARRYPONG=ready")
+    print("PONG=ready")
     print("mode=interactive-human-vs-cpu")
     print("controls=w up, s down, enter stay, q quit")
     print("FRAME=0")
@@ -137,7 +137,7 @@ def run_interactive_match(turns: int) -> None:
         try:
             move = input().strip().lower()
         except EOFError:
-            print("BARRYPONG_INPUT=closed")
+            print("PONG_INPUT=closed")
             move = "stay"
         if move == "q":
             break
@@ -145,7 +145,7 @@ def run_interactive_match(turns: int) -> None:
         print(f"FRAME={turn}")
         print(draw_frame(state, turn, move or "stay"))
 
-    print("BARRYPONG=pass")
+    print("PONG=pass")
     print("NEXT: python3 scripts/check_repo.py")
 
 

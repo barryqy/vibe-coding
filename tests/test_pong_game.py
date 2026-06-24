@@ -43,7 +43,7 @@ class PongGameTests(unittest.TestCase):
         self.assertIn("Turn 1 move", text)
         self.assertIn("FRAME=1", text)
         self.assertIn("move=s", text)
-        self.assertIn("BARRYPONG=pass", text)
+        self.assertIn("PONG=pass", text)
 
 
 if __name__ == "__main__":
