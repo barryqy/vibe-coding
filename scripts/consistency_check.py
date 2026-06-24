@@ -142,8 +142,8 @@ def main() -> int:
         errors,
     )
     require(
-        edit_perm == "ask",
-        "opencode.json must require approval for edits",
+        edit_perm == "allow",
+        "opencode.json must allow edits so noninteractive OpenCode lab prompts do not hang",
         errors,
     )
     require(
