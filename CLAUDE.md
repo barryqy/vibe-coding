@@ -16,7 +16,9 @@ python3 scripts/check_repo.py
 
 For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` and `tests/test_maze_game.py`.
 
-OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py`. The current session note should explain the next small Maze task before OpenCode runs a direct prompt:
+Keep `.second-brain/sessions/current-session.md` current as task state changes.
+
+OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should continue from the current session note:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Do not run shell commands during the edit; I will run the checks next." --file dojo_app/maze_game.py --file tests/test_maze_game.py --file .second-brain/sessions/current-session.md

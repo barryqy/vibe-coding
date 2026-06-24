@@ -10,6 +10,8 @@ Read this before using the second brain.
 4. Update `sessions/current-session.md` when the current task state changes.
 5. Add durable choices under `decisions/` when a future session should remember them.
 
+Agents keep the current session note fresh as part of normal lifecycle work.
+
 ## Rules
 
 - Keep notes short and specific.
