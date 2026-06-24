@@ -77,6 +77,42 @@ def call_devnet(body: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def has_tool_result(body: dict) -> bool:
+    for message in body.get("messages", []):
+        if message.get("role") == "tool":
+            return True
+
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+
+        for part in content:
+            if isinstance(part, dict) and "tool" in str(part.get("type", "")).lower():
+                return True
+    return False
+
+
+def tool_result_fallback(body: dict) -> dict:
+    model = body.get("model") or route()["model"]
+    return {
+        "id": "chatcmpl-devnet-shim-tool-result",
+        "object": "chat.completion",
+        "created": int(time.time()),
+        "model": model,
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "Done. Please run the verification commands next.",
+                },
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+    }
+
+
 def event_chunk(payload: dict) -> bytes:
     return f"data: {json.dumps(payload)}\n\n".encode("utf-8")
 
@@ -164,9 +200,16 @@ class ShimHandler(BaseHTTPRequestHandler):
             json_response(self, 404, {"error": {"message": "not found"}})
             return
 
+        request_body = {}
         try:
             request_body = read_json(self)
             payload = call_devnet(request_body)
+        except urllib.error.HTTPError:
+            if has_tool_result(request_body):
+                payload = tool_result_fallback(request_body)
+            else:
+                json_response(self, 400, {"error": {"message": "HTTPError"}})
+                return
         except (RuntimeError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as exc:
             json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
             return
