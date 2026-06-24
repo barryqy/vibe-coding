@@ -12,6 +12,5 @@ Good notes are short:
 Run this helper during the lab:
 
 ```bash
-python3 scripts/make_second_brain_note.py --title "Quality gate stays deterministic" --why "The lab should pass even when no model provider is configured."
+python3 scripts/make_second_brain_note.py --title "Codex uses the lab model route" --why "Students should not need personal model accounts for this lab."
 ```
-

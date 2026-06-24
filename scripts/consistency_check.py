@@ -65,7 +65,7 @@ def main() -> int:
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
-    require("opencode.ai/install" in agents, "AGENTS.md must show the direct OpenCode installer", errors)
+    require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
     require("opencode --version" in agents, "AGENTS.md must verify OpenCode with opencode --version", errors)
     require("--codex-only" in install_script and "--opencode-only" in install_script, "install_ai_tools.sh must support split install modes", errors)
     agents_lower = agents.lower()
@@ -92,6 +92,7 @@ def main() -> int:
     require("docs/quality-bar.md" in instructions, "opencode.json must load docs/quality-bar.md", errors)
 
     bash_perms = ((opencode.get("permission") or {}).get("bash") or {})
+    edit_perm = (opencode.get("permission") or {}).get("edit")
     devnet_setup = (root / "scripts/setup_opencode_devnet.py").read_text(encoding="utf-8")
     agent_task = (root / "scripts/agent_code_task.py").read_text(encoding="utf-8")
     require(
@@ -130,8 +131,13 @@ def main() -> int:
         errors,
     )
     require(
-        "dojo_app/snake_game.py" in devnet_setup and "tests/test_snake_game.py" in devnet_setup,
-        "setup_opencode_devnet.py must scope edits to the Snake files",
+        edit_perm == "ask",
+        "opencode.json must require approval for edits",
+        errors,
+    )
+    require(
+        '"edit": "ask"' in devnet_setup and '"webfetch": "deny"' in devnet_setup,
+        "setup_opencode_devnet.py must keep OpenCode edit/network permissions simple",
         errors,
     )
     require(

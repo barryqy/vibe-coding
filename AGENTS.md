@@ -50,7 +50,12 @@ python3 scripts/start_codex_model_adapter.py
 - Later, to install and configure OpenCode for comparison, run:
 
 ```bash
-curl -fsSL https://opencode.ai/install | bash -s -- --version 1.0.190 --no-modify-path
+mkdir -p "$HOME/.opencode/bin" .lab-state/opencode-download
+curl -fL --max-time 180 --progress-bar \
+  -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
+  https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
+tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
+install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
 export PATH="$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py
