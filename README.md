@@ -25,6 +25,10 @@ else
   npm install -g @openai/codex
 fi
 export PATH="$HOME/.local/bin:$PATH"
+codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
+if [ -x "$codex_bwrap" ] && ! command -v bwrap >/dev/null 2>&1; then
+  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+fi
 codex --version
 ```
 
@@ -87,6 +91,10 @@ else
   npm install -g @openai/codex
 fi
 export PATH="$HOME/.local/bin:$PATH"
+codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
+if [ -x "$codex_bwrap" ] && ! command -v bwrap >/dev/null 2>&1; then
+  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+fi
 codex --version
 ```
 
@@ -95,7 +103,7 @@ In a DevNet lab environment, Codex can use the built-in model route without a pe
 ```bash
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
-CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "display a small ascii art"
+CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:
@@ -123,7 +131,7 @@ python3 scripts/agent_compare.py --tool both --show-rules
 Claude Code remains optional for learners who already have sign-in on their own machine:
 
 ```bash
-claude "display a small ascii art"
+claude "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
 ## Explore DefenseClaw

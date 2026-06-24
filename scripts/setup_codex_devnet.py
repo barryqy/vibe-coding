@@ -32,6 +32,7 @@ def main() -> int:
             [
                 f"model = {toml_string(model)}",
                 'model_provider = "devnet"',
+                "model_context_window = 128000",
                 'approval_policy = "never"',
                 'sandbox = "read-only"',
                 'web_search = "disabled"',
@@ -52,6 +53,7 @@ def main() -> int:
     print(f"codex_home={HOME.relative_to(ROOT)}")
     print(f"config={CONFIG.relative_to(ROOT)}")
     print(f"model={model}")
+    print("model_context_window=128000")
     print("adapter=python3 scripts/start_codex_model_adapter.py")
     return 0
 
