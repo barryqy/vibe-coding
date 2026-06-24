@@ -26,8 +26,13 @@ else
 fi
 export PATH="$HOME/.local/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
-if [ -x "$codex_bwrap" ] && ! command -v bwrap >/dev/null 2>&1; then
+if command -v bwrap >/dev/null 2>&1; then
+  echo "CODEX_SANDBOX_HELPER=system"
+elif [ -x "$codex_bwrap" ]; then
   ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+  echo "CODEX_SANDBOX_HELPER=bundled-codex"
+else
+  echo "CODEX_SANDBOX_HELPER=not-found"
 fi
 codex --version
 ```
@@ -92,8 +97,13 @@ else
 fi
 export PATH="$HOME/.local/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
-if [ -x "$codex_bwrap" ] && ! command -v bwrap >/dev/null 2>&1; then
+if command -v bwrap >/dev/null 2>&1; then
+  echo "CODEX_SANDBOX_HELPER=system"
+elif [ -x "$codex_bwrap" ]; then
   ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+  echo "CODEX_SANDBOX_HELPER=bundled-codex"
+else
+  echo "CODEX_SANDBOX_HELPER=not-found"
 fi
 codex --version
 ```
