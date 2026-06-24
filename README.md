@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use a live BarryFlights MCP demo to check flight status
 4. create a small second brain that Codex and OpenCode can both read
-5. ask Codex for a tiny Pong strategy and run a human-vs-CPU CLI game
+5. ask Codex for the Pong controls and play a human-vs-CPU CLI game
 6. attach OpenCode to the same KB and add a small Pong feature
 7. scan credentials, PII, keys, and agent skills before trusting them
 
@@ -140,16 +140,16 @@ python3 scripts/opencode_kb_pong_feature.py
 python3 scripts/check_repo.py
 ```
 
-Run the tiny Pong game:
+Run the tiny Pong game in quick replay mode:
 
 ```bash
 python3 -m dojo_app.pong_game
 ```
 
-For a manual round against the CPU paddle, run:
+Play a manual round against the CPU paddle:
 
 ```bash
-python3 -m dojo_app.pong_game --play
+python3 -m dojo_app.pong_game --play --turns 8
 ```
 
 After that, compare both agents with one shared prompt:

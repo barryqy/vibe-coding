@@ -128,14 +128,22 @@ def run_interactive_match(turns: int) -> None:
     state = GameState()
     print("BARRYPONG=ready")
     print("mode=interactive-human-vs-cpu")
+    print("controls=w up, s down, enter stay, q quit")
+    print("FRAME=0")
+    print(draw_frame(state, 0, "ready"))
 
     for turn in range(1, turns + 1):
-        print(f"FRAME={turn}")
-        print(draw_frame(state, turn, "stay"))
-        move = input("Move [w/s/enter/q]: ").strip().lower()
+        print(f"Turn {turn} move [w/s/enter/q]: ", end="")
+        try:
+            move = input().strip().lower()
+        except EOFError:
+            print("BARRYPONG_INPUT=closed")
+            move = "stay"
         if move == "q":
             break
         state = next_state(state, move)
+        print(f"FRAME={turn}")
+        print(draw_frame(state, turn, move or "stay"))
 
     print("BARRYPONG=pass")
     print("NEXT: python3 scripts/check_repo.py")

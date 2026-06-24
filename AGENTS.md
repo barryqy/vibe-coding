@@ -76,10 +76,16 @@ python3 scripts/opencode_kb_pong_feature.py
 python3 scripts/check_repo.py
 ```
 
-- To run the tiny Pong game, run:
+- To run the tiny Pong game in quick replay mode, run:
 
 ```bash
 python3 -m dojo_app.pong_game
+```
+
+- To play the interactive mode, run:
+
+```bash
+python3 -m dojo_app.pong_game --play --turns 8
 ```
 
 - To compare Codex and OpenCode on the Pong prompt, run:
