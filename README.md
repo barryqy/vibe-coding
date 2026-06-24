@@ -42,7 +42,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/snake_game.py` is the tiny terminal game learners run and improve during the lab.
+- `dojo_app/snake_game.py` is the tiny terminal game used during the lab.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
@@ -144,7 +144,7 @@ After that, compare both agents with one shared prompt:
 python3 scripts/agent_compare.py --tool both --show-rules
 ```
 
-Claude Code remains optional for learners who already have sign-in on their own machine:
+Claude Code remains optional when you already have sign-in on your own machine:
 
 ```bash
 claude "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."

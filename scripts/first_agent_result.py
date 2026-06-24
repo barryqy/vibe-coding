@@ -39,7 +39,7 @@ def run(cmd: list[str], *, env: dict[str, str] | None = None, timeout: int = 180
 def prompt_for_first_result() -> str:
     return (
         "Read AGENTS.md and docs/quality-bar.md briefly. Do not edit files. "
-        "This is a quick tool check for a beginner lab. Reply with four short bullets: "
+        "This is a quick tool check for a short lab. Reply with four short bullets: "
         "1) give the Snake game a fun nickname, "
         "2) say what a coding agent does in one plain sentence, "
         "3) suggest one tiny safe feature for the Snake game, "
@@ -199,7 +199,7 @@ def run_claude() -> int:
 
 def main(argv: list[str]) -> int:
     add_tool_dirs_to_path()
-    parser = argparse.ArgumentParser(description="Run the first beginner AI-agent result.")
+    parser = argparse.ArgumentParser(description="Run the first AI-agent result.")
     parser.add_argument("--tool", choices=["opencode", "codex", "claude"], default="codex")
     args = parser.parse_args(argv)
 
