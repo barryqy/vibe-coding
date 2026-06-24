@@ -77,7 +77,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
+  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Keep static mode working. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py. Do not run shell commands during the edit; I will run the checks next. Do not add network calls, terminal clear codes, curses, or external packages."
 ```
 
 - To print the tiny Maze game, run:
