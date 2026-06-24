@@ -16,7 +16,7 @@
       "*.env.*": "deny",
       "secrets/**": "deny"
     },
-    "edit": "ask",
+    "edit": "allow",
     "bash": {
       "*": "ask",
       "python3 scripts/check_repo.py*": "allow",
