@@ -10,11 +10,11 @@ Good default loop:
 
 ```bash
 python3 scripts/setup_codex_devnet.py
-python3 -m dojo_app.snake_game
+python3 -m dojo_app.pong_game
 python3 scripts/check_repo.py
 ```
 
-For the Snake game module, keep edits scoped to `dojo_app/snake_game.py` and `tests/test_snake_game.py`.
+For the Pong game module, keep edits scoped to `dojo_app/pong_game.py` and `tests/test_pong_game.py`.
 
 For the DefenseClaw mini-module, keep the scanner path explicit:
 

@@ -195,6 +195,7 @@ LAB_CONTEXT = [
     "The lab uses Codex CLI and OpenCode with a supplied DevNet model route.",
     "The repo check command is python3 scripts/check_repo.py.",
     "DefenseClaw is introduced later to scan risky agent skills and extensions.",
+    "The tiny game exercise uses dojo_app/pong_game.py.",
 ]
 SENSITIVE_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9]{12,}"),
