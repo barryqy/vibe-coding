@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It renders a tile board by default, keeps `--render raw` for debugging the source maze data, and has a locked `--play` mode that OpenCode enables later.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used to teach tool calls before the security module.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
@@ -90,7 +90,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the current second-brain notes and make the Maze interactive, run a direct prompt:
+- To let OpenCode read the current second-brain notes and unlock the interactive Maze mode, run a direct prompt:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -98,9 +98,8 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py. Do not run shell commands during the edit; I will run the checks next. Do not add network calls, terminal clear codes, curses, or external packages." \
+  "Read the second brain and implement only the OpenCode Next Task. Keep the change small. Do not remove existing functions. Do not run shell commands during the edit; I will run the checks next." \
   --file dojo_app/maze_game.py \
-  --file tests/test_maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
 
@@ -123,7 +122,7 @@ python3 -m dojo_app.maze_game
 python3 -m dojo_app.maze_game --render raw
 ```
 
-- After OpenCode adds interaction, the play command should look like this:
+- After OpenCode unlocks interaction, the play command should look like this:
 
 ```bash
 python3 -m dojo_app.maze_game --play

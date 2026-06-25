@@ -11,7 +11,9 @@ TILE_CELLS = {
     ".": "  ",
     "S": "S ",
     "E": "E ",
+    "@": "@ ",
 }
+PLAY_MODE_ENABLED = False
 DEFAULT_MAZE = [
     "############",
     "#S.........#",
@@ -95,6 +97,74 @@ def render_maze(maze: list[str], mode: str = "tiles") -> str:
     return render_tiles(maze)
 
 
+def move_player(maze: list[str], position: tuple[int, int], key: str) -> tuple[int, int]:
+    moves = {
+        "w": (0, -1),
+        "up": (0, -1),
+        "s": (0, 1),
+        "down": (0, 1),
+        "a": (-1, 0),
+        "left": (-1, 0),
+        "d": (1, 0),
+        "right": (1, 0),
+    }
+    delta = moves.get(key.strip().lower())
+    if not delta:
+        return position
+
+    next_x = position[0] + delta[0]
+    next_y = position[1] + delta[1]
+    if next_y < 0 or next_y >= len(maze):
+        return position
+    if next_x < 0 or next_x >= len(maze[next_y]):
+        return position
+    if maze[next_y][next_x] == "#":
+        return position
+    return next_x, next_y
+
+
+def render_player_maze(
+    maze: list[str],
+    position: tuple[int, int],
+    render: str = "tiles",
+) -> str:
+    rows = [list(row) for row in maze]
+    x, y = position
+    rows[y][x] = "@"
+    with_player = ["".join(row) for row in rows]
+    return render_maze(with_player, render)
+
+
+def run_play_maze(
+    maze: list[str],
+    render: str = "tiles",
+    input_func=input,
+    output_func=print,
+) -> None:
+    position = find_cell(maze, "S")
+    exit_cell = find_cell(maze, "E")
+
+    output_func("MAZE_PLAY=ready")
+    output_func("controls=w/a/s/d or up/down/left/right, q to quit")
+    while True:
+        output_func(render_player_maze(maze, position, render))
+        if position == exit_cell:
+            output_func("MAZE_PLAY=escaped")
+            output_func("MAZE_PLAY=pass")
+            return
+
+        move = input_func("move> ").strip().lower()
+        if move in {"q", "quit", "exit"}:
+            output_func("MAZE_PLAY=quit")
+            output_func("MAZE_PLAY=pass")
+            return
+
+        new_position = move_player(maze, position, move)
+        if new_position == position:
+            output_func("move=blocked")
+        position = new_position
+
+
 def run_static_maze(
     maze: list[str],
     render: str = "tiles",
@@ -126,9 +196,18 @@ def main(argv: list[str] | None = None) -> int:
         default="tiles",
         help="Use tiles for a readable board, or raw to inspect the source maze",
     )
+    parser.add_argument("--play", action="store_true", help="Play the maze in the terminal")
     args = parser.parse_args(argv)
 
     maze, source = load_lab_maze(args.maze_file)
+    if args.play:
+        if not PLAY_MODE_ENABLED:
+            print("MAZE_PLAY=locked")
+            print("NEXT: ask OpenCode to enable PLAY_MODE_ENABLED")
+            return 1
+        run_play_maze(maze, args.render)
+        return 0
+
     run_static_maze(maze, args.render, source)
     return 0
 

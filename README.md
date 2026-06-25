@@ -9,7 +9,7 @@ The lab teaches a practical loop for AI-assisted coding:
 3. install the local BarryFlights MCP demo with Codex CLI and book a demo flight
 4. create a small second brain that Codex and OpenCode can both read
 5. ask Codex to generate 12x12 Maze data, then render it as a tile board
-6. attach OpenCode to the same KB and make the Maze interactive
+6. attach OpenCode to the same KB and unlock the Maze play mode
 7. scan credentials, PII, keys, and agent skills before trusting them
 
 ## Quick Start
@@ -157,7 +157,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-Then let OpenCode read the same second brain and make the Maze interactive:
+Then let OpenCode read the same second brain and unlock the Maze play mode:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -165,7 +165,9 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain. Make the maze interactive so I can play it with arrow keys. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Keep edits scoped to dojo_app/maze_game.py and tests/test_maze_game.py."
+  "Read the second brain and implement only the OpenCode Next Task. Keep the change small. Do not remove existing functions. Do not run shell commands during the edit; I will run the checks next." \
+  --file dojo_app/maze_game.py \
+  --file .second-brain/sessions/current-session.md
 ```
 
 Print the tiny Maze as a readable board:
@@ -180,7 +182,7 @@ Inspect the raw maze data:
 python3 -m dojo_app.maze_game --render raw
 ```
 
-After the interactive change, play it with arrow keys:
+After the interactive change, play it:
 
 ```bash
 python3 -m dojo_app.maze_game --play

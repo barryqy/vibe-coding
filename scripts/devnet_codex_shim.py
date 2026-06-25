@@ -172,14 +172,14 @@ def latest_user_text(body: dict) -> str:
     if not isinstance(raw_input, list):
         return ""
 
-    chunks: list[str] = []
+    latest = ""
     for item in raw_input:
         if not isinstance(item, dict) or item.get("role") != "user":
             continue
         text = content_text(item.get("content"))
         if text:
-            chunks.append(text)
-    return "\n".join(chunks)
+            latest = text
+    return latest
 
 
 def function_output(body: dict, call_id: str) -> str | None:
@@ -219,6 +219,27 @@ def booking_summary(tool_output: str) -> str:
             "NEXT: build second brain",
         ]
     )
+
+
+def run_barryflights_booking() -> str:
+    result = subprocess.run(
+        ["/bin/sh", "-lc", barryflights_booking_command()],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    output = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
+    if result.returncode != 0:
+        return "\n".join(
+            [
+                "BARRYFLIGHTS_BOOKING=fail",
+                f"exit_code={result.returncode}",
+                output or "no command output",
+            ]
+        )
+    return booking_summary(output)
 
 
 def stream_function_call(
@@ -493,16 +514,14 @@ class ShimHandler(BaseHTTPRequestHandler):
                 return
 
             if wants_barryflights_booking(request_body):
-                stream_function_call(
+                stream_responses_api(
                     self,
                     request_body,
-                    call_id="call_barryflights_booking",
-                    name="exec_command",
-                    arguments={
-                        "cmd": barryflights_booking_command(),
-                        "yield_time_ms": 1000,
-                        "max_output_tokens": 4000,
-                    },
+                    response_text_payload(
+                        run_barryflights_booking(),
+                        model=request_body.get("model"),
+                        response_id="resp_devnet_codex_booking_direct",
+                    ),
                 )
                 return
 
