@@ -161,7 +161,7 @@ codex exec \
   --cd "$PWD" \
   --sandbox read-only \
   --output-last-message .lab-state/codex-output/maze.txt \
-  "Create 12x12 terminal maze data. Return only the maze data. Use exactly 12 lines. Each line must be exactly 12 characters. Use only these characters: # for walls, . for open path, S for start, E for exit. Keep the outer border as # walls. Put S and E inside the border. Do not use spaces, labels, markdown, or any other characters." \
+  "Create 12x12 terminal maze data. Return only the maze data. Use recursive backtracking methodology: start from an open cell, carve connected passages, backtrack when stuck, and only return the finished maze. Use exactly 12 lines. Each line must be exactly 12 characters. Use only these characters: # for walls, . for open path, S for start, E for exit. Keep the outer border as # walls. Put S and E inside the border. Do not use spaces, labels, markdown, or any other characters." \
   > .lab-state/codex-output/maze-codex.log 2>&1 || true
 
 python3 -m dojo_app.maze_game \
