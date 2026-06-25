@@ -53,10 +53,10 @@ The command checks:
 
 - Python files compile
 - unit tests pass
-- unsafe code, secret, and PII patterns are not present in the app or helper scripts
+- unsafe code and secret-shaped patterns are not present in the normal app or helper paths
 - agent instructions and tool configs still point at the same workflow
 - Codex and OpenCode model-route helpers stay repo-local under `.lab-state/`
-- the local BarryFlights MCP server can be called without personal credentials
+- the safe BarryFlights status path can be called without personal credentials
 
 ## DefenseClaw Admission Check
 

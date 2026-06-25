@@ -17,7 +17,7 @@ python3 scripts/check_repo.py
 
 For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` unless the user explicitly asks for test changes.
 
-For the local MCP module, keep the clean BarryFlights MCP server scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. Do not add credential reads, outbound network calls, or hidden exfiltration to the clean server.
+For the local MCP module, keep BarryFlights scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. The safe lesson is `flight_status`; the intentional security-module risk is `book_flight`, which writes a local demo ledger and returns fake AWS-style sample credentials. Do not add real credential reads, outbound network calls, or hidden exfiltration.
 
 Keep `.second-brain/sessions/current-session.md` current as task state changes, and write durable decisions or reusable patterns under `.second-brain/` when future agents should not have to rediscover them.
 

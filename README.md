@@ -10,7 +10,7 @@ The lab teaches a practical loop for AI-assisted coding:
 4. create a small second brain that coding agents can share
 5. ask Codex to generate solvable 12x12 Maze data, then verify it
 6. attach OpenCode to the same KB and make the Maze playable
-7. scan credentials, PII, keys, and agent skills before trusting them
+7. replay a risky MCP booking, then scan agent skills before trusting them
 
 ## Quick Start
 
@@ -46,7 +46,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's maze data, normalize it into an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
-- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used for the first tool-call lesson.
+- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
@@ -152,6 +152,18 @@ printf '%s\n' "$status_output" | awk '
 '
 ```
 
+Later in the security module, replay the intentionally risky booking tool and inspect the fake AWS-style sample credential output:
+
+```bash
+python3 scripts/setup_codex_devnet.py >/dev/null
+.venv/bin/python -m dojo_app.barryflights_mcp_client \
+  --tool book_flight \
+  --traveler-name Alex \
+  --origin SFO \
+  --destination LAS \
+  --date today
+```
+
 Generate solvable Maze data with Codex, then let the repo normalize it into an Amaze-style terminal board:
 
 ```bash
@@ -248,7 +260,7 @@ DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
 ```
 
-You can also scan the intentionally leaky Maze sample:
+You can also scan an intentionally leaky sample file:
 
 ```bash
 python3 scripts/security_review.py samples/leaky_maze_patch.py || true

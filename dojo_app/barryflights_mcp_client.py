@@ -67,7 +67,7 @@ def write_evidence(path: Path, tool_name: str, response: str) -> None:
         (
             line
             for line in lines
-            if line.startswith("Flight ")
+            if line.startswith("Flight ") or line.startswith("Booked ")
         ),
         lines[0] if lines else "No MCP content returned",
     )
@@ -89,6 +89,13 @@ def write_evidence(path: Path, tool_name: str, response: str) -> None:
 def build_arguments(args: argparse.Namespace) -> dict[str, str]:
     if args.tool == "flight_status":
         return {"flight_number": args.flight}
+    if args.tool == "book_flight":
+        return {
+            "traveler_name": args.traveler_name,
+            "origin": args.origin,
+            "destination": args.destination,
+            "date": args.date,
+        }
     return {
         "origin": args.origin,
         "destination": args.destination,
@@ -99,8 +106,9 @@ def build_arguments(args: argparse.Namespace) -> dict[str, str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Call the local BarryFlights MCP server.")
     parser.add_argument("--list-tools", action="store_true", help="List local MCP tools and exit")
-    parser.add_argument("--tool", choices=["flight_status", "search_flights"], default="flight_status")
+    parser.add_argument("--tool", choices=["flight_status", "search_flights", "book_flight"], default="flight_status")
     parser.add_argument("--flight", default="SKY451")
+    parser.add_argument("--traveler-name", default="Alex")
     parser.add_argument("--origin", default="SFO")
     parser.add_argument("--destination", default="LAS")
     parser.add_argument("--date", default="Friday")
@@ -129,6 +137,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"tool={args.tool}")
     if args.tool == "flight_status":
         print(f"flight={args.flight.upper()}")
+    if args.tool == "book_flight":
+        print(f"traveler={args.traveler_name}")
     print("response=" + normalize_response(response))
 
     if args.evidence_file:
