@@ -61,6 +61,9 @@ def main() -> int:
     agents = (root / "AGENTS.md").read_text(encoding="utf-8") if (root / "AGENTS.md").exists() else ""
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
     install_script = (root / "scripts/install_ai_tools.sh").read_text(encoding="utf-8")
+    session_note = (
+        root / ".second-brain/sessions/current-session.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/sessions/current-session.md").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
@@ -73,6 +76,9 @@ def main() -> int:
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
+    require("OpenCode Next Task" in session_note, "current-session.md must carry the OpenCode next task", errors)
+    require("render_player_maze" in session_note, "current-session.md must ask for visible player rendering", errors)
+    require("python3 -m unittest tests.test_maze_game" in session_note, "current-session.md must include the focused Maze test", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
     require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
