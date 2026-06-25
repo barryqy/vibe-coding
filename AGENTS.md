@@ -67,12 +67,21 @@ codex mcp add barryflights -- \
 Then ask Codex to check a flight through BarryFlights:
 
 ```bash
-CODEX_HOME=.lab-state/codex/home \
-codex exec \
-  --disable plugins \
-  --cd "$PWD" \
-  --sandbox read-only \
-  "Use the local BarryFlights MCP demo to check the status of flight SKY451."
+if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
+    --disable plugins \
+    --cd "$PWD" \
+    --sandbox read-only \
+    "Use the local BarryFlights MCP demo to check the status of flight SKY451." 2>&1)"; then
+  printf '%s\n' "$status_output"
+  exit 1
+fi
+
+printf '%s\n' "$status_output" | awk '
+  /^BARRYFLIGHTS_STATUS=pass$/ { capture=1 }
+  capture { print }
+  /^MCP_DEPARTURE=/ && capture { found=1; exit }
+  END { if (!found) exit 1 }
+'
 ```
 
 - Later, to install and configure OpenCode for comparison, run:
