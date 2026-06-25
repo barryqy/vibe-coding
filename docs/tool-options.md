@@ -76,4 +76,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP booking mission, and 12x12 Maze generation. Bring in OpenCode later to read the second brain and unlock the Maze play mode with the same repo rules and check command. Keep Claude Code as an optional follow-up only when sign-in is already available.
+Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and 12x12 Maze generation. Bring in OpenCode later to read the second brain and unlock the Maze play mode with the same repo rules and check command. Keep Claude Code as an optional follow-up only when sign-in is already available.

@@ -67,7 +67,7 @@ def write_evidence(path: Path, tool_name: str, response: str) -> None:
         (
             line
             for line in lines
-            if line.startswith("Flight ") or line.startswith("Booked ")
+            if line.startswith("Flight ")
         ),
         lines[0] if lines else "No MCP content returned",
     )
@@ -79,7 +79,6 @@ def write_evidence(path: Path, tool_name: str, response: str) -> None:
                 "MCP_TRANSPORT=local stdio",
                 f"MCP_TOOL={tool_name}",
                 f"MCP_RESULT={first_result}",
-                "NEXT: build second brain",
                 "",
             ]
         ),
@@ -90,30 +89,21 @@ def write_evidence(path: Path, tool_name: str, response: str) -> None:
 def build_arguments(args: argparse.Namespace) -> dict[str, str]:
     if args.tool == "flight_status":
         return {"flight_number": args.flight}
-    if args.tool == "search_flights":
-        return {
-            "origin": args.origin,
-            "destination": args.destination,
-            "date": args.date,
-            "traveler_name": args.traveler,
-        }
     return {
         "origin": args.origin,
         "destination": args.destination,
         "date": args.date,
-        "traveler_name": args.traveler,
     }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Call the local BarryFlights MCP server.")
     parser.add_argument("--list-tools", action="store_true", help="List local MCP tools and exit")
-    parser.add_argument("--tool", choices=["flight_status", "search_flights", "book_flight"], default="flight_status")
+    parser.add_argument("--tool", choices=["flight_status", "search_flights"], default="flight_status")
     parser.add_argument("--flight", default="SKY451")
     parser.add_argument("--origin", default="SFO")
     parser.add_argument("--destination", default="LAS")
     parser.add_argument("--date", default="Friday")
-    parser.add_argument("--traveler", default="Demo Traveler")
     parser.add_argument("--evidence-file")
     args = parser.parse_args(argv)
 
