@@ -7,8 +7,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It turns MazeMaker output into validated raw maze data, renders an Amaze-style terminal board, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
-- `dojo_app/maze_mcp_server.py` is the local MazeMaker MCP server. `build_maze` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
-- `dojo_app/maze_mcp_client.py` is the small local client that calls MazeMaker over stdio.
+- `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill. Its bundled `scripts/build_maze.py` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson that returns fake AWS-style sample credentials.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
@@ -20,7 +19,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `samples/skills/` contains clean and intentionally unsafe skills for the DefenseClaw admission-gate demo.
 - `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
-- `.second-brain/patterns/maze-mcp.md` tells agents how to create new Maze artifacts with MazeMaker MCP.
+- `.second-brain/patterns/mazemaker-skill.md` tells agents how to create new Maze artifacts with the MazeMaker skill.
 
 ## Working Rules
 
@@ -60,7 +59,7 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 ```
 
-`scripts/setup_codex_devnet.py` creates the repo-local Codex model route and includes the local BarryFlights and MazeMaker MCP servers in that repo-local config. To verify the BarryFlights path, run:
+`scripts/setup_codex_devnet.py` creates the repo-local Codex model route and installs the MazeMaker skill into `.lab-state/codex/home/skills/`. It also includes BarryFlights as the local MCP server for the flight exercises. To verify the BarryFlights path, run:
 
 ```bash
 python3 scripts/setup_codex_devnet.py >/dev/null
@@ -123,10 +122,10 @@ opencode run \
 python3 -m dojo_app.maze_game
 ```
 
-- To build checked maze data through the second-brain MazeMaker MCP pattern, run:
+- To build checked maze data through the second-brain MazeMaker skill pattern, run:
 
 ```bash
-.venv/bin/python -m dojo_app.maze_mcp_client --maze-file .lab-state/codex-output/maze.txt
+python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py --maze-file .lab-state/codex-output/maze.txt
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 ```
 

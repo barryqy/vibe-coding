@@ -1,0 +1,4 @@
+interface:
+  display_name: "MazeMaker"
+  short_description: "Build checked terminal Maze artifacts"
+  default_prompt: "Use $mazemaker to create a checked 12x12 terminal Maze artifact."

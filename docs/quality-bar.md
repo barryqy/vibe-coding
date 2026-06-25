@@ -12,6 +12,7 @@ Good vibe coding still has a quality bar.
 - Security-sensitive changes get an extra review.
 - Model routes and data sources are named before the app sends prompts.
 - Local MCP tools are called through an explicit client before they are treated as trusted context.
+- Repo-local skills are installed from known files and checked before their artifacts are trusted.
 - Agent skills and extensions are scanned before they are trusted.
 - Durable decisions are written down once, then reused.
 

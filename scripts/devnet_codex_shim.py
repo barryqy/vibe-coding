@@ -21,7 +21,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "booking-mcp-20260625"
+SHIM_VERSION = "mazemaker-skill-20260625"
 
 
 def route() -> dict[str, str]:
@@ -215,9 +215,9 @@ def wants_barryflights_booking(body: dict) -> bool:
     return mentions_barryflights and mentions_booking
 
 
-def wants_maze_mcp_build(body: dict) -> bool:
+def wants_mazemaker_skill_build(body: dict) -> bool:
     text = latest_user_text(body).lower()
-    mentions_maze_mcp = "mazemaker" in text or "maze mcp" in text
+    mentions_mazemaker = "mazemaker" in text or "maze maker" in text or "maze skill" in text
     mentions_kb_maze = (
         "maze" in text
         and (
@@ -229,7 +229,7 @@ def wants_maze_mcp_build(body: dict) -> bool:
         )
     )
     wants_build = "build" in text or "generate" in text or "create" in text
-    return (mentions_maze_mcp or mentions_kb_maze) and "maze" in text and wants_build
+    return (mentions_mazemaker or mentions_kb_maze) and "maze" in text and wants_build
 
 
 def status_summary(tool_output: str) -> str:
@@ -365,16 +365,18 @@ def run_barryflights_booking() -> str:
     return booking_summary(output)
 
 
-def run_maze_mcp_build(body: dict) -> str:
+def run_mazemaker_skill_build(body: dict) -> str:
     python_bin = ROOT / ".venv" / "bin" / "python"
     if not python_bin.exists():
         python_bin = Path(sys.executable)
+    skill_script = ROOT / ".lab-state" / "codex" / "home" / "skills" / "mazemaker" / "scripts" / "build_maze.py"
+    if not skill_script.exists():
+        skill_script = ROOT / "skills" / "mazemaker" / "scripts" / "build_maze.py"
 
     result = subprocess.run(
         [
             str(python_bin),
-            "-m",
-            "dojo_app.maze_mcp_client",
+            str(skill_script),
             "--maze-file",
             ".lab-state/codex-output/maze.txt",
         ],
@@ -388,7 +390,7 @@ def run_maze_mcp_build(body: dict) -> str:
     if result.returncode != 0:
         return "\n".join(
             [
-                "MAZE_MCP=fail",
+                "MAZEMAKER_SKILL=fail",
                 f"exit_code={result.returncode}",
                 output or "no command output",
             ]
@@ -694,15 +696,15 @@ class ShimHandler(BaseHTTPRequestHandler):
                 )
                 return
 
-            if wants_maze_mcp_build(request_body):
-                text = run_maze_mcp_build(request_body)
+            if wants_mazemaker_skill_build(request_body):
+                text = run_mazemaker_skill_build(request_body)
                 stream_responses_api(
                     self,
                     request_body,
                     response_text_payload(
                         text,
                         model=request_body.get("model"),
-                        response_id="resp_devnet_codex_maze_mcp",
+                        response_id="resp_devnet_codex_mazemaker_skill",
                     ),
                 )
                 return

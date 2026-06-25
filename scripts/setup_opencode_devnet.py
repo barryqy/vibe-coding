@@ -15,7 +15,7 @@ INSTRUCTIONS = [
     ".second-brain/RESOLVER.md",
     ".second-brain/schema.md",
     ".second-brain/projects/vibe-coding-dojo.md",
-    ".second-brain/patterns/maze-mcp.md",
+    ".second-brain/patterns/mazemaker-skill.md",
     ".second-brain/sessions/current-session.md",
 ]
 
@@ -42,9 +42,9 @@ def main() -> int:
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 -m dojo_app.maze_game*": "allow",
-                "python3 -m dojo_app.maze_mcp_client*": "allow",
+                "python3 skills/mazemaker/scripts/build_maze.py*": "allow",
+                "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
-                ".venv/bin/python -m dojo_app.maze_mcp_client*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
                 "*": "ask",
             },
