@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import random
 import select
 import sys
 import termios
@@ -37,51 +36,6 @@ DEFAULT_MAZE = [
     "##########E#",
     "############",
 ]
-
-
-def generate_recursive_backtracker_maze(
-    size: int = MAZE_SIZE,
-    seed: int | None = None,
-) -> list[str]:
-    if size != MAZE_SIZE:
-        raise ValueError("only 12x12 mazes are supported in this lab")
-
-    rng = random.Random(seed) if seed is not None else random.SystemRandom()
-    rows = [["#"] * size for _ in range(size)]
-    last_cell = size - 3
-    start = (1, 1)
-    stack = [start]
-    visited = {start}
-    rows[start[1]][start[0]] = "."
-
-    while stack:
-        x, y = stack[-1]
-        neighbors = []
-        for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
-            next_x = x + dx * 2
-            next_y = y + dy * 2
-            if next_x < 1 or next_x > last_cell:
-                continue
-            if next_y < 1 or next_y > last_cell:
-                continue
-            if (next_x, next_y) in visited:
-                continue
-            neighbors.append((next_x, next_y, dx, dy))
-
-        if not neighbors:
-            stack.pop()
-            continue
-
-        next_x, next_y, dx, dy = rng.choice(neighbors)
-        rows[y + dy][x + dx] = "."
-        rows[next_y][next_x] = "."
-        visited.add((next_x, next_y))
-        stack.append((next_x, next_y))
-
-    rows[1][1] = "S"
-    rows[last_cell][size - 2] = "."
-    rows[size - 2][size - 2] = "E"
-    return ["".join(row) for row in rows]
 
 
 def valid_maze_lines(lines: list[str]) -> bool:
@@ -203,11 +157,7 @@ def load_maze(path: str | None = None) -> list[str]:
 def load_lab_maze(path: str | None = None) -> tuple[list[str], str]:
     if not path:
         return list(DEFAULT_MAZE), "default"
-
-    try:
-        return load_maze(path), "generated"
-    except (OSError, ValueError):
-        return list(DEFAULT_MAZE), "default-fallback"
+    return load_maze(path), "generated"
 
 
 def load_checked_maze(path: str | None = None) -> tuple[list[str], str, str]:
@@ -215,24 +165,6 @@ def load_checked_maze(path: str | None = None) -> tuple[list[str], str, str]:
         return list(DEFAULT_MAZE), "default", "raw"
     maze, maze_format = extract_maze(Path(path).read_text(encoding="utf-8"))
     return maze, "generated", maze_format
-
-
-def repair_maze_file(path: str | None = None) -> tuple[list[str], str, str]:
-    if not path:
-        return list(DEFAULT_MAZE), "default", "raw"
-
-    maze_path = Path(path)
-    try:
-        maze, maze_format = extract_maze(maze_path.read_text(encoding="utf-8"))
-        source = "generated"
-    except (OSError, ValueError):
-        maze = generate_recursive_backtracker_maze()
-        maze_format = "raw"
-        source = "repair-generated"
-
-    maze_path.parent.mkdir(parents=True, exist_ok=True)
-    maze_path.write_text(render_raw(maze) + "\n", encoding="utf-8")
-    return maze, source, maze_format
 
 
 def find_cell(maze: list[str], marker: str) -> tuple[int, int]:
@@ -406,8 +338,6 @@ def run_static_maze(
     print("MAZE=ready")
     print("mode=static")
     print(f"source={source}")
-    if source in {"default-fallback", "repair-generated"}:
-        print("warning=generated-maze-invalid")
     print("size=12x12")
     print(f"start={start[0]},{start[1]}")
     print(f"exit={exit_cell[0]},{exit_cell[1]}")
@@ -423,8 +353,6 @@ def run_maze_check(maze: list[str], source: str = "generated", maze_format: str 
 
     print("MAZE_CHECK=ready")
     print(f"source={source}")
-    if source in {"default-fallback", "repair-generated"}:
-        print("warning=generated-maze-invalid")
     print(f"format={maze_format}")
     print("size=12x12")
     print("border=ok")
@@ -448,19 +376,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Validate a generated maze without re-rendering it",
     )
-    parser.add_argument(
-        "--repair-file",
-        action="store_true",
-        help="Normalize the maze file, or replace invalid output with a fresh local maze",
-    )
     args = parser.parse_args(argv)
 
     if args.check_only:
         try:
-            if args.repair_file:
-                maze, source, maze_format = repair_maze_file(args.maze_file)
-            else:
-                maze, source, maze_format = load_checked_maze(args.maze_file)
+            maze, source, maze_format = load_checked_maze(args.maze_file)
             run_maze_check(maze, source, maze_format)
         except (OSError, ValueError) as exc:
             print("MAZE_CHECK=fail")
@@ -468,7 +388,13 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         return 0
 
-    maze, source = load_lab_maze(args.maze_file)
+    try:
+        maze, source = load_lab_maze(args.maze_file)
+    except (OSError, ValueError) as exc:
+        print("MAZE=fail")
+        print(f"reason={exc}")
+        return 1
+
     if args.play:
         if not PLAY_MODE_ENABLED:
             print("MAZE_PLAY=locked")
