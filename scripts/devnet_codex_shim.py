@@ -161,12 +161,11 @@ def response_text_payload(
     *,
     model: str | None = None,
     response_id: str = "resp_devnet_codex",
-    usage: dict | None = None,
 ) -> dict:
     return {
         "id": response_id,
         "choices": [{"message": {"content": text}}],
-        "usage": usage or {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         "model": model or route()["model"],
     }
 
@@ -205,16 +204,6 @@ def function_output(body: dict, call_id: str) -> str | None:
 def wants_barryflights_status(body: dict) -> bool:
     text = latest_user_text(body).lower()
     return "barryflights" in text and "flight" in text and ("status" in text or "check" in text)
-
-
-def local_usage(body: dict, text: str) -> dict[str, int]:
-    prompt_tokens = max(1, len(latest_user_text(body).split()))
-    completion_tokens = max(1, len(text.split()))
-    return {
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens,
-        "total_tokens": prompt_tokens + completion_tokens,
-    }
 
 
 def status_summary(tool_output: str) -> str:
@@ -521,7 +510,6 @@ class ShimHandler(BaseHTTPRequestHandler):
                         text,
                         model=request_body.get("model"),
                         response_id="resp_devnet_codex_status_done",
-                        usage=local_usage(request_body, text),
                     ),
                 )
                 return
@@ -535,7 +523,6 @@ class ShimHandler(BaseHTTPRequestHandler):
                         text,
                         model=request_body.get("model"),
                         response_id="resp_devnet_codex_status_direct",
-                        usage=local_usage(request_body, text),
                     ),
                 )
                 return
