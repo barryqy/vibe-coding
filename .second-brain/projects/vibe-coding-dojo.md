@@ -12,6 +12,8 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 ## Current Files
 
 - `dojo_app/maze_game.py` contains Maze parsing, solvability checks, rendering, and play mode.
+- `dojo_app/maze_mcp_server.py` exposes the local MazeMaker MCP `build_maze` tool.
+- `dojo_app/maze_mcp_client.py` calls MazeMaker over stdio for local checks.
 - `tests/test_maze_game.py` contains the direct Maze tests.
 - `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
@@ -19,7 +21,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 
 ## Boundaries
 
-- Keep the game deterministic.
+- Keep maze generation checked and repeatable when a fixed seed is used.
 - Do not add network calls, credential reads, terminal clear codes, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.

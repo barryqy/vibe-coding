@@ -11,7 +11,7 @@ from dojo_app.barryflights_mcp_server import MCP_SERVER_NAME
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVER = ROOT / "dojo_app" / "barryflights_mcp_server.py"
+SERVER_MODULE = "dojo_app.barryflights_mcp_server"
 
 
 def text_from_result(result: Any) -> str:
@@ -29,7 +29,7 @@ async def call_mcp_tool(tool_name: str, arguments: dict[str, Any]) -> str:
 
     server_params = StdioServerParameters(
         command=sys.executable,
-        args=[str(SERVER)],
+        args=["-m", SERVER_MODULE],
         cwd=str(ROOT),
     )
 
@@ -46,7 +46,7 @@ async def list_mcp_tools() -> list[str]:
 
     server_params = StdioServerParameters(
         command=sys.executable,
-        args=[str(SERVER)],
+        args=["-m", SERVER_MODULE],
         cwd=str(ROOT),
     )
 

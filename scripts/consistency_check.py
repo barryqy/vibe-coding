@@ -19,7 +19,10 @@ REQUIRED_FILES = [
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
+    Path("dojo_app/maze_mcp_server.py"),
+    Path("dojo_app/maze_mcp_client.py"),
     Path("tests/test_maze_game.py"),
+    Path("tests/test_maze_mcp.py"),
     Path("dojo_app/barryflights_mcp_server.py"),
     Path("dojo_app/barryflights_mcp_client.py"),
     Path("tests/test_barryflights_mcp.py"),
@@ -78,6 +81,8 @@ def main() -> int:
     require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
     require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
     require("--check-only" in agents, "AGENTS.md must mention the Maze solvability check command", errors)
+    require("maze_mcp_server.py" in agents, "AGENTS.md must mention the local MazeMaker MCP server", errors)
+    require("maze_mcp_client.py" in agents, "AGENTS.md must mention the local MazeMaker MCP client", errors)
     require("barryflights_mcp_server.py" in agents, "AGENTS.md must mention the local BarryFlights MCP server", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
@@ -176,8 +181,28 @@ def main() -> int:
         errors,
     )
     require(
+        "python3 -m dojo_app.maze_mcp_client*" in bash_perms,
+        "opencode.json must allow the local MazeMaker MCP client",
+        errors,
+    )
+    require(
+        ".venv/bin/python -m dojo_app.maze_mcp_client*" in bash_perms,
+        "opencode.json must allow the venv-backed MazeMaker MCP client",
+        errors,
+    )
+    require(
         "[mcp_servers.barryflights]" in codex_setup,
         "setup_codex_devnet.py must include the local BarryFlights MCP server in the repo-local Codex config",
+        errors,
+    )
+    require(
+        "[mcp_servers.mazemaker]" in codex_setup,
+        "setup_codex_devnet.py must include the local MazeMaker MCP server in the repo-local Codex config",
+        errors,
+    )
+    require(
+        "dojo_app.maze_mcp_server" in codex_setup and "cwd =" in codex_setup,
+        "setup_codex_devnet.py must launch MCP servers as modules from the repo root",
         errors,
     )
     manual_mcp_command = "codex mcp " + "add barryflights"
