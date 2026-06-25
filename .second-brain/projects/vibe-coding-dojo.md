@@ -11,7 +11,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 
 ## Current Files
 
-- `dojo_app/maze_game.py` contains Maze.
+- `dojo_app/maze_game.py` contains Maze parsing, solvability checks, rendering, and play mode.
 - `tests/test_maze_game.py` contains the direct Maze tests.
 - `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
