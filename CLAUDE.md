@@ -11,6 +11,7 @@ Good default loop:
 ```bash
 python3 scripts/setup_codex_devnet.py
 .venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
+python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py --maze-file .lab-state/codex-output/maze.txt
 python3 -m dojo_app.maze_game
 python3 scripts/check_repo.py
 ```

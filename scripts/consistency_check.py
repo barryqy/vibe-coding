@@ -15,15 +15,16 @@ REQUIRED_FILES = [
     Path(".second-brain/RESOLVER.md"),
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
-    Path(".second-brain/patterns/maze-mcp.md"),
+    Path(".second-brain/patterns/mazemaker-skill.md"),
     Path(".second-brain/sessions/current-session.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
-    Path("dojo_app/maze_mcp_server.py"),
-    Path("dojo_app/maze_mcp_client.py"),
+    Path("skills/mazemaker/SKILL.md"),
+    Path("skills/mazemaker/scripts/build_maze.py"),
+    Path("skills/mazemaker/agents/openai.yaml"),
     Path("tests/test_maze_game.py"),
-    Path("tests/test_maze_mcp.py"),
+    Path("tests/test_mazemaker_skill.py"),
     Path("dojo_app/barryflights_mcp_server.py"),
     Path("dojo_app/barryflights_mcp_client.py"),
     Path("tests/test_barryflights_mcp.py"),
@@ -76,9 +77,11 @@ def main() -> int:
         root / ".second-brain/RESOLVER.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/RESOLVER.md").exists() else ""
     maze_pattern = (
-        root / ".second-brain/patterns/maze-mcp.md"
-    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/maze-mcp.md").exists() else ""
+        root / ".second-brain/patterns/mazemaker-skill.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/mazemaker-skill.md").exists() else ""
     maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
+    mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
+    mazemaker_script = (root / "skills/mazemaker/scripts/build_maze.py").read_text(encoding="utf-8") if (root / "skills/mazemaker/scripts/build_maze.py").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
@@ -86,8 +89,8 @@ def main() -> int:
     require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
     require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
     require("--check-only" in agents, "AGENTS.md must mention the Maze solvability check command", errors)
-    require("maze_mcp_server.py" in agents, "AGENTS.md must mention the local MazeMaker MCP server", errors)
-    require("maze_mcp_client.py" in agents, "AGENTS.md must mention the local MazeMaker MCP client", errors)
+    require("skills/mazemaker/SKILL.md" in agents, "AGENTS.md must mention the local MazeMaker skill", errors)
+    require("skills/mazemaker/scripts/build_maze.py" in agents, "AGENTS.md must mention the MazeMaker skill script", errors)
     require("barryflights_mcp_server.py" in agents, "AGENTS.md must mention the local BarryFlights MCP server", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
@@ -106,8 +109,12 @@ def main() -> int:
     require("Decision Note" in schema_note, "schema.md must define decision notes", errors)
     require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
     require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
-    require("patterns/maze-mcp.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker MCP pattern", errors)
-    require("build_maze" in maze_pattern and "MAZE_MCP=pass" in maze_pattern, "maze-mcp.md must describe the MazeMaker tool and pass marker", errors)
+    require("patterns/mazemaker-skill.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker skill pattern", errors)
+    require("build_maze.py" in maze_pattern and "MAZEMAKER_SKILL=pass" in maze_pattern, "mazemaker-skill.md must describe the MazeMaker script and pass marker", errors)
+    require("MAZEMAKER_SKILL=pass" in mazemaker_skill, "MazeMaker skill must document the pass marker", errors)
+    require("MAZEMAKER_SKILL=pass" in mazemaker_script, "MazeMaker skill script must print the pass marker", errors)
+    old_mazemaker_label = "MazeMaker " + "MCP"
+    require(old_mazemaker_label not in agents + resolver_note + maze_pattern + session_note, "MazeMaker should be described as a skill only", errors)
     require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
     require("clear_screen(" in maze_game, "maze_game.py must redraw play mode in an interactive terminal", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
@@ -148,8 +155,8 @@ def main() -> int:
         errors,
     )
     require(
-        ".second-brain/patterns/maze-mcp.md" in instructions,
-        "opencode.json must load the MazeMaker MCP pattern",
+        ".second-brain/patterns/mazemaker-skill.md" in instructions,
+        "opencode.json must load the MazeMaker skill pattern",
         errors,
     )
 
@@ -194,13 +201,13 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 -m dojo_app.maze_mcp_client*" in bash_perms,
-        "opencode.json must allow the local MazeMaker MCP client",
+        "python3 skills/mazemaker/scripts/build_maze.py*" in bash_perms,
+        "opencode.json must allow the repo-local MazeMaker skill script",
         errors,
     )
     require(
-        ".venv/bin/python -m dojo_app.maze_mcp_client*" in bash_perms,
-        "opencode.json must allow the venv-backed MazeMaker MCP client",
+        "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*" in bash_perms,
+        "opencode.json must allow the installed MazeMaker skill script",
         errors,
     )
     require(
@@ -214,16 +221,10 @@ def main() -> int:
         "devnet_codex_shim.py must route the risky BarryFlights booking prompt",
         errors,
     )
-    require(
-        "[mcp_servers.mazemaker]" in codex_setup,
-        "setup_codex_devnet.py must include the local MazeMaker MCP server in the repo-local Codex config",
-        errors,
-    )
-    require(
-        "dojo_app.maze_mcp_server" in codex_setup and "cwd =" in codex_setup,
-        "setup_codex_devnet.py must launch MCP servers as modules from the repo root",
-        errors,
-    )
+    old_mazemaker_section = "[mcp_servers." + "mazemaker]"
+    require(old_mazemaker_section not in codex_setup, "setup_codex_devnet.py must not register mazemaker as a tool server", errors)
+    require("install_mazemaker_skill" in codex_setup, "setup_codex_devnet.py must install the MazeMaker skill", errors)
+    require("local_skill=mazemaker" in codex_setup, "setup_codex_devnet.py must report the MazeMaker skill", errors)
     manual_mcp_command = "codex mcp " + "add barryflights"
     require(
         manual_mcp_command not in agents,
@@ -251,8 +252,8 @@ def main() -> int:
         errors,
     )
     require(
-        ".second-brain/patterns/maze-mcp.md" in opencode_setup,
-        "setup_opencode_devnet.py must attach the MazeMaker MCP pattern",
+        ".second-brain/patterns/mazemaker-skill.md" in opencode_setup,
+        "setup_opencode_devnet.py must attach the MazeMaker skill pattern",
         errors,
     )
     require(

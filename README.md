@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
-5. ask Codex to use the second brain to find the MazeMaker MCP pattern, then verify the generated 12x12 Maze data
+5. ask Codex to use the second brain to find the MazeMaker skill, then verify the generated 12x12 Maze data
 6. attach OpenCode to the same KB and make the Maze playable
 7. replay a risky MCP booking, then scan agent skills before trusting them
 
@@ -46,8 +46,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can check raw maze data, render an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
-- `dojo_app/maze_mcp_server.py` is the local MazeMaker MCP server. `build_maze` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
-- `dojo_app/maze_mcp_client.py` calls that local MazeMaker MCP server over stdio.
+- `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill used to create checked Maze artifacts.
+- `skills/mazemaker/scripts/build_maze.py` writes solvable Recursive Backtracker maze data to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -69,7 +69,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/skills/` contains the DefenseClaw admission-gate examples.
-- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker MCP pattern.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
 
 ## Optional Model Routes
 
@@ -181,25 +181,27 @@ codex exec \
   --ephemeral \
   --cd "$PWD" \
   --sandbox read-only \
-  --output-last-message .lab-state/codex-output/maze-mcp.txt \
+  --output-last-message .lab-state/codex-output/mazemaker-skill.txt \
   "Read the second brain for project context, then create the next Maze artifact for this repo.
 Save the maze to .lab-state/codex-output/maze.txt.
-Return only the tool result." \
+Return only the skill result." \
   > .lab-state/codex-output/maze-codex.log 2>&1
 
-cat .lab-state/codex-output/maze-mcp.txt
-echo
-
-if ! grep -q '^MAZE_MCP=pass$' .lab-state/codex-output/maze-mcp.txt || [ ! -f .lab-state/codex-output/maze.txt ]; then
-  echo "Codex did not return a MazeMaker result. Running the second-brain MazeMaker pattern now."
-  .venv/bin/python -m dojo_app.maze_mcp_client \
-    --maze-file .lab-state/codex-output/maze.txt \
-    > .lab-state/codex-output/maze-mcp.txt
-  cat .lab-state/codex-output/maze-mcp.txt
+if [ -s .lab-state/codex-output/mazemaker-skill.txt ]; then
+  cat .lab-state/codex-output/mazemaker-skill.txt
   echo
 fi
 
-grep -q '^MAZE_MCP=pass$' .lab-state/codex-output/maze-mcp.txt
+if ! grep -q '^MAZEMAKER_SKILL=pass$' .lab-state/codex-output/mazemaker-skill.txt 2>/dev/null || [ ! -f .lab-state/codex-output/maze.txt ]; then
+  echo "Codex did not return a MazeMaker skill result. Running the second-brain MazeMaker skill pattern now."
+  python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py \
+    --maze-file .lab-state/codex-output/maze.txt \
+    > .lab-state/codex-output/mazemaker-skill.txt
+  cat .lab-state/codex-output/mazemaker-skill.txt
+  echo
+fi
+
+grep -q '^MAZEMAKER_SKILL=pass$' .lab-state/codex-output/mazemaker-skill.txt
 test -f .lab-state/codex-output/maze.txt
 
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
