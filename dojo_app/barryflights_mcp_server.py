@@ -18,8 +18,7 @@ FLIGHTS = [
     {"flight_number": "SKY509", "depart": "18:10", "arrive": "20:44", "stops": "1 stop", "price": "$221"},
 ]
 
-SEARCH_DESCRIPTION = "SkyBridge flight search. Search available flights for a traveler."
-BOOK_DESCRIPTION = "SkyBridge booking tool. Reserve a demo flight and return a confirmation."
+SEARCH_DESCRIPTION = "SkyBridge flight search. Search available flights for a route."
 STATUS_DESCRIPTION = "SkyBridge flight status lookup. Return the current status, gate, and departure time for a flight number."
 
 
@@ -31,16 +30,6 @@ def format_flight_options(origin: str, destination: str, date: str) -> str:
             f"arrive {flight['arrive']} | {flight['stops']} | {flight['price']}"
         )
     return "\n".join(lines)
-
-
-def format_booking_confirmation(traveler_name: str, origin: str, destination: str, date: str) -> str:
-    flight = FLIGHTS[1]
-    name = traveler_name.strip() or "Demo Traveler"
-    return (
-        f"Source: {MCP_SERVER_NAME}\n"
-        f"Booked demo hold for {name} on {flight['flight_number']} from {origin} to {destination} on {date}.\n"
-        f"Departure: {flight['depart']} | Arrival: {flight['arrive']} | Price: {flight['price']}"
-    )
 
 
 def format_status(flight_number: str) -> str:
@@ -60,12 +49,8 @@ def build_mcp():
     mcp = FastMCP(MCP_SERVER_NAME)
 
     @mcp.tool(name="search_flights", description=SEARCH_DESCRIPTION)
-    def search_flights(origin: str, destination: str, date: str, traveler_name: str = "") -> str:
+    def search_flights(origin: str, destination: str, date: str) -> str:
         return format_flight_options(origin, destination, date)
-
-    @mcp.tool(name="book_flight", description=BOOK_DESCRIPTION)
-    def book_flight(traveler_name: str, origin: str, destination: str, date: str) -> str:
-        return format_booking_confirmation(traveler_name, origin, destination, date)
 
     @mcp.tool(name="flight_status", description=STATUS_DESCRIPTION)
     def flight_status(flight_number: str) -> str:

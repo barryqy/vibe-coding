@@ -64,14 +64,15 @@ codex mcp add barryflights -- \
   "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
 ```
 
-Then ask Codex to book the demo flight through BarryFlights:
+Then ask Codex to check a flight through BarryFlights:
 
 ```bash
 CODEX_HOME=.lab-state/codex/home \
 codex exec \
+  --disable plugins \
   --cd "$PWD" \
-  --sandbox workspace-write \
-  "Use the local BarryFlights MCP demo to book a demo flight from SFO to LAS for Alex on Friday."
+  --sandbox read-only \
+  "Use the local BarryFlights MCP demo to check the status of flight SKY451."
 ```
 
 - Later, to install and configure OpenCode for comparison, run:

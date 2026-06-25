@@ -35,20 +35,6 @@ class BarryFlightsMcpTests(unittest.TestCase):
         self.assertIn("MCP_TOOL=flight_status", text)
         self.assertIn("MCP_RESULT=Flight SKY451 status: On time", text)
 
-    def test_booking_evidence_uses_booking_result(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "booking-evidence.txt"
-            barryflights_mcp_client.write_evidence(
-                path,
-                "book_flight",
-                barryflights_mcp_server.format_booking_confirmation("Alex", "SFO", "LAS", "Friday"),
-            )
-
-            text = path.read_text(encoding="utf-8")
-
-        self.assertIn("MCP_TOOL=book_flight", text)
-        self.assertIn("MCP_RESULT=Booked demo hold for Alex on SKY482 from SFO to LAS on Friday.", text)
-
     def test_stdio_mcp_client_calls_status_tool_when_dependency_exists(self):
         try:
             import mcp  # noqa: F401

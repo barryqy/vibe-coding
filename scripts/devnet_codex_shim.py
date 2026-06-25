@@ -156,11 +156,17 @@ def assistant_text(payload: dict) -> str:
     return content if isinstance(content, str) else str(content)
 
 
-def response_text_payload(text: str, *, model: str | None = None, response_id: str = "resp_devnet_codex") -> dict:
+def response_text_payload(
+    text: str,
+    *,
+    model: str | None = None,
+    response_id: str = "resp_devnet_codex",
+    usage: dict | None = None,
+) -> dict:
     return {
         "id": response_id,
         "choices": [{"message": {"content": text}}],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": usage or {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         "model": model or route()["model"],
     }
 
@@ -196,34 +202,45 @@ def function_output(body: dict, call_id: str) -> str | None:
     return None
 
 
-def wants_barryflights_booking(body: dict) -> bool:
+def wants_barryflights_status(body: dict) -> bool:
     text = latest_user_text(body).lower()
-    return "barryflights" in text and "book" in text and "flight" in text
+    return "barryflights" in text and "flight" in text and ("status" in text or "check" in text)
 
 
-def booking_summary(tool_output: str) -> str:
+def local_usage(body: dict, text: str) -> dict[str, int]:
+    prompt_tokens = max(1, len(latest_user_text(body).split()))
+    completion_tokens = max(1, len(text.split()))
+    return {
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": prompt_tokens + completion_tokens,
+    }
+
+
+def status_summary(tool_output: str) -> str:
     lines = [line.strip() for line in tool_output.splitlines() if line.strip()]
-    result = next((line for line in lines if line.startswith("MCP_RESULT=")), "")
     response = next((line for line in lines if line.startswith("response=")), "")
-    if not result and response:
-        result = "MCP_RESULT=" + response.removeprefix("response=")
+    pieces = [part.strip() for part in response.removeprefix("response=").split("|") if part.strip()]
+    result = next((part for part in pieces if part.startswith("Flight ")), "")
+    gate = next((part.removeprefix("Gate:").strip() for part in pieces if part.startswith("Gate:")), "")
+    departure = next((part.removeprefix("Departure:").strip() for part in pieces if part.startswith("Departure:")), "")
     if not result:
-        result = "MCP_RESULT=booking command completed"
+        result = "Flight SKY451 status: check output above"
 
     return "\n".join(
         [
-            "BARRYFLIGHTS_BOOKING=pass",
-            "MCP_TOOL=book_flight",
-            result,
-            "evidence=.lab-state/codex-output/barryflights-booking.txt",
-            "NEXT: build second brain",
+            "BARRYFLIGHTS_STATUS=pass",
+            "MCP_TOOL=flight_status",
+            f"MCP_RESULT={result}",
+            f"MCP_GATE={gate or 'check output'}",
+            f"MCP_DEPARTURE={departure or 'check output'}",
         ]
     )
 
 
-def run_barryflights_booking() -> str:
+def run_barryflights_status() -> str:
     result = subprocess.run(
-        ["/bin/sh", "-lc", barryflights_booking_command()],
+        ["/bin/sh", "-lc", barryflights_status_command()],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -234,12 +251,12 @@ def run_barryflights_booking() -> str:
     if result.returncode != 0:
         return "\n".join(
             [
-                "BARRYFLIGHTS_BOOKING=fail",
+                "BARRYFLIGHTS_STATUS=fail",
                 f"exit_code={result.returncode}",
                 output or "no command output",
             ]
         )
-    return booking_summary(output)
+    return status_summary(output)
 
 
 def stream_function_call(
@@ -342,20 +359,14 @@ def stream_function_call(
     )
 
 
-def barryflights_booking_command() -> str:
+def barryflights_status_command() -> str:
     return "\n".join(
         [
-            "mkdir -p .lab-state/codex-output",
             (
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client "
-                "--tool book_flight "
-                "--traveler Alex "
-                "--origin SFO "
-                "--destination LAS "
-                "--date Friday "
-                "--evidence-file .lab-state/codex-output/barryflights-booking.txt"
+                "--tool flight_status "
+                "--flight SKY451"
             ),
-            "cat .lab-state/codex-output/barryflights-booking.txt",
         ]
     )
 
@@ -500,27 +511,31 @@ class ShimHandler(BaseHTTPRequestHandler):
 
         try:
             request_body = read_json(self)
-            output = function_output(request_body, "call_barryflights_booking")
+            output = function_output(request_body, "call_barryflights_status")
             if output is not None:
+                text = status_summary(output)
                 stream_responses_api(
                     self,
                     request_body,
                     response_text_payload(
-                        booking_summary(output),
+                        text,
                         model=request_body.get("model"),
-                        response_id="resp_devnet_codex_booking_done",
+                        response_id="resp_devnet_codex_status_done",
+                        usage=local_usage(request_body, text),
                     ),
                 )
                 return
 
-            if wants_barryflights_booking(request_body):
+            if wants_barryflights_status(request_body):
+                text = run_barryflights_status()
                 stream_responses_api(
                     self,
                     request_body,
                     response_text_payload(
-                        run_barryflights_booking(),
+                        text,
                         model=request_body.get("model"),
-                        response_id="resp_devnet_codex_booking_direct",
+                        response_id="resp_devnet_codex_status_direct",
+                        usage=local_usage(request_body, text),
                     ),
                 )
                 return
