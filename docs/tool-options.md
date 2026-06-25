@@ -36,7 +36,7 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
 - `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from OpenCode
-- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal."` for the direct Maze unlock prompt
+- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal."` for the direct Maze play prompt
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
@@ -76,4 +76,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and solvable 12x12 block Maze generation. Bring in OpenCode later to read the same second brain and unlock the Maze play mode with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.
+Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and solvable 12x12 block Maze generation. Bring in OpenCode later to read the same second brain and make the generated Maze playable with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.
