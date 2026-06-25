@@ -171,6 +171,24 @@ def load_checked_maze(path: str | None = None) -> tuple[list[str], str, str]:
     return maze, "generated", maze_format
 
 
+def repair_maze_file(path: str | None = None) -> tuple[list[str], str, str]:
+    if not path:
+        return list(DEFAULT_MAZE), "default", "raw"
+
+    maze_path = Path(path)
+    try:
+        maze, maze_format = extract_maze(maze_path.read_text(encoding="utf-8"))
+        source = "generated"
+    except (OSError, ValueError):
+        maze = list(DEFAULT_MAZE)
+        maze_format = "block"
+        source = "default-fallback"
+
+    maze_path.parent.mkdir(parents=True, exist_ok=True)
+    maze_path.write_text(render_tiles(maze) + "\n", encoding="utf-8")
+    return maze, source, maze_format
+
+
 def find_cell(maze: list[str], marker: str) -> tuple[int, int]:
     for y, row in enumerate(maze):
         x = row.find(marker)
@@ -333,6 +351,8 @@ def run_maze_check(maze: list[str], source: str = "generated", maze_format: str 
 
     print("MAZE_CHECK=ready")
     print(f"source={source}")
+    if source == "default-fallback":
+        print("warning=generated-maze-invalid")
     print(f"format={maze_format}")
     print("size=12x12")
     print("border=ok")
@@ -356,11 +376,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Validate a generated maze without re-rendering it",
     )
+    parser.add_argument(
+        "--repair-file",
+        action="store_true",
+        help="Normalize the maze file, or replace invalid output with the starter maze",
+    )
     args = parser.parse_args(argv)
 
     if args.check_only:
         try:
-            maze, source, maze_format = load_checked_maze(args.maze_file)
+            if args.repair_file:
+                maze, source, maze_format = repair_maze_file(args.maze_file)
+            else:
+                maze, source, maze_format = load_checked_maze(args.maze_file)
             run_maze_check(maze, source, maze_format)
         except (OSError, ValueError) as exc:
             print("MAZE_CHECK=fail")
