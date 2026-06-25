@@ -64,7 +64,7 @@ codex mcp add barryflights -- \
   "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
 ```
 
-Then ask Codex to check a flight through BarryFlights:
+Then ask Codex to check a flight through BarryFlights. In the DevNet lab, the Codex adapter calls the local BarryFlights MCP client for this one status-check prompt so the exercise has a stable tool result.
 
 ```bash
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \

@@ -331,11 +331,11 @@ class BarryBotTests(unittest.TestCase):
         self.assertIn("python3 scripts/check_repo.py", answer)
 
     def test_redacts_sensitive_values(self):
-        text = "sk-thisIsFakeButLongEnough user@example.com 111-22-3333 AKIA1111111111111111"  # lab-scanner: ignore
+        text = "sk-thisIsSampleButLongEnough user@example.com 111-22-3333 AKIA1111111111111111"  # lab-scanner: ignore
 
         clean = barrybot.redact_sensitive_text(text)
 
-        self.assertNotIn("sk-thisIsFake", clean)
+        self.assertNotIn("sk-thisIsSample", clean)
         self.assertNotIn("user@example.com", clean)  # lab-scanner: ignore
         self.assertNotIn("111-22-3333", clean)  # lab-scanner: ignore
         self.assertNotIn("AKIA1111111111111111", clean)  # lab-scanner: ignore

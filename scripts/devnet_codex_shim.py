@@ -165,7 +165,7 @@ def response_text_payload(
     return {
         "id": response_id,
         "choices": [{"message": {"content": text}}],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": None,
         "model": model or route()["model"],
     }
 
@@ -339,7 +339,7 @@ def stream_function_call(
         **base_response,
         "status": "completed",
         "output": [done_item],
-        "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+        "usage": None,
     }
     response_event(
         handler,
@@ -461,7 +461,14 @@ def stream_responses_api(handler: BaseHTTPRequestHandler, request_body: dict, pa
         {"type": "response.output_item.done", "output_index": 0, "item": done_item},
     )
 
-    usage = payload.get("usage") or {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    usage = payload.get("usage")
+    response_usage = None
+    if isinstance(usage, dict):
+        response_usage = {
+            "input_tokens": usage.get("prompt_tokens", 0),
+            "output_tokens": usage.get("completion_tokens", 0),
+            "total_tokens": usage.get("total_tokens", 0),
+        }
     completed = {
         "id": response_id,
         "object": "response",
@@ -469,11 +476,7 @@ def stream_responses_api(handler: BaseHTTPRequestHandler, request_body: dict, pa
         "status": "completed",
         "model": model,
         "output": [done_item],
-        "usage": {
-            "input_tokens": usage.get("prompt_tokens", 0),
-            "output_tokens": usage.get("completion_tokens", 0),
-            "total_tokens": usage.get("total_tokens", 0),
-        },
+        "usage": response_usage,
     }
     response_event(
         handler,

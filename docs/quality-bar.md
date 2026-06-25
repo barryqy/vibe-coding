@@ -69,4 +69,4 @@ The demo compares one intentionally unsafe skill with one clean skill. The lesso
 
 ## Security Line
 
-Do not let a coding agent read, print, commit, or summarize secrets. Fake samples are fine. Real tokens, cookies, private keys, cloud credentials, and private customer data are not lab material.
+Do not let a coding agent read, print, commit, or summarize secrets. Purpose-built sample values are fine. Real tokens, cookies, private keys, cloud credentials, and private customer data are not lab material.

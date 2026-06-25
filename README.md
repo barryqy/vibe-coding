@@ -133,6 +133,8 @@ codex mcp add barryflights -- \
 
 Ask Codex to check a flight through BarryFlights:
 
+In the DevNet lab, Codex reaches the supplied model through the repo-local adapter. For this one status-check prompt, the adapter calls the local BarryFlights MCP client so the exercise has a stable tool result. The flight data is a demo dataset.
+
 ```bash
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
     --disable plugins \

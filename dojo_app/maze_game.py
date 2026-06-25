@@ -184,7 +184,6 @@ def run_static_maze(
     print(f"render={render}")
     print(render_maze(maze, render))
     print("MAZE=pass")
-    print("NEXT: install OpenCode")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -203,7 +202,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.play:
         if not PLAY_MODE_ENABLED:
             print("MAZE_PLAY=locked")
-            print("NEXT: ask OpenCode to enable PLAY_MODE_ENABLED")
             return 1
         run_play_maze(maze, args.render)
         return 0

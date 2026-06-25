@@ -157,7 +157,7 @@ def tool_result_fallback(body: dict) -> dict:
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": None,
     }
 
 
@@ -225,8 +225,8 @@ def stream_response(handler: BaseHTTPRequestHandler, request_body: dict, payload
     handler.wfile.write(event_chunk(done))
 
     stream_options = request_body.get("stream_options") or {}
-    if stream_options.get("include_usage"):
-        usage = payload.get("usage") or {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    usage = payload.get("usage")
+    if stream_options.get("include_usage") and isinstance(usage, dict):
         handler.wfile.write(event_chunk({"choices": [], "usage": usage}))
 
     handler.wfile.write(b"data: [DONE]\n\n")

@@ -126,7 +126,6 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("render=tiles", text)
         self.assertIn("██", text)
         self.assertIn("MAZE=pass", text)
-        self.assertIn("NEXT: install OpenCode", text)
 
     def test_static_run_prints_fallback_marker(self):
         output = io.StringIO()
