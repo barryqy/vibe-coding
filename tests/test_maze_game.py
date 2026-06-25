@@ -59,6 +59,12 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(maze, maze_game.DEFAULT_MAZE)
         self.assertEqual(source, "default-fallback")
 
+    def test_lab_loader_falls_back_for_missing_model_output(self):
+        maze, source = maze_game.load_lab_maze("/tmp/maze-output-that-does-not-exist.txt")
+
+        self.assertEqual(maze, maze_game.DEFAULT_MAZE)
+        self.assertEqual(source, "default-fallback")
+
     def test_tile_render_is_readable(self):
         rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE)
 
