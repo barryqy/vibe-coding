@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -20,6 +21,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
+SHIM_VERSION = "maze-mcp-20260625"
 
 
 def route() -> dict[str, str]:
@@ -206,6 +208,13 @@ def wants_barryflights_status(body: dict) -> bool:
     return "barryflights" in text and "flight" in text and ("status" in text or "check" in text)
 
 
+def wants_maze_mcp_build(body: dict) -> bool:
+    text = latest_user_text(body).lower()
+    mentions_maze_mcp = "mazemaker" in text or "maze mcp" in text
+    wants_build = "build" in text or "generate" in text or "create" in text
+    return mentions_maze_mcp and "maze" in text and wants_build
+
+
 def status_summary(tool_output: str) -> str:
     lines = [line.strip() for line in tool_output.splitlines() if line.strip()]
     response = next((line for line in lines if line.startswith("response=")), "")
@@ -246,6 +255,37 @@ def run_barryflights_status() -> str:
             ]
         )
     return status_summary(output)
+
+
+def run_maze_mcp_build(body: dict) -> str:
+    python_bin = ROOT / ".venv" / "bin" / "python"
+    if not python_bin.exists():
+        python_bin = Path(sys.executable)
+
+    result = subprocess.run(
+        [
+            str(python_bin),
+            "-m",
+            "dojo_app.maze_mcp_client",
+            "--maze-file",
+            ".lab-state/codex-output/maze.txt",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    output = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
+    if result.returncode != 0:
+        return "\n".join(
+            [
+                "MAZE_MCP=fail",
+                f"exit_code={result.returncode}",
+                output or "no command output",
+            ]
+        )
+    return output
 
 
 def stream_function_call(
@@ -490,6 +530,9 @@ class ShimHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self) -> None:
+        if self.path.rstrip("/") == "/v1/devnet-shim-info":
+            json_response(self, 200, {"version": SHIM_VERSION})
+            return
         if self.path.rstrip("/") == "/v1/models":
             model = route()["model"]
             json_response(self, 200, {"object": "list", "data": [{"id": model, "object": "model"}]})
@@ -530,6 +573,19 @@ class ShimHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+            if wants_maze_mcp_build(request_body):
+                text = run_maze_mcp_build(request_body)
+                stream_responses_api(
+                    self,
+                    request_body,
+                    response_text_payload(
+                        text,
+                        model=request_body.get("model"),
+                        response_id="resp_devnet_codex_maze_mcp",
+                    ),
+                )
+                return
+
             payload = call_devnet(request_body)
         except urllib.error.HTTPError as exc:
             json_response(self, 400, {"error": {"message": http_error_message(exc)}})
@@ -543,8 +599,64 @@ class ShimHandler(BaseHTTPRequestHandler):
 
 def ready(host: str, port: int) -> bool:
     try:
-        with urllib.request.urlopen(f"http://{host}:{port}/v1/models", timeout=1) as response:
-            return response.status == 200
+        with urllib.request.urlopen(f"http://{host}:{port}/v1/devnet-shim-info", timeout=1) as response:
+            if response.status != 200:
+                return False
+            body = json.loads(response.read().decode("utf-8"))
+            return body.get("version") == SHIM_VERSION
+    except Exception:
+        return False
+
+
+def stop_existing(host: str, port: int) -> None:
+    pids = []
+    if PID.exists():
+        raw = PID.read_text(encoding="utf-8").strip()
+        if raw.isdigit():
+            pids.append(int(raw))
+
+    for command in (
+        ["lsof", "-ti", f"TCP:{port}", "-sTCP:LISTEN"],
+        ["fuser", f"{port}/tcp"],
+    ):
+        try:
+            result = subprocess.run(
+                command,
+                text=True,
+                capture_output=True,
+                timeout=2,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        combined = f"{result.stdout}\n{result.stderr}"
+        for token in combined.replace("\n", " ").split():
+            if token.isdigit():
+                pids.append(int(token))
+
+    for pid in sorted(set(pids)):
+        if pid == os.getpid():
+            continue
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            continue
+        except PermissionError:
+            continue
+
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline:
+        if not port_has_listener(host, port):
+            return
+        time.sleep(0.1)
+
+
+def port_has_listener(host: str, port: int) -> bool:
+    try:
+        with urllib.request.urlopen(f"http://{host}:{port}/v1/models", timeout=0.5):
+            return True
+    except urllib.error.HTTPError:
+        return True
     except Exception:
         return False
 
@@ -553,7 +665,10 @@ def ensure(host: str, port: int) -> int:
     if ready(host, port):
         print("CODEX_MODEL_ADAPTER=ready")
         print(f"local_url=http://{host}:{port}/v1")
+        print(f"shim_version={SHIM_VERSION}")
         return 0
+
+    stop_existing(host, port)
 
     STATE.mkdir(parents=True, exist_ok=True)
     with LOG.open("ab") as log:
@@ -570,6 +685,7 @@ def ensure(host: str, port: int) -> int:
         if ready(host, port):
             print("CODEX_MODEL_ADAPTER=ready")
             print(f"local_url=http://{host}:{port}/v1")
+            print(f"shim_version={SHIM_VERSION}")
             return 0
         time.sleep(0.25)
 

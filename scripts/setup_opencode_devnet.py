@@ -41,6 +41,9 @@ def main() -> int:
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 -m dojo_app.maze_game*": "allow",
+                "python3 -m dojo_app.maze_mcp_client*": "allow",
+                ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
+                ".venv/bin/python -m dojo_app.maze_mcp_client*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
                 "*": "ask",
             },

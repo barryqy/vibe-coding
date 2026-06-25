@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
-5. ask Codex to generate solvable 12x12 Maze data, then verify it
+5. ask Codex to use a local MazeMaker MCP tool, then verify the generated 12x12 Maze data
 6. attach OpenCode to the same KB and make the Maze playable
 7. replay a risky MCP booking, then scan agent skills before trusting them
 
@@ -45,7 +45,9 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can turn a Codex maze plan into checked raw maze data, render an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can check raw maze data, render an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_mcp_server.py` is the local MazeMaker MCP server. `build_maze` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
+- `dojo_app/maze_mcp_client.py` calls that local MazeMaker MCP server over stdio.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -164,30 +166,31 @@ python3 scripts/setup_codex_devnet.py >/dev/null
   --date today
 ```
 
-Generate a tiny Maze plan with Codex, then let the repo build and check an Amaze-style terminal board:
+Ask Codex to use the local MazeMaker MCP tool, then check and render the Amaze-style terminal board:
 
 ```bash
 mkdir -p .lab-state/codex-output
-maze_seed="$(date +%s%N)"
+python3 scripts/setup_codex_devnet.py >/dev/null
+python3 scripts/start_codex_model_adapter.py >/dev/null
+
 CODEX_HOME=.lab-state/codex/home \
 codex exec \
   --disable plugin_sharing \
   --ephemeral \
   --cd "$PWD" \
   --sandbox read-only \
-  --output-last-message .lab-state/codex-output/maze-plan.txt \
-  "Create a tiny Recursive Backtracker maze plan for seed ${maze_seed}.
-Return exactly two lines in this format:
-SEED: ${maze_seed}
-ORDER: NESW
-For ORDER, choose one exact value from: NESW, NWSE, ESWN, WNSE, SWEN, ENWS.
-Do not draw the maze. Do not add markdown or extra text." \
+  --output-last-message .lab-state/codex-output/maze-mcp.txt \
+  "Use the local MazeMaker MCP tool to build a new solvable 12x12 Recursive Backtracker maze.
+Save the maze to .lab-state/codex-output/maze.txt.
+Return only the MazeMaker MCP result." \
   > .lab-state/codex-output/maze-codex.log 2>&1
 
-python3 -m dojo_app.maze_game \
-  --plan-file .lab-state/codex-output/maze-plan.txt \
-  --write-maze .lab-state/codex-output/maze.txt \
-  --check-only
+cat .lab-state/codex-output/maze-mcp.txt
+echo
+grep -q '^MAZE_MCP=pass$' .lab-state/codex-output/maze-mcp.txt
+test -f .lab-state/codex-output/maze.txt
+
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 
 python3 -m dojo_app.maze_game \
   --maze-file .lab-state/codex-output/maze.txt \
