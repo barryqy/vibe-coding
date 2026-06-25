@@ -16,7 +16,7 @@ In this dojo, the Codex path uses:
 - `python3 scripts/setup_codex_devnet.py` to include the local BarryFlights MCP server in the repo-local Codex config before the MCP module
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from Codex
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --output-last-message .lab-state/codex-output/maze.txt "Create 12x12 terminal maze data..."` to create the first maze artifact
-- `python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only` to verify that the saved diagram is valid and solvable
+- `python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only --repair-file` to verify that the saved maze data is valid and solvable
 - `AGENTS.md` for shared project guidance
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
@@ -76,4 +76,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and solvable 12x12 block Maze generation. Bring in OpenCode later to read the same second brain and make the generated Maze playable with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.
+Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and solvable 12x12 Maze data generation. Bring in OpenCode later to read the same second brain and make the generated Maze playable with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.

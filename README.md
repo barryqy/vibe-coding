@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
-5. ask Codex to generate a solvable 12x12 block Maze, then verify it
+5. ask Codex to generate solvable 12x12 Maze data, then verify it
 6. attach OpenCode to the same KB and make the Maze playable
 7. scan credentials, PII, keys, and agent skills before trusting them
 
@@ -161,7 +161,7 @@ codex exec \
   --cd "$PWD" \
   --sandbox read-only \
   --output-last-message .lab-state/codex-output/maze.txt \
-  "Create 12x12 terminal maze data. Return only the maze data. Use recursive backtracking methodology: start from an open cell, carve connected passages, backtrack when stuck, and only return the finished maze. Use exactly 12 lines. Each line must be exactly 12 characters. Use only these characters: # for walls, . for open path, S for start, E for exit. Keep the outer border as # walls. Put S and E inside the border. Do not use spaces, labels, markdown, or any other characters." \
+  "Create 12x12 terminal maze data. Return only the maze data. Use the Recursive Backtracker algorithm, like Amaze's recursivebacktracker option: start from an open cell, keep a path stack, carve to an unvisited neighbor, backtrack when stuck, and only return the finished maze. Use exactly 12 lines. Each line must be exactly 12 characters. Use only these characters: # for walls, . for open path, S for start, E for exit. Keep the outer border as # walls. Put S and E inside the border. Do not use spaces, labels, markdown, or any other characters." \
   > .lab-state/codex-output/maze-codex.log 2>&1 || true
 
 python3 -m dojo_app.maze_game \
