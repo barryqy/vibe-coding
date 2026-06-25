@@ -66,7 +66,7 @@ def load_lab_maze(path: str | None = None) -> tuple[list[str], str]:
 
     try:
         return load_maze(path), "generated"
-    except ValueError:
+    except (OSError, ValueError):
         return list(DEFAULT_MAZE), "default-fallback"
 
 

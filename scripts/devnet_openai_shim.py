@@ -118,6 +118,13 @@ def call_devnet(body: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def http_error_message(exc: urllib.error.HTTPError) -> str:
+    body = exc.read().decode("utf-8", "replace").strip()
+    if body:
+        return f"HTTP {exc.code}: {body[:500]}"
+    return f"HTTP {exc.code}: {exc.reason}"
+
+
 def has_tool_result(body: dict) -> bool:
     for message in body.get("messages", []):
         if message.get("role") == "tool":
@@ -245,13 +252,13 @@ class ShimHandler(BaseHTTPRequestHandler):
         try:
             request_body = read_json(self)
             payload = call_devnet(request_body)
-        except urllib.error.HTTPError:
+        except urllib.error.HTTPError as exc:
             if has_tool_result(request_body):
                 payload = tool_result_fallback(request_body)
             else:
-                json_response(self, 400, {"error": {"message": "HTTPError"}})
+                json_response(self, 400, {"error": {"message": http_error_message(exc)}})
                 return
-        except (RuntimeError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as exc:
+        except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:
             json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
             return
 
