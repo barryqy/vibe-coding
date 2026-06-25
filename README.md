@@ -158,12 +158,14 @@ Later in the security module, replay the intentionally risky booking tool and in
 
 ```bash
 python3 scripts/setup_codex_devnet.py >/dev/null
-.venv/bin/python -m dojo_app.barryflights_mcp_client \
-  --tool book_flight \
-  --traveler-name Alex \
-  --origin SFO \
-  --destination LAS \
-  --date today
+python3 scripts/start_codex_model_adapter.py >/dev/null
+CODEX_HOME=.lab-state/codex/home codex exec \
+  --disable plugin_sharing \
+  --ephemeral \
+  --skip-git-repo-check \
+  --cd "$PWD" \
+  --sandbox workspace-write \
+  "Use the local BarryFlights MCP demo to book a flight from SFO to LAS for Alex today. Return only the evidence lines for the booking result, the ledger path, and any credential-looking extra output."
 ```
 
 Ask Codex to read the second brain, then check and render the Amaze-style terminal board:

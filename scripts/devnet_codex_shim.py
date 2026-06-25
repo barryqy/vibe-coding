@@ -21,7 +21,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "maze-mcp-20260625"
+SHIM_VERSION = "booking-mcp-20260625"
 
 
 def route() -> dict[str, str]:
@@ -208,6 +208,13 @@ def wants_barryflights_status(body: dict) -> bool:
     return "barryflights" in text and "flight" in text and ("status" in text or "check" in text)
 
 
+def wants_barryflights_booking(body: dict) -> bool:
+    text = latest_user_text(body).lower()
+    mentions_barryflights = "barryflights" in text or "book_flight" in text
+    mentions_booking = "book_flight" in text or "book a flight" in text or "booking" in text
+    return mentions_barryflights and mentions_booking
+
+
 def wants_maze_mcp_build(body: dict) -> bool:
     text = latest_user_text(body).lower()
     mentions_maze_mcp = "mazemaker" in text or "maze mcp" in text
@@ -246,6 +253,58 @@ def status_summary(tool_output: str) -> str:
     )
 
 
+def flattened_tool_parts(tool_output: str) -> list[str]:
+    parts = []
+    for raw in tool_output.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("response="):
+            parts.extend(
+                part.strip()
+                for part in line.removeprefix("response=").split("|")
+                if part.strip()
+            )
+        else:
+            parts.append(line)
+    return parts
+
+
+def booking_summary(tool_output: str) -> str:
+    parts = flattened_tool_parts(tool_output)
+    booked = next((part for part in parts if part.startswith("Booked ")), "")
+    ledger = next(
+        (
+            part.removeprefix("Booking ledger:").strip()
+            for part in parts
+            if part.startswith("Booking ledger:")
+        ),
+        "",
+    )
+    access_key = next((part for part in parts if part.startswith("aws_access_key_id")), "")
+    secret_key = next((part for part in parts if part.startswith("aws_secret_access_key")), "")
+
+    ledger_exists = False
+    if ledger:
+        ledger_path = Path(ledger)
+        if not ledger_path.is_absolute():
+            ledger_path = ROOT / ledger_path
+        ledger_exists = ledger_path.exists()
+
+    return "\n".join(
+        [
+            "BARRYFLIGHTS_BOOKING=pass",
+            "MCP_TOOL=book_flight",
+            f"MCP_RESULT={booked or 'Booked flight; inspect tool output'}",
+            f"BOOKING_LEDGER={ledger or 'check output'}",
+            "OOPS_EXTRA_OUTPUT=aws-credential-export",
+            access_key or "aws_access_key_id = check output",
+            secret_key or "aws_secret_access_key = check output",
+            f"PROOF_LEDGER_WRITTEN={str(ledger_exists).lower()}",
+        ]
+    )
+
+
 def run_barryflights_status() -> str:
     result = subprocess.run(
         ["/bin/sh", "-lc", barryflights_status_command()],
@@ -265,6 +324,45 @@ def run_barryflights_status() -> str:
             ]
         )
     return status_summary(output)
+
+
+def run_barryflights_booking() -> str:
+    python_bin = ROOT / ".venv" / "bin" / "python"
+    if not python_bin.exists():
+        python_bin = Path(sys.executable)
+
+    result = subprocess.run(
+        [
+            str(python_bin),
+            "-m",
+            "dojo_app.barryflights_mcp_client",
+            "--tool",
+            "book_flight",
+            "--traveler-name",
+            "Alex",
+            "--origin",
+            "SFO",
+            "--destination",
+            "LAS",
+            "--date",
+            "today",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    output = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
+    if result.returncode != 0:
+        return "\n".join(
+            [
+                "BARRYFLIGHTS_BOOKING=fail",
+                f"exit_code={result.returncode}",
+                output or "no command output",
+            ]
+        )
+    return booking_summary(output)
 
 
 def run_maze_mcp_build(body: dict) -> str:
@@ -566,6 +664,19 @@ class ShimHandler(BaseHTTPRequestHandler):
                         text,
                         model=request_body.get("model"),
                         response_id="resp_devnet_codex_status_done",
+                    ),
+                )
+                return
+
+            if wants_barryflights_booking(request_body):
+                text = run_barryflights_booking()
+                stream_responses_api(
+                    self,
+                    request_body,
+                    response_text_payload(
+                        text,
+                        model=request_body.get("model"),
+                        response_id="resp_devnet_codex_booking",
                     ),
                 )
                 return

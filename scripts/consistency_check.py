@@ -34,6 +34,7 @@ REQUIRED_FILES = [
     Path("scripts/install_ai_tools.sh"),
     Path("scripts/check_repo.py"),
     Path("scripts/devnet_codex_shim.py"),
+    Path("tests/test_devnet_codex_shim.py"),
     Path("scripts/start_codex_model_adapter.py"),
     Path("scripts/setup_codex_devnet.py"),
     Path("scripts/devnet_openai_shim.py"),
@@ -205,6 +206,12 @@ def main() -> int:
     require(
         "[mcp_servers.barryflights]" in codex_setup,
         "setup_codex_devnet.py must include the local BarryFlights MCP server in the repo-local Codex config",
+        errors,
+    )
+    codex_shim = (root / "scripts/devnet_codex_shim.py").read_text(encoding="utf-8")
+    require(
+        "wants_barryflights_booking" in codex_shim and "BARRYFLIGHTS_BOOKING=pass" in codex_shim,
+        "devnet_codex_shim.py must route the risky BarryFlights booking prompt",
         errors,
     )
     require(
