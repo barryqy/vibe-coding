@@ -20,6 +20,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `samples/skills/` contains clean and intentionally unsafe skills for the DefenseClaw admission-gate demo.
 - `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
+- `.second-brain/patterns/maze-mcp.md` tells agents how to create new Maze artifacts with MazeMaker MCP.
 
 ## Working Rules
 
@@ -122,7 +123,7 @@ opencode run \
 python3 -m dojo_app.maze_game
 ```
 
-- To build checked maze data through the local MazeMaker MCP tool, run:
+- To build checked maze data through the second-brain MazeMaker MCP pattern, run:
 
 ```bash
 .venv/bin/python -m dojo_app.maze_mcp_client --maze-file .lab-state/codex-output/maze.txt

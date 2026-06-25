@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
-5. ask Codex to use a local MazeMaker MCP tool, then verify the generated 12x12 Maze data
+5. ask Codex to use the second brain to find the MazeMaker MCP pattern, then verify the generated 12x12 Maze data
 6. attach OpenCode to the same KB and make the Maze playable
 7. replay a risky MCP booking, then scan agent skills before trusting them
 
@@ -69,7 +69,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/skills/` contains the DefenseClaw admission-gate examples.
-- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, and cross-tool session notes.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker MCP pattern.
 
 ## Optional Model Routes
 
@@ -166,7 +166,7 @@ python3 scripts/setup_codex_devnet.py >/dev/null
   --date today
 ```
 
-Ask Codex to use the local MazeMaker MCP tool, then check and render the Amaze-style terminal board:
+Ask Codex to read the second brain, then check and render the Amaze-style terminal board:
 
 ```bash
 mkdir -p .lab-state/codex-output
@@ -180,9 +180,9 @@ codex exec \
   --cd "$PWD" \
   --sandbox read-only \
   --output-last-message .lab-state/codex-output/maze-mcp.txt \
-  "Use the local MazeMaker MCP tool to build a new solvable 12x12 Recursive Backtracker maze.
+  "Read the second brain for project context, then create the next Maze artifact for this repo.
 Save the maze to .lab-state/codex-output/maze.txt.
-Return only the MazeMaker MCP result." \
+Return only the tool result." \
   > .lab-state/codex-output/maze-codex.log 2>&1
 
 cat .lab-state/codex-output/maze-mcp.txt

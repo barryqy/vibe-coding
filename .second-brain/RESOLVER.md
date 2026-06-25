@@ -9,6 +9,10 @@ This folder is shared memory for any coding agent working in this repo.
 3. Read the matching project note under `projects/`.
 4. Search `decisions/` and `patterns/` when the task touches a repeated choice or workflow.
 
+## Known Patterns
+
+- For Maze artifact requests, read `patterns/maze-mcp.md` before acting.
+
 ## Memory Lifecycle
 
 - Recall before rediscovery: check the KB before asking the user to repeat context.

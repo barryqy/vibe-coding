@@ -10,6 +10,7 @@ status: active
 - Codex is installed and connected to the supplied lab model route.
 - Codex can check flight status through the local BarryFlights MCP server.
 - The Maze app can use the local MazeMaker MCP tool to build checked 12x12 maze data and render it as an Amaze-style terminal board.
+- The MazeMaker MCP pattern lives at `.second-brain/patterns/maze-mcp.md`.
 - The Maze app includes a locked play mode that can be enabled by a small code change.
 - The second brain is shared context for any agent that works in this repo.
 
