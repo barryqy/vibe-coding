@@ -9,7 +9,7 @@ The lab teaches a practical loop for AI-assisted coding:
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
 5. ask Codex to generate a solvable 12x12 block Maze, then verify it
-6. attach OpenCode to the same KB and unlock the Maze play mode
+6. attach OpenCode to the same KB and make the Maze playable
 7. scan credentials, PII, keys, and agent skills before trusting them
 
 ## Quick Start
@@ -182,7 +182,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-Then let OpenCode read the same second brain and unlock the Maze play mode:
+Then let OpenCode read the same second brain and make the Maze playable:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -190,7 +190,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Update .second-brain/sessions/current-session.md with what changed; I will run the checks next." \
+  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Then stop." \
   --file dojo_app/maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -210,7 +210,7 @@ python3 -m dojo_app.maze_game --render raw
 After the interactive change, play it:
 
 ```bash
-python3 -m dojo_app.maze_game --play
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 After that, compare both agents with one shared prompt:

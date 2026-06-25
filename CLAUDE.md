@@ -24,7 +24,7 @@ Keep `.second-brain/sessions/current-session.md` current as task state changes, 
 OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should read it before changing the Maze:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Update .second-brain/sessions/current-session.md with what changed; I will run the checks next." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Then stop." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
 ```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:

@@ -101,7 +101,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the second brain and unlock the interactive Maze mode, run a direct prompt:
+- To let OpenCode read the second brain and make the Maze playable, run a direct prompt:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -109,7 +109,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Update .second-brain/sessions/current-session.md with what changed; I will run the checks next." \
+  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Then stop." \
   --file dojo_app/maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -139,10 +139,10 @@ python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --che
 python3 -m dojo_app.maze_game --render raw
 ```
 
-- After OpenCode unlocks interaction, the play command should look like this:
+- After OpenCode makes the Maze playable, the play command should look like this:
 
 ```bash
-python3 -m dojo_app.maze_game --play
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 - To compare Codex and OpenCode on the Maze prompt, run:

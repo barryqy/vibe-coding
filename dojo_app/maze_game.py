@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import os
+import select
+import sys
+import termios
+import time
+import tty
 from pathlib import Path
 
 
@@ -228,6 +234,47 @@ def render_player_maze(
     return render_maze(with_player, render)
 
 
+def read_tty_move(input_stream=sys.stdin, output_stream=sys.stdout) -> str:
+    fd = input_stream.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        output_stream.write("move> ")
+        output_stream.flush()
+        first = os.read(fd, 1).decode(errors="ignore")
+
+        if first == "\x1b":
+            sequence = first
+            deadline = time.monotonic() + 0.2
+            while len(sequence) < 3 and time.monotonic() < deadline:
+                timeout = max(0, deadline - time.monotonic())
+                ready, _, _ = select.select([fd], [], [], timeout)
+                if not ready:
+                    break
+                sequence += os.read(fd, 1).decode(errors="ignore")
+            moves = {
+                "\x1b[A": "up",
+                "\x1b[B": "down",
+                "\x1b[C": "right",
+                "\x1b[D": "left",
+            }
+            output_stream.write("\n")
+            output_stream.flush()
+            return moves.get(sequence, "")
+
+        output_stream.write("\n")
+        output_stream.flush()
+        return first.lower()
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def read_move(input_func=input) -> str:
+    if input_func is input and sys.stdin.isatty():
+        return read_tty_move()
+    return input_func("move> ").strip().lower()
+
+
 def run_play_maze(
     maze: list[str],
     render: str = "tiles",
@@ -238,7 +285,7 @@ def run_play_maze(
     exit_cell = find_cell(maze, "E")
 
     output_func("MAZE_PLAY=ready")
-    output_func("controls=w/a/s/d or up/down/left/right, q to quit")
+    output_func("controls=w/a/s/d or arrow keys, q to quit")
     while True:
         output_func(render_player_maze(maze, position, render))
         if position == exit_cell:
@@ -246,7 +293,7 @@ def run_play_maze(
             output_func("MAZE_PLAY=pass")
             return
 
-        move = input_func("move> ").strip().lower()
+        move = read_move(input_func)
         if move in {"q", "quit", "exit"}:
             output_func("MAZE_PLAY=quit")
             output_func("MAZE_PLAY=pass")
