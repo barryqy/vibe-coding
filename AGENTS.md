@@ -7,7 +7,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It verifies Codex's maze data, normalizes it into an Amaze-style terminal board when needed, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
-- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used to teach tool calls before the security module.
+- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson that returns fake AWS-style sample credentials.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and repo checks.
@@ -126,11 +126,23 @@ python3 -m dojo_app.maze_game
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only --repair-file
 ```
 
-- To verify the local BarryFlights MCP tool path, run:
+- To verify the safe local BarryFlights MCP tool path, run:
 
 ```bash
 .venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
 .venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
+```
+
+- To replay the intentionally risky MCP booking path, run:
+
+```bash
+python3 scripts/setup_codex_devnet.py >/dev/null
+.venv/bin/python -m dojo_app.barryflights_mcp_client \
+  --tool book_flight \
+  --traveler-name Alex \
+  --origin SFO \
+  --destination LAS \
+  --date today
 ```
 
 - To inspect the source maze data, run:
@@ -195,6 +207,6 @@ python3 scripts/defenseclaw_skill_demo.py
 - The DefenseClaw mini-demo passes when skill samples or admission-gate code changed.
 - Agent instructions still match the quality bar.
 - The Maze game runs without hiding credentials, private keys, or network calls.
-- The local BarryFlights MCP server stays clean; risky MCP behavior belongs in the security module.
+- The BarryFlights `flight_status` path stays clean; the intentional `book_flight` risk stays obvious, local, and sample-data-only for the security module.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
 - The current session note in `.second-brain/sessions/current-session.md` reflects the latest task state.
