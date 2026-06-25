@@ -15,6 +15,7 @@ INSTRUCTIONS = [
     ".second-brain/RESOLVER.md",
     ".second-brain/schema.md",
     ".second-brain/projects/vibe-coding-dojo.md",
+    ".second-brain/patterns/maze-mcp.md",
     ".second-brain/sessions/current-session.md",
 ]
 

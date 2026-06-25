@@ -211,8 +211,18 @@ def wants_barryflights_status(body: dict) -> bool:
 def wants_maze_mcp_build(body: dict) -> bool:
     text = latest_user_text(body).lower()
     mentions_maze_mcp = "mazemaker" in text or "maze mcp" in text
+    mentions_kb_maze = (
+        "maze" in text
+        and (
+            "second brain" in text
+            or ".second-brain" in text
+            or "project context" in text
+            or "project memory" in text
+            or "maze artifact" in text
+        )
+    )
     wants_build = "build" in text or "generate" in text or "create" in text
-    return mentions_maze_mcp and "maze" in text and wants_build
+    return (mentions_maze_mcp or mentions_kb_maze) and "maze" in text and wants_build
 
 
 def status_summary(tool_output: str) -> str:

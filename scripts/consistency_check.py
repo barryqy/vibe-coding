@@ -15,6 +15,7 @@ REQUIRED_FILES = [
     Path(".second-brain/RESOLVER.md"),
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
+    Path(".second-brain/patterns/maze-mcp.md"),
     Path(".second-brain/sessions/current-session.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
@@ -73,6 +74,9 @@ def main() -> int:
     resolver_note = (
         root / ".second-brain/RESOLVER.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/RESOLVER.md").exists() else ""
+    maze_pattern = (
+        root / ".second-brain/patterns/maze-mcp.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/maze-mcp.md").exists() else ""
     maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
@@ -101,6 +105,8 @@ def main() -> int:
     require("Decision Note" in schema_note, "schema.md must define decision notes", errors)
     require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
     require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
+    require("patterns/maze-mcp.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker MCP pattern", errors)
+    require("build_maze" in maze_pattern and "MAZE_MCP=pass" in maze_pattern, "maze-mcp.md must describe the MazeMaker tool and pass marker", errors)
     require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
@@ -137,6 +143,11 @@ def main() -> int:
     require(
         ".second-brain/sessions/current-session.md" in instructions,
         "opencode.json must load the current second-brain session note",
+        errors,
+    )
+    require(
+        ".second-brain/patterns/maze-mcp.md" in instructions,
+        "opencode.json must load the MazeMaker MCP pattern",
         errors,
     )
 
@@ -229,6 +240,11 @@ def main() -> int:
     require(
         ".second-brain/sessions/current-session.md" in opencode_setup,
         "setup_opencode_devnet.py must attach the current second-brain session note",
+        errors,
+    )
+    require(
+        ".second-brain/patterns/maze-mcp.md" in opencode_setup,
+        "setup_opencode_devnet.py must attach the MazeMaker MCP pattern",
         errors,
     )
     require(
