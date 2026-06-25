@@ -8,7 +8,7 @@ The lab teaches a practical loop for AI-assisted coding:
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
-5. ask Codex to generate 12x12 Maze data, then render it as a tile board
+5. ask Codex to generate a solvable 12x12 block Maze, then verify it
 6. attach OpenCode to the same KB and unlock the Maze play mode
 7. scan credentials, PII, keys, and agent skills before trusting them
 
@@ -45,7 +45,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's block maze diagram, render a tile board, and keep `--render raw` for debugging the source maze data.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used for the first tool-call lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -150,6 +150,20 @@ printf '%s\n' "$status_output" | awk '
   /^MCP_DEPARTURE=/ && capture { found=1; exit }
   END { if (!found) exit 1 }
 '
+```
+
+Generate a solvable block Maze with Codex, then verify the saved diagram:
+
+```bash
+mkdir -p .lab-state/codex-output
+CODEX_HOME=.lab-state/codex/home \
+codex exec \
+  --cd "$PWD" \
+  --sandbox read-only \
+  --output-last-message .lab-state/codex-output/maze.txt \
+  "Create a 12x12 terminal maze as a block diagram. Return only the solvable diagram. Use █ for walls, space for open path, S for start, and E for exit. Keep the outer border as █ walls. Put S and E inside the border. Do not use dots, labels, markdown, or any other characters."
+
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:

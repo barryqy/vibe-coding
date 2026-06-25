@@ -13,6 +13,10 @@ class MazeGameTests(unittest.TestCase):
     def test_default_maze_is_12_by_12(self):
         self.assertTrue(maze_game.valid_maze_lines(maze_game.DEFAULT_MAZE))
 
+    def test_default_maze_is_solvable(self):
+        self.assertTrue(maze_game.maze_is_solvable(maze_game.DEFAULT_MAZE))
+        self.assertIsInstance(maze_game.shortest_path_length(maze_game.DEFAULT_MAZE), int)
+
     def test_extract_maze_ignores_extra_text(self):
         text = "\n".join(["Here is a maze:", *maze_game.DEFAULT_MAZE, "done"])
 
@@ -22,6 +26,42 @@ class MazeGameTests(unittest.TestCase):
         text = "```text\n" + "\n".join(maze_game.DEFAULT_MAZE) + "\n```"
 
         self.assertEqual(maze_game.extract_maze_lines(text), maze_game.DEFAULT_MAZE)
+
+    def test_extract_maze_accepts_single_block_diagram(self):
+        block = "\n".join(
+            row.replace("#", "█").replace(".", " ") for row in maze_game.DEFAULT_MAZE
+        )
+
+        self.assertEqual(maze_game.extract_maze_lines(block), maze_game.DEFAULT_MAZE)
+        maze, maze_format = maze_game.extract_maze(block)
+        self.assertEqual(maze, maze_game.DEFAULT_MAZE)
+        self.assertEqual(maze_format, "block")
+
+    def test_extract_maze_accepts_tile_diagram(self):
+        tile = maze_game.render_maze(maze_game.DEFAULT_MAZE)
+
+        self.assertEqual(maze_game.extract_maze_lines(tile), maze_game.DEFAULT_MAZE)
+
+    def test_extract_maze_rejects_unsolvable_maze(self):
+        unsolvable = "\n".join(
+            [
+                "############",
+                "#S##########",
+                "############",
+                "############",
+                "############",
+                "############",
+                "############",
+                "############",
+                "############",
+                "############",
+                "##########E#",
+                "############",
+            ]
+        )
+
+        with self.assertRaises(ValueError):
+            maze_game.extract_maze_lines(unsolvable)
 
     def test_find_start_and_exit(self):
         self.assertEqual(maze_game.find_cell(maze_game.DEFAULT_MAZE, "S"), (1, 1))
@@ -137,6 +177,37 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("source=default-fallback", text)
         self.assertIn("warning=generated-maze-invalid", text)
         self.assertIn("MAZE=pass", text)
+
+    def test_check_only_prints_solvable_markers(self):
+        output = io.StringIO()
+        block = "\n".join(
+            row.replace("#", "█").replace(".", " ") for row in maze_game.DEFAULT_MAZE
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "maze.txt"
+            path.write_text(block, encoding="utf-8")
+            with redirect_stdout(output):
+                result = maze_game.main(["--maze-file", str(path), "--check-only"])
+
+        text = output.getvalue()
+        self.assertEqual(result, 0)
+        self.assertIn("MAZE_CHECK=ready", text)
+        self.assertIn("format=block", text)
+        self.assertIn("solvable=yes", text)
+        self.assertIn("MAZE_CHECK=pass", text)
+
+    def test_check_only_fails_bad_diagram(self):
+        output = io.StringIO()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "maze.txt"
+            path.write_text("not a maze", encoding="utf-8")
+            with redirect_stdout(output):
+                result = maze_game.main(["--maze-file", str(path), "--check-only"])
+
+        self.assertEqual(result, 1)
+        self.assertIn("MAZE_CHECK=fail", output.getvalue())
 
 
 if __name__ == "__main__":
