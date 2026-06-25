@@ -120,10 +120,10 @@ opencode run \
 python3 -m dojo_app.maze_game
 ```
 
-- To check Codex-generated maze data and normalize it when needed, run:
+- To check Codex-generated maze data, run:
 
 ```bash
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only --repair-file
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 ```
 
 - To verify the safe local BarryFlights MCP tool path, run:

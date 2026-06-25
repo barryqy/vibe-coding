@@ -17,21 +17,6 @@ class MazeGameTests(unittest.TestCase):
         self.assertTrue(maze_game.maze_is_solvable(maze_game.DEFAULT_MAZE))
         self.assertIsInstance(maze_game.shortest_path_length(maze_game.DEFAULT_MAZE), int)
 
-    def test_recursive_backtracker_maze_is_valid(self):
-        maze = maze_game.generate_recursive_backtracker_maze(seed=7)
-
-        self.assertTrue(maze_game.trusted_maze_lines(maze))
-        self.assertEqual(maze_game.find_cell(maze, "S"), (1, 1))
-        self.assertEqual(maze_game.find_cell(maze, "E"), (10, 10))
-
-    def test_recursive_backtracker_can_make_different_mazes(self):
-        mazes = {
-            "\n".join(maze_game.generate_recursive_backtracker_maze(seed=seed))
-            for seed in range(5)
-        }
-
-        self.assertGreater(len(mazes), 1)
-
     def test_extract_maze_ignores_extra_text(self):
         text = "\n".join(["Here is a maze:", *maze_game.DEFAULT_MAZE, "done"])
 
@@ -89,7 +74,7 @@ class MazeGameTests(unittest.TestCase):
 
             self.assertEqual(maze_game.load_maze(str(path)), maze_game.DEFAULT_MAZE)
 
-    def test_lab_loader_falls_back_for_bad_model_output(self):
+    def test_lab_loader_rejects_bad_model_output(self):
         bad_model_text = "\n".join(
             [
                 "#### ######",
@@ -109,16 +94,12 @@ class MazeGameTests(unittest.TestCase):
             path = Path(tmp) / "maze.txt"
             path.write_text(bad_model_text, encoding="utf-8")
 
-            maze, source = maze_game.load_lab_maze(str(path))
+            with self.assertRaises(ValueError):
+                maze_game.load_lab_maze(str(path))
 
-        self.assertEqual(maze, maze_game.DEFAULT_MAZE)
-        self.assertEqual(source, "default-fallback")
-
-    def test_lab_loader_falls_back_for_missing_model_output(self):
-        maze, source = maze_game.load_lab_maze("/tmp/maze-output-that-does-not-exist.txt")
-
-        self.assertEqual(maze, maze_game.DEFAULT_MAZE)
-        self.assertEqual(source, "default-fallback")
+    def test_lab_loader_rejects_missing_model_output(self):
+        with self.assertRaises(OSError):
+            maze_game.load_lab_maze("/tmp/maze-output-that-does-not-exist.txt")
 
     def test_tile_render_is_readable(self):
         rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE, "tiles")
@@ -199,17 +180,6 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("+---+", text)
         self.assertIn("MAZE=pass", text)
 
-    def test_static_run_prints_fallback_marker(self):
-        output = io.StringIO()
-
-        with redirect_stdout(output):
-            maze_game.run_static_maze(maze_game.DEFAULT_MAZE, source="default-fallback")
-
-        text = output.getvalue()
-        self.assertIn("source=default-fallback", text)
-        self.assertIn("warning=generated-maze-invalid", text)
-        self.assertIn("MAZE=pass", text)
-
     def test_check_only_prints_solvable_markers(self):
         output = io.StringIO()
         block = "\n".join(
@@ -241,7 +211,7 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("MAZE_CHECK=fail", output.getvalue())
 
-    def test_repair_file_replaces_bad_diagram_with_fresh_maze(self):
+    def test_static_cli_fails_bad_diagram(self):
         output = io.StringIO()
         bad_diagram = "\n".join(
             [
@@ -256,22 +226,12 @@ class MazeGameTests(unittest.TestCase):
             path = Path(tmp) / "maze.txt"
             path.write_text(bad_diagram, encoding="utf-8")
             with redirect_stdout(output):
-                result = maze_game.main(
-                    ["--maze-file", str(path), "--check-only", "--repair-file"]
-                )
-
-            repaired = path.read_text(encoding="utf-8")
+                result = maze_game.main(["--maze-file", str(path)])
 
         text = output.getvalue()
-        self.assertEqual(result, 0)
-        self.assertIn("source=repair-generated", text)
-        self.assertIn("warning=generated-maze-invalid", text)
-        self.assertIn("format=raw", text)
-        self.assertIn("MAZE_CHECK=pass", text)
-
-        repaired_maze = maze_game.extract_maze_lines(repaired)
-        self.assertTrue(maze_game.trusted_maze_lines(repaired_maze))
-        self.assertNotEqual(repaired_maze, maze_game.DEFAULT_MAZE)
+        self.assertEqual(result, 1)
+        self.assertIn("MAZE=fail", text)
+        self.assertIn("expected a solvable 12x12 maze", text)
 
 
 if __name__ == "__main__":
