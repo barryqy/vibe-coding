@@ -161,7 +161,7 @@ codex exec \
   --cd "$PWD" \
   --sandbox read-only \
   --output-last-message .lab-state/codex-output/maze.txt \
-  "Create a 12x12 terminal maze as a block diagram. Return only the solvable diagram. Use █ for walls, space for open path, S for start, and E for exit. Keep the outer border as █ walls. Put S and E inside the border. Do not use dots, labels, markdown, or any other characters."
+  "Create a 12x12 terminal maze as a block diagram. Return only the solvable diagram. The logical maze is 12 cells wide and 12 cells tall. Render every cell as exactly two characters: ██ for one wall cell, two spaces for one open path cell, S followed by one space for the start cell, and E followed by one space for the exit cell. Each line must be exactly 24 characters. Keep the outer border as wall cells. Put S and E inside the border. Do not use dots, labels, markdown, or any other characters."
 
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 ```
