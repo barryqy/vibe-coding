@@ -187,6 +187,16 @@ Return only the tool result." \
 
 cat .lab-state/codex-output/maze-mcp.txt
 echo
+
+if ! grep -q '^MAZE_MCP=pass$' .lab-state/codex-output/maze-mcp.txt || [ ! -f .lab-state/codex-output/maze.txt ]; then
+  echo "Codex did not return a MazeMaker result. Running the second-brain MazeMaker pattern now."
+  .venv/bin/python -m dojo_app.maze_mcp_client \
+    --maze-file .lab-state/codex-output/maze.txt \
+    > .lab-state/codex-output/maze-mcp.txt
+  cat .lab-state/codex-output/maze-mcp.txt
+  echo
+fi
+
 grep -q '^MAZE_MCP=pass$' .lab-state/codex-output/maze-mcp.txt
 test -f .lab-state/codex-output/maze.txt
 
