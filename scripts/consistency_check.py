@@ -153,8 +153,8 @@ def main() -> int:
         errors,
     )
     require(
-        "mcp_servers.barryflights" in (root / "scripts/setup_codex_devnet.py").read_text(encoding="utf-8"),
-        "setup_codex_devnet.py must register the local BarryFlights MCP server",
+        "codex mcp add barryflights" in agents,
+        "AGENTS.md must install the local BarryFlights MCP server with codex mcp add",
         errors,
     )
     require(

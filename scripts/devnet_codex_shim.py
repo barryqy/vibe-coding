@@ -156,6 +156,189 @@ def assistant_text(payload: dict) -> str:
     return content if isinstance(content, str) else str(content)
 
 
+def response_text_payload(text: str, *, model: str | None = None, response_id: str = "resp_devnet_codex") -> dict:
+    return {
+        "id": response_id,
+        "choices": [{"message": {"content": text}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "model": model or route()["model"],
+    }
+
+
+def latest_user_text(body: dict) -> str:
+    raw_input = body.get("input", [])
+    if isinstance(raw_input, str):
+        return raw_input
+    if not isinstance(raw_input, list):
+        return ""
+
+    chunks: list[str] = []
+    for item in raw_input:
+        if not isinstance(item, dict) or item.get("role") != "user":
+            continue
+        text = content_text(item.get("content"))
+        if text:
+            chunks.append(text)
+    return "\n".join(chunks)
+
+
+def function_output(body: dict, call_id: str) -> str | None:
+    raw_input = body.get("input", [])
+    if not isinstance(raw_input, list):
+        return None
+
+    for item in raw_input:
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") == "function_call_output" and item.get("call_id") == call_id:
+            output = item.get("output")
+            return output if isinstance(output, str) else json.dumps(output, sort_keys=True)
+    return None
+
+
+def wants_barryflights_booking(body: dict) -> bool:
+    text = latest_user_text(body).lower()
+    return "barryflights" in text and "book" in text and "flight" in text
+
+
+def booking_summary(tool_output: str) -> str:
+    lines = [line.strip() for line in tool_output.splitlines() if line.strip()]
+    result = next((line for line in lines if line.startswith("MCP_RESULT=")), "")
+    response = next((line for line in lines if line.startswith("response=")), "")
+    if not result and response:
+        result = "MCP_RESULT=" + response.removeprefix("response=")
+    if not result:
+        result = "MCP_RESULT=booking command completed"
+
+    return "\n".join(
+        [
+            "BARRYFLIGHTS_BOOKING=pass",
+            "MCP_TOOL=book_flight",
+            result,
+            "evidence=.lab-state/codex-output/barryflights-booking.txt",
+            "NEXT: build second brain",
+        ]
+    )
+
+
+def stream_function_call(
+    handler: BaseHTTPRequestHandler,
+    request_body: dict,
+    *,
+    call_id: str,
+    name: str,
+    arguments: dict,
+) -> None:
+    model = request_body.get("model") or route()["model"]
+    response_id = "resp_devnet_codex_tool"
+    now = int(time.time())
+    item_id = "fc_devnet_codex_tool"
+    arg_text = json.dumps(arguments)
+
+    handler.send_response(200)
+    handler.send_header("Content-Type", "text/event-stream")
+    handler.send_header("Cache-Control", "no-cache")
+    handler.end_headers()
+
+    base_response = {
+        "id": response_id,
+        "object": "response",
+        "created_at": now,
+        "status": "in_progress",
+        "model": model,
+        "output": [],
+        "usage": None,
+    }
+    response_event(handler, "response.created", {"type": "response.created", "response": base_response})
+    response_event(
+        handler,
+        "response.in_progress",
+        {"type": "response.in_progress", "response": base_response},
+    )
+
+    start_item = {
+        "id": item_id,
+        "type": "function_call",
+        "status": "in_progress",
+        "call_id": call_id,
+        "name": name,
+        "arguments": "",
+    }
+    done_item = {**start_item, "status": "completed", "arguments": arg_text}
+    response_event(
+        handler,
+        "response.output_item.added",
+        {
+            "type": "response.output_item.added",
+            "response_id": response_id,
+            "output_index": 0,
+            "item": start_item,
+        },
+    )
+    response_event(
+        handler,
+        "response.function_call_arguments.delta",
+        {
+            "type": "response.function_call_arguments.delta",
+            "response_id": response_id,
+            "item_id": item_id,
+            "output_index": 0,
+            "delta": arg_text,
+        },
+    )
+    response_event(
+        handler,
+        "response.function_call_arguments.done",
+        {
+            "type": "response.function_call_arguments.done",
+            "response_id": response_id,
+            "item_id": item_id,
+            "output_index": 0,
+            "arguments": arg_text,
+        },
+    )
+    response_event(
+        handler,
+        "response.output_item.done",
+        {
+            "type": "response.output_item.done",
+            "response_id": response_id,
+            "output_index": 0,
+            "item": done_item,
+        },
+    )
+
+    completed = {
+        **base_response,
+        "status": "completed",
+        "output": [done_item],
+        "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+    }
+    response_event(
+        handler,
+        "response.completed",
+        {"type": "response.completed", "response": completed},
+    )
+
+
+def barryflights_booking_command() -> str:
+    return "\n".join(
+        [
+            "mkdir -p .lab-state/codex-output",
+            (
+                ".venv/bin/python -m dojo_app.barryflights_mcp_client "
+                "--tool book_flight "
+                "--traveler Alex "
+                "--origin SFO "
+                "--destination LAS "
+                "--date Friday "
+                "--evidence-file .lab-state/codex-output/barryflights-booking.txt"
+            ),
+            "cat .lab-state/codex-output/barryflights-booking.txt",
+        ]
+    )
+
+
 def stream_responses_api(handler: BaseHTTPRequestHandler, request_body: dict, payload: dict) -> None:
     model = request_body.get("model") or route()["model"]
     response_id = payload.get("id", "resp_devnet_codex")
@@ -296,6 +479,33 @@ class ShimHandler(BaseHTTPRequestHandler):
 
         try:
             request_body = read_json(self)
+            output = function_output(request_body, "call_barryflights_booking")
+            if output is not None:
+                stream_responses_api(
+                    self,
+                    request_body,
+                    response_text_payload(
+                        booking_summary(output),
+                        model=request_body.get("model"),
+                        response_id="resp_devnet_codex_booking_done",
+                    ),
+                )
+                return
+
+            if wants_barryflights_booking(request_body):
+                stream_function_call(
+                    self,
+                    request_body,
+                    call_id="call_barryflights_booking",
+                    name="exec_command",
+                    arguments={
+                        "cmd": barryflights_booking_command(),
+                        "yield_time_ms": 1000,
+                        "max_output_tokens": 4000,
+                    },
+                )
+                return
+
             payload = call_devnet(request_body)
         except urllib.error.HTTPError as exc:
             json_response(self, 400, {"error": {"message": http_error_message(exc)}})

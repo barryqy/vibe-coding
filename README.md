@@ -6,7 +6,7 @@ The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
-3. use a local BarryFlights MCP demo to check flight status
+3. install the local BarryFlights MCP demo with Codex CLI and book a demo flight
 4. create a small second brain that Codex and OpenCode can both read
 5. ask Codex to generate 12x12 Maze data, then render it as a tile board
 6. attach OpenCode to the same KB and make the Maze interactive
@@ -121,10 +121,24 @@ python3 scripts/start_codex_model_adapter.py
 CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
-Call the local BarryFlights MCP server:
+Install the local BarryFlights MCP server with Codex CLI:
 
 ```bash
-.venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
+CODEX_HOME=.lab-state/codex/home \
+codex mcp add barryflights -- \
+  "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
+
+CODEX_HOME=.lab-state/codex/home codex mcp list | sed -n '1,20p'
+```
+
+Ask Codex to book a demo flight through BarryFlights:
+
+```bash
+CODEX_HOME=.lab-state/codex/home \
+codex exec \
+  --cd "$PWD" \
+  --sandbox workspace-write \
+  "Use the local BarryFlights MCP demo to book a demo flight from SFO to LAS for Alex on Friday."
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:
