@@ -56,7 +56,23 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 ```
 
-`scripts/setup_codex_devnet.py` also keeps the local BarryFlights MCP server registered in the repo-local Codex home. The lab introduces that server later; do not move risky MCP examples into the first install module.
+`scripts/setup_codex_devnet.py` only creates the repo-local Codex model route. Install the local BarryFlights MCP server with Codex CLI when the lab reaches the MCP module:
+
+```bash
+CODEX_HOME=.lab-state/codex/home \
+codex mcp add barryflights -- \
+  "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
+```
+
+Then ask Codex to book the demo flight through BarryFlights:
+
+```bash
+CODEX_HOME=.lab-state/codex/home \
+codex exec \
+  --cd "$PWD" \
+  --sandbox workspace-write \
+  "Use the local BarryFlights MCP demo to book a demo flight from SFO to LAS for Alex on Friday."
+```
 
 - Later, to install and configure OpenCode for comparison, run:
 

@@ -63,7 +63,14 @@ def normalize_response(text: str) -> str:
 
 def write_evidence(path: Path, tool_name: str, response: str) -> None:
     lines = response.splitlines()
-    first_result = next((line for line in lines if line.startswith("Flight ")), lines[0] if lines else "No MCP content returned")
+    first_result = next(
+        (
+            line
+            for line in lines
+            if line.startswith("Flight ") or line.startswith("Booked ")
+        ),
+        lines[0] if lines else "No MCP content returned",
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\n".join(
