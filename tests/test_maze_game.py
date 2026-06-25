@@ -107,7 +107,9 @@ class MazeGameTests(unittest.TestCase):
 
     def test_tile_render_is_readable(self):
         rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE)
+        lines = rendered.splitlines()
 
+        self.assertTrue(all(len(line) == maze_game.MAZE_SIZE * 2 for line in lines))
         self.assertIn("██", rendered)
         self.assertIn("S ", rendered)
         self.assertIn("E ", rendered)
