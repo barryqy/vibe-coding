@@ -32,6 +32,7 @@ TILE_CELLS = {
     "E": "E ",
     "@": "@ ",
 }
+CLEAR_SCREEN = "\033[2J\033[H"
 PLAY_MODE_ENABLED = False
 DEFAULT_MAZE = [
     "############",
@@ -379,6 +380,17 @@ def read_move(input_func=input) -> str:
     return input_func("move> ").strip().lower()
 
 
+def interactive_screen(output_func=print) -> bool:
+    return output_func is print and sys.stdout.isatty()
+
+
+def clear_screen(output_func=print) -> bool:
+    if not interactive_screen(output_func):
+        return False
+    print(CLEAR_SCREEN, end="")
+    return True
+
+
 def run_play_maze(
     maze: list[str],
     render: str = "amaze",
@@ -387,10 +399,16 @@ def run_play_maze(
 ) -> None:
     position = find_cell(maze, "S")
     exit_cell = find_cell(maze, "E")
+    use_clear = interactive_screen(output_func)
 
-    output_func("MAZE_PLAY=ready")
-    output_func("controls=w/a/s/d or arrow keys, q to quit")
+    if not use_clear:
+        output_func("MAZE_PLAY=ready")
+        output_func("controls=w/a/s/d or arrow keys, q to quit")
     while True:
+        if use_clear:
+            clear_screen(output_func)
+            output_func("MAZE_PLAY=ready")
+            output_func("controls=w/a/s/d or arrow keys, q to quit")
         output_func(render_player_maze(maze, position, render))
         if position == exit_cell:
             output_func("MAZE_PLAY=escaped")

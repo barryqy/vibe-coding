@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from dojo_app import maze_game
 
@@ -215,6 +216,19 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("MAZE_PLAY=ready", text)
         self.assertIn("MAZE_PLAY=quit", text)
         self.assertIn("MAZE_PLAY=pass", text)
+
+    def test_clear_screen_only_runs_for_tty_output(self):
+        self.assertFalse(maze_game.clear_screen(output_func=lambda _text: None))
+
+        class FakeTTY(io.StringIO):
+            def isatty(self):
+                return True
+
+        fake_stdout = FakeTTY()
+        with patch("sys.stdout", fake_stdout):
+            self.assertTrue(maze_game.clear_screen())
+
+        self.assertEqual(fake_stdout.getvalue(), maze_game.CLEAR_SCREEN)
 
     def test_static_run_prints_stable_markers(self):
         output = io.StringIO()
