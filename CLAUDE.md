@@ -10,11 +10,14 @@ Good default loop:
 
 ```bash
 python3 scripts/setup_codex_devnet.py
+.venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
 python3 -m dojo_app.maze_game
 python3 scripts/check_repo.py
 ```
 
 For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` and `tests/test_maze_game.py`.
+
+For the local MCP module, keep the clean BarryFlights MCP server scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. Do not add credential reads, outbound network calls, or hidden exfiltration to the clean server.
 
 Keep `.second-brain/sessions/current-session.md` current as task state changes.
 

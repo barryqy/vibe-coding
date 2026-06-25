@@ -6,7 +6,7 @@ The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
-3. use a live BarryFlights MCP demo to check flight status
+3. use a local BarryFlights MCP demo to check flight status
 4. create a small second brain that Codex and OpenCode can both read
 5. ask Codex to generate 12x12 Maze data, then render it as a tile board
 6. attach OpenCode to the same KB and make the Maze interactive
@@ -18,6 +18,9 @@ The lab teaches a practical loop for AI-assisted coding:
 cd /home/developer/src
 git clone https://github.com/barryqy/vibe-coding.git
 cd vibe-coding
+python3 -m venv .venv
+.venv/bin/python -m pip install -q --upgrade pip
+.venv/bin/python -m pip install -q -r requirements.txt
 if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
   CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
 else
@@ -43,6 +46,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
+- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used for the first tool-call lesson.
+- `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
@@ -114,6 +119,12 @@ In a DevNet lab environment, Codex can use the built-in model route without a pe
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
+```
+
+Call the local BarryFlights MCP server:
+
+```bash
+.venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:

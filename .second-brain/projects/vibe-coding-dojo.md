@@ -13,10 +13,13 @@ This repo is a small AI coding dojo. Codex is used first with the supplied lab m
 
 - `dojo_app/maze_game.py` contains Maze.
 - `tests/test_maze_game.py` contains the direct Maze tests.
+- `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
+- `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
 - `scripts/check_repo.py` is the repo-level verification command.
 
 ## Boundaries
 
 - Keep the game deterministic.
 - Do not add network calls, credential reads, terminal clear codes, or external packages.
+- Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - Keep changes scoped to the game and its direct tests unless the handoff says otherwise.

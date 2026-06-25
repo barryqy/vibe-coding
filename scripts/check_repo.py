@@ -45,6 +45,10 @@ def main() -> int:
         ("Agent instructions match", [sys.executable, "scripts/consistency_check.py"]),
     ]
 
+    venv_python = ROOT / ".venv" / "bin" / "python"
+    if venv_python.exists():
+        checks.insert(1, ("Local MCP smoke passed", [str(venv_python), "-m", "unittest", "tests.test_barryflights_mcp"]))
+
     for name, cmd in checks:
         if not run_step(name, cmd):
             print("REPO_CHECK=fail")

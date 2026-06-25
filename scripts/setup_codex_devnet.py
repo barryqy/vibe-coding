@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 
 
@@ -14,8 +15,37 @@ MODEL_CATALOG = HOME / "model-catalog.json"
 SHIM_BASE_URL = "http://127.0.0.1:8776/v1"
 
 
+def mcp_python() -> Path:
+    venv_python = ROOT / ".venv" / "bin" / "python"
+    if venv_python.exists():
+        return venv_python
+    return Path(sys.executable)
+
+
 def toml_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def mcp_config_text() -> str:
+    return "\n".join(
+        [
+            "[mcp_servers.barryflights]",
+            f"command = {toml_string(str(mcp_python()))}",
+            f"args = [{toml_string(str(ROOT / 'dojo_app' / 'barryflights_mcp_server.py'))}]",
+            "",
+        ]
+    )
+
+
+def ensure_mcp_config() -> None:
+    HOME.mkdir(parents=True, exist_ok=True)
+    if CONFIG.exists():
+        text = CONFIG.read_text(encoding="utf-8")
+        if "[mcp_servers.barryflights]" not in text:
+            CONFIG.write_text(text.rstrip() + "\n\n" + mcp_config_text(), encoding="utf-8")
+        return
+
+    CONFIG.write_text(mcp_config_text(), encoding="utf-8")
 
 
 def model_catalog(model: str) -> dict:
@@ -61,6 +91,7 @@ def main() -> int:
     model = os.getenv("LLM_MODEL", "gpt-4o")
 
     if not base_url or not api_key:
+        ensure_mcp_config()
         print("CODEX_MODEL_ROUTE=skipped")
         print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
         return 0
@@ -88,6 +119,7 @@ def main() -> int:
                 f"base_url = {toml_string(SHIM_BASE_URL)}",
                 'wire_api = "responses"',
                 "",
+                mcp_config_text(),
             ]
         ),
         encoding="utf-8",
