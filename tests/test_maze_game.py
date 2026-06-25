@@ -17,6 +17,21 @@ class MazeGameTests(unittest.TestCase):
         self.assertTrue(maze_game.maze_is_solvable(maze_game.DEFAULT_MAZE))
         self.assertIsInstance(maze_game.shortest_path_length(maze_game.DEFAULT_MAZE), int)
 
+    def test_recursive_backtracker_maze_is_valid(self):
+        maze = maze_game.generate_recursive_backtracker_maze(seed=7)
+
+        self.assertTrue(maze_game.trusted_maze_lines(maze))
+        self.assertEqual(maze_game.find_cell(maze, "S"), (1, 1))
+        self.assertEqual(maze_game.find_cell(maze, "E"), (10, 10))
+
+    def test_recursive_backtracker_can_make_different_mazes(self):
+        mazes = {
+            "\n".join(maze_game.generate_recursive_backtracker_maze(seed=seed))
+            for seed in range(5)
+        }
+
+        self.assertGreater(len(mazes), 1)
+
     def test_extract_maze_ignores_extra_text(self):
         text = "\n".join(["Here is a maze:", *maze_game.DEFAULT_MAZE, "done"])
 
@@ -226,7 +241,7 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("MAZE_CHECK=fail", output.getvalue())
 
-    def test_repair_file_replaces_bad_diagram(self):
+    def test_repair_file_replaces_bad_diagram_with_fresh_maze(self):
         output = io.StringIO()
         bad_diagram = "\n".join(
             [
@@ -249,10 +264,14 @@ class MazeGameTests(unittest.TestCase):
 
         text = output.getvalue()
         self.assertEqual(result, 0)
-        self.assertIn("source=default-fallback", text)
+        self.assertIn("source=repair-generated", text)
         self.assertIn("warning=generated-maze-invalid", text)
+        self.assertIn("format=raw", text)
         self.assertIn("MAZE_CHECK=pass", text)
-        self.assertEqual(maze_game.extract_maze_lines(repaired), maze_game.DEFAULT_MAZE)
+
+        repaired_maze = maze_game.extract_maze_lines(repaired)
+        self.assertTrue(maze_game.trusted_maze_lines(repaired_maze))
+        self.assertNotEqual(repaired_maze, maze_game.DEFAULT_MAZE)
 
 
 if __name__ == "__main__":
