@@ -24,7 +24,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 
 - Keep maze generation checked and repeatable when a fixed seed is used.
 - When a task asks for a new Maze artifact, use the MazeMaker MCP pattern from `.second-brain/patterns/maze-mcp.md`.
-- Do not add network calls, credential reads, terminal clear codes, or external packages.
+- Do not add network calls, credential reads, shell clear commands, curses, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.
 

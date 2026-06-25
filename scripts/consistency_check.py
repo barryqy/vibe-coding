@@ -108,6 +108,7 @@ def main() -> int:
     require("patterns/maze-mcp.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker MCP pattern", errors)
     require("build_maze" in maze_pattern and "MAZE_MCP=pass" in maze_pattern, "maze-mcp.md must describe the MazeMaker tool and pass marker", errors)
     require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
+    require("clear_screen(" in maze_game, "maze_game.py must redraw play mode in an interactive terminal", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
     require("--check-only" in maze_game, "maze_game.py must expose a check-only path for Codex diagrams", errors)
