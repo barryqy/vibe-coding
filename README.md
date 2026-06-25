@@ -30,12 +30,12 @@ fi
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
 if command -v bwrap >/dev/null 2>&1; then
-  echo "CODEX_SANDBOX_HELPER=system"
+  echo "Using the system sandbox helper."
 elif [ -x "$codex_bwrap" ]; then
   ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
-  echo "CODEX_SANDBOX_HELPER=bundled-codex"
+  echo "Using the sandbox helper bundled with Codex."
 else
-  echo "CODEX_SANDBOX_HELPER=not-found"
+  echo "Sandbox helper not found."
 fi
 codex --version
 ```
@@ -100,15 +100,15 @@ else
   npm config set prefix "$HOME/.local"
   npm install -g @openai/codex
 fi
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
 if command -v bwrap >/dev/null 2>&1; then
-  echo "CODEX_SANDBOX_HELPER=system"
+  echo "Using the system sandbox helper."
 elif [ -x "$codex_bwrap" ]; then
   ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
-  echo "CODEX_SANDBOX_HELPER=bundled-codex"
+  echo "Using the sandbox helper bundled with Codex."
 else
-  echo "CODEX_SANDBOX_HELPER=not-found"
+  echo "Sandbox helper not found."
 fi
 codex --version
 ```
