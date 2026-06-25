@@ -15,7 +15,7 @@ python3 -m dojo_app.maze_game
 python3 scripts/check_repo.py
 ```
 
-For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` and `tests/test_maze_game.py`.
+For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` unless the user explicitly asks for test changes.
 
 For the local MCP module, keep the clean BarryFlights MCP server scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. Do not add credential reads, outbound network calls, or hidden exfiltration to the clean server.
 
@@ -24,7 +24,7 @@ Keep `.second-brain/sessions/current-session.md` current as task state changes.
 OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should continue from the current session note:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain. Make the maze interactive so I can play it with arrow keys. Add a --play flag. Preserve run_static_maze, the default tile-rendered static output, and --render raw. Do not run shell commands during the edit; I will run the checks next." --file dojo_app/maze_game.py --file tests/test_maze_game.py --file .second-brain/sessions/current-session.md
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain and implement only the OpenCode Next Task. Keep the change small. Do not remove existing functions. Do not run shell commands during the edit; I will run the checks next." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
 ```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:

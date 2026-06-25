@@ -8,23 +8,21 @@ status: active
 ## Current State
 
 - Codex is installed and connected to the supplied lab model route.
-- The local BarryFlights MCP server returned a clean flight_status result.
-- The second brain now carries the OpenCode task for after the Maze is generated.
+- Codex booked a demo hold through the local BarryFlights MCP server and saved reviewable evidence.
+- The Maze already has a safe locked play mode.
+- The second brain now carries the small OpenCode task for after the Maze is generated.
 
 ## OpenCode Next Task
 
-- Add a `--play` flag to `dojo_app/maze_game.py` so the Maze can be played in the terminal.
-- Keep the existing static path unchanged: do not remove, rename, or replace `run_static_maze`, `render_maze`, `load_lab_maze`, or `main`.
-- Keep `args = parser.parse_args(argv)` in `main` before reading `args.maze_file`, `args.render`, or `args.play`.
-- Add `move_player(maze, position, key)` as a pure helper. Support `w`, `a`, `s`, `d`, `up`, `down`, `left`, and `right`. Never move into `#`.
-- Add `render_player_maze(maze, position, render)` so play mode visibly shows the player as `@` on the board.
-- Add one or two `MazeGameTests` methods for the pure movement/render helpers only. Do not test the input loop.
-- Use simple line input in play mode: show controls, accept `w/a/s/d`, `up/down/left/right`, and `q` to quit.
+- Change only `PLAY_MODE_ENABLED = False` to `PLAY_MODE_ENABLED = True` in `dojo_app/maze_game.py`.
+- Do not edit `tests/test_maze_game.py`.
+- Do not remove, rename, or replace `run_static_maze`, `render_maze`, `load_lab_maze`, `move_player`, `render_player_maze`, `run_play_maze`, or `main`.
+- Do not change command-line flags other than enabling the existing `--play` path.
 - Do not add network calls, credential reads, terminal clear codes, curses, or external packages.
 
 ## Next Action
 
-- Let OpenCode implement the play mode from this shared memory.
+- Let OpenCode unlock play mode from this shared memory.
 - After the edit, run `python3 -m unittest tests.test_maze_game` and `python3 scripts/check_repo.py`.
 
 ## Boundaries

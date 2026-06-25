@@ -79,6 +79,40 @@ class MazeGameTests(unittest.TestCase):
             "\n".join(maze_game.DEFAULT_MAZE),
         )
 
+    def test_move_player_respects_paths_and_walls(self):
+        start = maze_game.find_cell(maze_game.DEFAULT_MAZE, "S")
+
+        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "d"), (2, 1))
+        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "right"), (2, 1))
+        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "a"), start)
+        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "up"), start)
+        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "nonsense"), start)
+
+    def test_render_player_maze_marks_player(self):
+        start = maze_game.find_cell(maze_game.DEFAULT_MAZE, "S")
+        raw = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start, "raw")
+        tiles = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start)
+
+        self.assertIn("@", raw)
+        self.assertNotIn("S", raw)
+        self.assertIn("@ ", tiles)
+        self.assertIn("██", tiles)
+
+    def test_play_loop_can_quit(self):
+        output = io.StringIO()
+        moves = iter(["q"])
+
+        with redirect_stdout(output):
+            maze_game.run_play_maze(
+                maze_game.DEFAULT_MAZE,
+                input_func=lambda _prompt: next(moves),
+            )
+
+        text = output.getvalue()
+        self.assertIn("MAZE_PLAY=ready", text)
+        self.assertIn("MAZE_PLAY=quit", text)
+        self.assertIn("MAZE_PLAY=pass", text)
+
     def test_static_run_prints_stable_markers(self):
         output = io.StringIO()
 
