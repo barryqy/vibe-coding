@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It verifies Codex's block maze diagram, renders a tile board when needed, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It verifies Codex's maze data, normalizes it into a readable tile board when needed, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used to teach tool calls before the security module.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
@@ -120,10 +120,10 @@ opencode run \
 python3 -m dojo_app.maze_game
 ```
 
-- To check a Codex-generated block maze diagram without re-rendering it, run:
+- To check Codex-generated maze data and normalize it when needed, run:
 
 ```bash
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only --repair-file
 ```
 
 - To verify the local BarryFlights MCP tool path, run:

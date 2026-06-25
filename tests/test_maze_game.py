@@ -211,6 +211,34 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("MAZE_CHECK=fail", output.getvalue())
 
+    def test_repair_file_replaces_bad_diagram(self):
+        output = io.StringIO()
+        bad_diagram = "\n".join(
+            [
+                "████████████████████████",
+                "██S  ██      ██      ██",
+                "██  ████  ██  ██  ██  ██",
+                "██      ██  ██      E",
+            ]
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "maze.txt"
+            path.write_text(bad_diagram, encoding="utf-8")
+            with redirect_stdout(output):
+                result = maze_game.main(
+                    ["--maze-file", str(path), "--check-only", "--repair-file"]
+                )
+
+            repaired = path.read_text(encoding="utf-8")
+
+        text = output.getvalue()
+        self.assertEqual(result, 0)
+        self.assertIn("source=default-fallback", text)
+        self.assertIn("warning=generated-maze-invalid", text)
+        self.assertIn("MAZE_CHECK=pass", text)
+        self.assertEqual(maze_game.extract_maze_lines(repaired), maze_game.DEFAULT_MAZE)
+
 
 if __name__ == "__main__":
     unittest.main()

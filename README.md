@@ -45,7 +45,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's block maze diagram, render a tile board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's maze data, normalize it into a readable tile board, and keep `--render raw` for debugging the source maze data.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used for the first tool-call lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -152,7 +152,7 @@ printf '%s\n' "$status_output" | awk '
 '
 ```
 
-Generate a solvable block Maze with Codex, then verify the saved diagram:
+Generate solvable Maze data with Codex, then let the repo normalize it into a readable block board:
 
 ```bash
 mkdir -p .lab-state/codex-output
@@ -161,9 +161,15 @@ codex exec \
   --cd "$PWD" \
   --sandbox read-only \
   --output-last-message .lab-state/codex-output/maze.txt \
-  "Create a 12x12 terminal maze as a block diagram. Return only the solvable diagram. The logical maze is 12 cells wide and 12 cells tall. Render every cell as exactly two characters: ██ for one wall cell, two spaces for one open path cell, S followed by one space for the start cell, and E followed by one space for the exit cell. Each line must be exactly 24 characters. Keep the outer border as wall cells. Put S and E inside the border. Do not use dots, labels, markdown, or any other characters."
+  "Create 12x12 terminal maze data. Return only the maze data. Use exactly 12 lines. Each line must be exactly 12 characters. Use only these characters: # for walls, . for open path, S for start, E for exit. Keep the outer border as # walls. Put S and E inside the border. Do not use spaces, labels, markdown, or any other characters." \
+  > .lab-state/codex-output/maze-codex.log 2>&1 || true
 
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
+python3 -m dojo_app.maze_game \
+  --maze-file .lab-state/codex-output/maze.txt \
+  --check-only \
+  --repair-file
+
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:
