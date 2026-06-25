@@ -45,7 +45,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's maze data, normalize it into a readable tile board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's maze data, normalize it into an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used for the first tool-call lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -152,7 +152,7 @@ printf '%s\n' "$status_output" | awk '
 '
 ```
 
-Generate solvable Maze data with Codex, then let the repo normalize it into a readable block board:
+Generate solvable Maze data with Codex, then let the repo normalize it into an Amaze-style terminal board:
 
 ```bash
 mkdir -p .lab-state/codex-output

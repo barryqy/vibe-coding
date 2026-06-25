@@ -38,7 +38,7 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(maze_format, "block")
 
     def test_extract_maze_accepts_tile_diagram(self):
-        tile = maze_game.render_maze(maze_game.DEFAULT_MAZE)
+        tile = maze_game.render_maze(maze_game.DEFAULT_MAZE, "tiles")
 
         self.assertEqual(maze_game.extract_maze_lines(tile), maze_game.DEFAULT_MAZE)
 
@@ -106,7 +106,7 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(source, "default-fallback")
 
     def test_tile_render_is_readable(self):
-        rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE)
+        rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE, "tiles")
         lines = rendered.splitlines()
 
         self.assertTrue(all(len(line) == maze_game.MAZE_SIZE * 2 for line in lines))
@@ -114,6 +114,18 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("S ", rendered)
         self.assertIn("E ", rendered)
         self.assertNotIn("#", rendered)
+
+    def test_amaze_render_uses_classic_terminal_walls(self):
+        rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE)
+        lines = rendered.splitlines()
+
+        self.assertEqual(len(lines), (maze_game.MAZE_SIZE - 2) * 2 + 1)
+        self.assertTrue(all(len(line) == (maze_game.MAZE_SIZE - 2) * 4 + 1 for line in lines))
+        self.assertTrue(all(line.startswith(("+", "|")) for line in lines))
+        self.assertIn("+---+", rendered)
+        self.assertIn("| S ", rendered)
+        self.assertIn("| E ", rendered)
+        self.assertNotIn("██", rendered)
 
     def test_raw_render_is_available_for_debugging(self):
         self.assertEqual(
@@ -133,10 +145,13 @@ class MazeGameTests(unittest.TestCase):
     def test_render_player_maze_marks_player(self):
         start = maze_game.find_cell(maze_game.DEFAULT_MAZE, "S")
         raw = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start, "raw")
-        tiles = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start)
+        amaze = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start)
+        tiles = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start, "tiles")
 
         self.assertIn("@", raw)
         self.assertNotIn("S", raw)
+        self.assertIn("| @ ", amaze)
+        self.assertIn("+---+", amaze)
         self.assertIn("@ ", tiles)
         self.assertIn("██", tiles)
 
@@ -165,8 +180,8 @@ class MazeGameTests(unittest.TestCase):
         self.assertIn("MAZE=ready", text)
         self.assertIn("mode=static", text)
         self.assertIn("size=12x12", text)
-        self.assertIn("render=tiles", text)
-        self.assertIn("██", text)
+        self.assertIn("render=amaze", text)
+        self.assertIn("+---+", text)
         self.assertIn("MAZE=pass", text)
 
     def test_static_run_prints_fallback_marker(self):
