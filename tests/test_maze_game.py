@@ -101,6 +101,56 @@ class MazeGameTests(unittest.TestCase):
         with self.assertRaises(OSError):
             maze_game.load_lab_maze("/tmp/maze-output-that-does-not-exist.txt")
 
+    def test_maze_plan_generates_trusted_maze(self):
+        seed, order = maze_game.parse_maze_plan("SEED: lab-42\nORDER: NESW\n")
+        maze = maze_game.generate_maze_from_plan(seed, order)
+
+        self.assertTrue(maze_game.trusted_maze_lines(maze))
+        self.assertEqual(maze_game.find_cell(maze, "S"), (1, 1))
+        self.assertEqual(maze_game.find_cell(maze, "E"), (10, 10))
+
+    def test_maze_plan_changes_with_seed(self):
+        first = maze_game.generate_maze_from_plan("lab-42", "NESW")
+        second = maze_game.generate_maze_from_plan("lab-43", "NESW")
+
+        self.assertNotEqual(first, second)
+        self.assertTrue(maze_game.trusted_maze_lines(second))
+
+    def test_maze_plan_rejects_bad_order(self):
+        with self.assertRaises(ValueError):
+            maze_game.parse_maze_plan("SEED: lab-42\nORDER: NNNN\n")
+
+    def test_maze_plan_accepts_order_with_punctuation(self):
+        seed, order = maze_game.parse_maze_plan("SEED: lab-42\nORDER: SWEN.\n")
+
+        self.assertEqual(seed, "lab-42")
+        self.assertEqual(order, "SWEN")
+
+    def test_plan_cli_writes_checked_maze(self):
+        output = io.StringIO()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan_path = Path(tmp) / "maze-plan.txt"
+            maze_path = Path(tmp) / "maze.txt"
+            plan_path.write_text("SEED: lab-42\nORDER: NESW\n", encoding="utf-8")
+            with redirect_stdout(output):
+                result = maze_game.main(
+                    [
+                        "--plan-file",
+                        str(plan_path),
+                        "--write-maze",
+                        str(maze_path),
+                        "--check-only",
+                    ]
+                )
+
+            written_maze = maze_path.read_text(encoding="utf-8")
+
+        self.assertEqual(result, 0)
+        self.assertIn("source=plan", output.getvalue())
+        self.assertIn("format=recursive-backtracker", output.getvalue())
+        self.assertTrue(maze_game.trusted_maze_lines(maze_game.extract_maze_lines(written_maze)))
+
     def test_tile_render_is_readable(self):
         rendered = maze_game.render_maze(maze_game.DEFAULT_MAZE, "tiles")
         lines = rendered.splitlines()

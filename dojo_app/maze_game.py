@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
+import re
 import select
 import sys
 import termios
@@ -12,6 +14,15 @@ from pathlib import Path
 
 MAZE_SIZE = 12
 ALLOWED_CELLS = {"#", ".", "S", "E"}
+ROOM_VALUES = (1, 3, 5, 7, 9)
+ROOMS = {(row, col) for row in ROOM_VALUES for col in ROOM_VALUES}
+MOVE_DELTAS = {
+    "N": (-2, 0),
+    "S": (2, 0),
+    "E": (0, 2),
+    "W": (0, -2),
+}
+PLAN_LINE_RE = re.compile(r"^(SEED|ORDER)\s*[:=]\s*(.+)$", re.IGNORECASE)
 BLOCK_CELLS = {"█": "#", " ": ".", "S": "S", "E": "E"}
 TILE_PAIRS = {"██": "#", "  ": ".", "S ": "S", "E ": "E"}
 TILE_CELLS = {
@@ -146,6 +157,77 @@ def extract_maze(text: str) -> tuple[list[str], str]:
 
 def extract_maze_lines(text: str) -> list[str]:
     return extract_maze(text)[0]
+
+
+def parse_maze_plan(text: str) -> tuple[str, str]:
+    values: dict[str, str] = {}
+    for raw in text.splitlines():
+        match = PLAN_LINE_RE.match(raw.strip())
+        if match:
+            values[match.group(1).upper()] = match.group(2).strip()
+
+    seed = values.get("SEED", "")
+    raw_order = values.get("ORDER", "").upper()
+    order_tokens = re.findall(r"\b[NSEW]{4}\b", raw_order)
+    order = order_tokens[0] if order_tokens else raw_order.replace(" ", "")
+
+    if not seed:
+        raise ValueError("maze plan needs SEED")
+    if len(seed) > 64:
+        raise ValueError("maze plan SEED is too long")
+    if len(order) != 4 or set(order) != set(MOVE_DELTAS):
+        raise ValueError("maze plan ORDER must contain N, S, E, and W once")
+    return seed, order
+
+
+def generate_maze_from_plan(seed: str, order: str) -> list[str]:
+    rng = random.Random(f"{seed}:{order}")
+    rows = [["#"] * MAZE_SIZE for _ in range(MAZE_SIZE)]
+    current = (1, 1)
+    stack = [current]
+    seen = {current}
+    rows[1][1] = "."
+
+    while stack:
+        row, col = stack[-1]
+        choices = []
+        for direction in order:
+            dr, dc = MOVE_DELTAS[direction]
+            next_room = (row + dr, col + dc)
+            if next_room in ROOMS and next_room not in seen:
+                choices.append((direction, next_room))
+
+        if not choices:
+            stack.pop()
+            continue
+
+        direction, next_room = choices[rng.randrange(len(choices))]
+        dr, dc = MOVE_DELTAS[direction]
+        wall_row = row + dr // 2
+        wall_col = col + dc // 2
+        rows[wall_row][wall_col] = "."
+        rows[next_room[0]][next_room[1]] = "."
+        seen.add(next_room)
+        stack.append(next_room)
+
+    rows[1][1] = "S"
+    rows[9][10] = "."
+    rows[10][10] = "E"
+    maze = ["".join(row) for row in rows]
+    if seen != ROOMS or not trusted_maze_lines(maze):
+        raise ValueError("maze plan did not produce a trusted maze")
+    return maze
+
+
+def load_maze_plan(path: str) -> tuple[list[str], str, str]:
+    seed, order = parse_maze_plan(Path(path).read_text(encoding="utf-8"))
+    return generate_maze_from_plan(seed, order), "plan", "recursive-backtracker"
+
+
+def write_maze(path: str, maze: list[str]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("\n".join(maze) + "\n", encoding="utf-8")
 
 
 def load_maze(path: str | None = None) -> list[str]:
@@ -364,6 +446,8 @@ def run_maze_check(maze: list[str], source: str = "generated", maze_format: str 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Print a tiny terminal maze.")
     parser.add_argument("--maze-file", help="Optional file containing a 12x12 maze")
+    parser.add_argument("--plan-file", help="Optional file containing SEED and ORDER lines")
+    parser.add_argument("--write-maze", help="Write the checked raw maze to this path")
     parser.add_argument(
         "--render",
         choices=["amaze", "tiles", "raw"],
@@ -378,9 +462,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    if args.maze_file and args.plan_file:
+        parser.error("use --maze-file or --plan-file, not both")
+
     if args.check_only:
         try:
-            maze, source, maze_format = load_checked_maze(args.maze_file)
+            if args.plan_file:
+                maze, source, maze_format = load_maze_plan(args.plan_file)
+            else:
+                maze, source, maze_format = load_checked_maze(args.maze_file)
+            if args.write_maze:
+                write_maze(args.write_maze, maze)
             run_maze_check(maze, source, maze_format)
         except (OSError, ValueError) as exc:
             print("MAZE_CHECK=fail")
@@ -389,7 +481,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        maze, source = load_lab_maze(args.maze_file)
+        if args.plan_file:
+            maze, source, _maze_format = load_maze_plan(args.plan_file)
+        else:
+            maze, source = load_lab_maze(args.maze_file)
+        if args.write_maze:
+            write_maze(args.write_maze, maze)
     except (OSError, ValueError) as exc:
         print("MAZE=fail")
         print(f"reason={exc}")
