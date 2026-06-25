@@ -36,7 +36,7 @@ else
   npm config set prefix "$HOME/.local"
   npm install -g @openai/codex
 fi
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
 if command -v bwrap >/dev/null 2>&1; then
   echo "CODEX_SANDBOX_HELPER=system"
@@ -56,17 +56,17 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 ```
 
-`scripts/setup_codex_devnet.py` only creates the repo-local Codex model route. Install the local BarryFlights MCP server with Codex CLI when the lab reaches the MCP module:
+`scripts/setup_codex_devnet.py` creates the repo-local Codex model route and includes the local BarryFlights MCP server in that repo-local config. To verify the tool path, run:
 
 ```bash
-CODEX_HOME=.lab-state/codex/home \
-codex mcp add barryflights -- \
-  "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
+python3 scripts/setup_codex_devnet.py >/dev/null
+.venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
 ```
 
 Then ask Codex to check a flight through BarryFlights. In the DevNet lab, the Codex adapter calls the local BarryFlights MCP client for this one status-check prompt so the exercise has a stable tool result.
 
 ```bash
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
     --disable plugins \
     --cd "$PWD" \
