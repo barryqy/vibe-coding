@@ -64,6 +64,12 @@ def main() -> int:
     session_note = (
         root / ".second-brain/sessions/current-session.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/sessions/current-session.md").exists() else ""
+    schema_note = (
+        root / ".second-brain/schema.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/schema.md").exists() else ""
+    resolver_note = (
+        root / ".second-brain/RESOLVER.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/RESOLVER.md").exists() else ""
     maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
@@ -77,10 +83,19 @@ def main() -> int:
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
-    require("OpenCode Next Task" in session_note, "current-session.md must carry the OpenCode next task", errors)
-    require("render_player_maze" in session_note, "current-session.md must ask for visible player rendering", errors)
+    require("schema.md" in agents, "AGENTS.md must tell agents to read the second-brain schema", errors)
+    require("OpenCode Next Task" not in session_note, "current-session.md must stay general, not carry an OpenCode-specific task", errors)
+    require("OpenCode Next Task" not in agents, "AGENTS.md must use a direct prompt, not a hidden OpenCode task note", errors)
+    require("shared context for any agent" in session_note, "current-session.md must describe the second brain as shared agent context", errors)
+    session_lower = session_note.lower()
+    require("current state" in session_lower and "recent work" in session_lower, "current-session.md must keep general session structure", errors)
+    require("open questions" in session_lower and "verification" in session_lower, "current-session.md must include open questions and verification", errors)
+    require("Project Note" in schema_note, "schema.md must define project notes", errors)
+    require("Session Note" in schema_note, "schema.md must define session notes", errors)
+    require("Decision Note" in schema_note, "schema.md must define decision notes", errors)
+    require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
+    require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
     require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
-    require("PLAY_MODE_ENABLED = True" in session_note, "current-session.md must ask OpenCode to unlock play mode", errors)
     require("python3 -m unittest tests.test_maze_game" in session_note, "current-session.md must include the focused Maze test", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
@@ -164,7 +179,7 @@ def main() -> int:
     manual_mcp_command = "codex mcp " + "add barryflights"
     require(
         manual_mcp_command not in agents,
-        "AGENTS.md should not expose manual MCP registration in the learner path",
+        "AGENTS.md should not expose manual MCP registration in the required path",
         errors,
     )
     require(

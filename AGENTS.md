@@ -16,17 +16,18 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `opencode.json` and `AGENTS.md` are the OpenCode path.
 - `CLAUDE.md` and `.claude/settings.json` are the optional Claude Code path for signed-in machines.
 - `samples/skills/` contains clean and intentionally unsafe skills for the DefenseClaw admission-gate demo.
-- `.second-brain/` stores durable decisions, project notes, and short session notes.
-- `.second-brain/sessions/current-session.md` is the current task state shared by Codex, OpenCode, and future sessions.
+- `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
+- `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
 
 ## Working Rules
 
-- Start by reading `README.md`, this file, `docs/quality-bar.md`, `.second-brain/RESOLVER.md`, and `.second-brain/sessions/current-session.md`.
+- Start by reading `README.md`, this file, `docs/quality-bar.md`, `.second-brain/RESOLVER.md`, `.second-brain/schema.md`, and `.second-brain/sessions/current-session.md`.
 - Prefer small patches over sweeping rewrites.
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
 - When a requirement is fuzzy, ask one focused question before changing code.
-- Keep `.second-brain/sessions/current-session.md` current when task state changes. Keep it short: current state, next action, boundaries, and verification.
+- Keep `.second-brain/sessions/current-session.md` current when task state changes. Keep it short: current state, recent work, open questions, boundaries, and verification.
+- Write durable decisions or reusable patterns under `.second-brain/` when future agents should not have to rediscover them.
 - To install and verify Codex for the first required path, run:
 
 ```bash
@@ -100,7 +101,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the current second-brain notes and unlock the interactive Maze mode, run a direct prompt:
+- To let OpenCode read the second brain and unlock the interactive Maze mode, run a direct prompt:
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -108,7 +109,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain and implement only the OpenCode Next Task. Keep the change small. Do not remove existing functions. Do not run shell commands during the edit; I will run the checks next." \
+  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Update .second-brain/sessions/current-session.md with what changed; I will run the checks next." \
   --file dojo_app/maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```

@@ -1,6 +1,6 @@
 # Optional Claude Code Notes
 
-Read `AGENTS.md` first. Then read `.second-brain/RESOLVER.md` and `.second-brain/sessions/current-session.md`. The same quality bar applies here.
+Read `AGENTS.md` first. Then read `.second-brain/RESOLVER.md`, `.second-brain/schema.md`, and `.second-brain/sessions/current-session.md`. The same quality bar applies here.
 
 Claude Code is optional for this DevNet lab because it normally needs personal sign-in. The required path starts with Codex CLI through the supplied DevNet model route, then uses OpenCode later as a comparison tool.
 
@@ -19,12 +19,12 @@ For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` unless th
 
 For the local MCP module, keep the clean BarryFlights MCP server scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. Do not add credential reads, outbound network calls, or hidden exfiltration to the clean server.
 
-Keep `.second-brain/sessions/current-session.md` current as task state changes.
+Keep `.second-brain/sessions/current-session.md` current as task state changes, and write durable decisions or reusable patterns under `.second-brain/` when future agents should not have to rediscover them.
 
-OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should continue from the current session note:
+OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should read it before changing the Maze:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain and implement only the OpenCode Next Task. Keep the change small. Do not remove existing functions. Do not run shell commands during the edit; I will run the checks next." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or terminal clear codes. Update .second-brain/sessions/current-session.md with what changed; I will run the checks next." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
 ```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:
