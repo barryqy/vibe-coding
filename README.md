@@ -6,7 +6,7 @@ The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
-3. install the local BarryFlights MCP demo with Codex CLI and check a flight status
+3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that Codex and OpenCode can both read
 5. ask Codex to generate 12x12 Maze data, then render it as a tile board
 6. attach OpenCode to the same KB and unlock the Maze play mode
@@ -27,7 +27,7 @@ else
   npm config set prefix "$HOME/.local"
   npm install -g @openai/codex
 fi
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
 if command -v bwrap >/dev/null 2>&1; then
   echo "CODEX_SANDBOX_HELPER=system"
@@ -116,18 +116,16 @@ codex --version
 In a DevNet lab environment, Codex can use the built-in model route without a personal model key:
 
 ```bash
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
-Install the local BarryFlights MCP server with Codex CLI:
+Check the local BarryFlights tool that is included with the dojo:
 
 ```bash
-CODEX_HOME=.lab-state/codex/home \
-codex mcp add barryflights -- \
-  "$PWD/.venv/bin/python" "$PWD/dojo_app/barryflights_mcp_server.py"
-
+python3 scripts/setup_codex_devnet.py >/dev/null
 .venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
 ```
 
@@ -136,6 +134,7 @@ Ask Codex to check a flight through BarryFlights:
 In the DevNet lab, Codex reaches the supplied model through the repo-local adapter. For this one status-check prompt, the adapter calls the local BarryFlights MCP client so the exercise has a stable tool result. The flight data is a demo dataset.
 
 ```bash
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
     --disable plugins \
     --cd "$PWD" \

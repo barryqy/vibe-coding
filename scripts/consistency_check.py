@@ -118,7 +118,8 @@ def main() -> int:
 
     bash_perms = ((opencode.get("permission") or {}).get("bash") or {})
     edit_perm = (opencode.get("permission") or {}).get("edit")
-    devnet_setup = (root / "scripts/setup_opencode_devnet.py").read_text(encoding="utf-8")
+    codex_setup = (root / "scripts/setup_codex_devnet.py").read_text(encoding="utf-8")
+    opencode_setup = (root / "scripts/setup_opencode_devnet.py").read_text(encoding="utf-8")
     agent_task = (root / "scripts/agent_code_task.py").read_text(encoding="utf-8")
     require(
         "python3 scripts/defenseclaw_skill_demo.py*" in bash_perms,
@@ -156,8 +157,14 @@ def main() -> int:
         errors,
     )
     require(
-        "codex mcp add barryflights" in agents,
-        "AGENTS.md must install the local BarryFlights MCP server with codex mcp add",
+        "[mcp_servers.barryflights]" in codex_setup,
+        "setup_codex_devnet.py must include the local BarryFlights MCP server in the repo-local Codex config",
+        errors,
+    )
+    manual_mcp_command = "codex mcp " + "add barryflights"
+    require(
+        manual_mcp_command not in agents,
+        "AGENTS.md should not expose manual MCP registration in the learner path",
         errors,
     )
     require(
@@ -171,17 +178,17 @@ def main() -> int:
         errors,
     )
     require(
-        '"edit": "allow"' in devnet_setup and '"webfetch": "deny"' in devnet_setup,
+        '"edit": "allow"' in opencode_setup and '"webfetch": "deny"' in opencode_setup,
         "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping network permissions denied",
         errors,
     )
     require(
-        ".second-brain/sessions/current-session.md" in devnet_setup,
+        ".second-brain/sessions/current-session.md" in opencode_setup,
         "setup_opencode_devnet.py must attach the current second-brain session note",
         errors,
     )
     require(
-        "dojo_app/tasks.py" not in devnet_setup and "tests/test_tasks.py" not in devnet_setup,
+        "dojo_app/tasks.py" not in opencode_setup and "tests/test_tasks.py" not in opencode_setup,
         "setup_opencode_devnet.py still references the old tasks exercise",
         errors,
     )
