@@ -1,53 +1,46 @@
 # KB Schema
 
-Use plain Markdown with light frontmatter.
+Use plain Markdown with light frontmatter. Keep the newest, most useful guidance near the top.
+
+## Project Note
+
+Frontmatter: `type: project`, `status: active`
+
+Headings:
+- `# Project Name`
+- `## Summary`
+- `## Current Files`
+- `## Boundaries`
+- `## Verification`
+
+## Session Note
+
+Frontmatter: `type: session`, `status: active`
+
+Headings:
+- `# Current Session`
+- `## Current State`
+- `## Recent Work`
+- `## Open Questions`
+- `## Boundaries`
+- `## Verification`
 
 ## Decision Note
 
-```markdown
----
-type: decision
-status: active
----
+Frontmatter: `type: decision`, `status: active`
 
-# Decision Title
+Headings:
+- `# Decision Title`
+- `## Decision`
+- `## Why It Matters`
+- `## Evidence`
 
-## Decision
+## Pattern Note
 
-What changed.
+Frontmatter: `type: pattern`, `status: active`
 
-## Why It Matters
-
-Why the next agent should remember it.
-
-## Evidence
-
-- command or file path
-```
-
-## Session Handoff
-
-```markdown
----
-type: session
-status: active
----
-
-# Current Agent Handoff
-
-## Current State
-
-What works right now.
-
-## Next Action
-
-The smallest next task.
-
-## Boundaries
-
-Files, commands, or data the next agent must avoid.
-
-## Verification
-
-The command that proves the task worked.
-```
+Headings:
+- `# Pattern Title`
+- `## When To Use`
+- `## Steps`
+- `## Verification`

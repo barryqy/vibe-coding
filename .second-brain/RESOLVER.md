@@ -1,22 +1,26 @@
 # KB Resolver
 
-Read this before using the second brain.
+This folder is shared memory for any coding agent working in this repo.
 
-## Order
+## Read Order
 
-1. Read `schema.md` for the note shape.
+1. Read `schema.md` to understand the note shapes.
 2. Read `sessions/current-session.md` for the latest task state.
 3. Read the matching project note under `projects/`.
-4. Update `sessions/current-session.md` when the current task state changes.
-5. Add durable choices under `decisions/` when a future session should remember them.
+4. Search `decisions/` and `patterns/` when the task touches a repeated choice or workflow.
 
-Agents keep the current session note fresh as part of normal lifecycle work.
+## Memory Lifecycle
+
+- Recall before rediscovery: check the KB before asking the user to repeat context.
+- Update `sessions/current-session.md` when the current task state changes.
+- Put durable project facts in `projects/`.
+- Put choices that should survive future sessions in `decisions/`.
+- Put reusable workflows or command patterns in `patterns/`.
 
 ## Rules
 
-- Keep notes short and specific.
-- Prefer one current note over several almost-duplicates.
-- Store evidence as commands or file paths, not raw terminal dumps.
-- Never store secrets or private credentials.
-- If a note is only useful during the current exercise, put it in `sessions/`.
-- If a note should survive future exercises, put it in `decisions/` or `projects/`.
+- Keep notes short, concrete, and easy to scan.
+- Prefer updating an existing note over creating near-duplicates.
+- Store evidence as commands, file paths, or short observations, not raw terminal dumps.
+- Never store secrets, raw tokens, cookies, private keys, or one-time credentials.
+- Record what changed and why it matters so another agent can continue without guessing.

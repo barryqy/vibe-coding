@@ -7,7 +7,7 @@ status: active
 
 ## Summary
 
-This repo is a small AI coding dojo. Codex is used first with the supplied lab model route. OpenCode joins later and reads the same second brain before working on the Maze game.
+This repo is a small AI coding dojo. Coding agents use the supplied lab model route, read the same second brain before editing, and keep task state current as they work.
 
 ## Current Files
 
@@ -22,4 +22,8 @@ This repo is a small AI coding dojo. Codex is used first with the supplied lab m
 - Keep the game deterministic.
 - Do not add network calls, credential reads, terminal clear codes, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
-- Keep changes scoped to the game and its direct tests unless the handoff says otherwise.
+- Keep changes scoped to the game and its direct tests unless the current task says otherwise.
+
+## Verification
+
+- python3 scripts/check_repo.py
