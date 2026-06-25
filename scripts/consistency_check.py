@@ -20,6 +20,10 @@ REQUIRED_FILES = [
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
     Path("tests/test_maze_game.py"),
+    Path("dojo_app/barryflights_mcp_server.py"),
+    Path("dojo_app/barryflights_mcp_client.py"),
+    Path("tests/test_barryflights_mcp.py"),
+    Path("requirements.txt"),
     Path("scripts/agent_compare.py"),
     Path("scripts/agent_code_task.py"),
     Path("scripts/barrybot_demo.py"),
@@ -63,6 +67,7 @@ def main() -> int:
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
     require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
     require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
+    require("barryflights_mcp_server.py" in agents, "AGENTS.md must mention the local BarryFlights MCP server", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
     require("Codex" in agents and "scripts/setup_codex_devnet.py" in agents, "AGENTS.md must mention the Codex DevNet setup", errors)
@@ -134,6 +139,16 @@ def main() -> int:
     require(
         "python3 -m dojo_app.maze_game*" in bash_perms,
         "opencode.json must allow the Maze game command",
+        errors,
+    )
+    require(
+        "python3 -m dojo_app.barryflights_mcp_client*" in bash_perms,
+        "opencode.json must allow the local BarryFlights MCP client",
+        errors,
+    )
+    require(
+        "mcp_servers.barryflights" in (root / "scripts/setup_codex_devnet.py").read_text(encoding="utf-8"),
+        "setup_codex_devnet.py must register the local BarryFlights MCP server",
         errors,
     )
     require(

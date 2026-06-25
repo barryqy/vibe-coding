@@ -7,6 +7,8 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
 - `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It renders a tile board by default and keeps `--render raw` for debugging the source maze data.
+- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server used to teach tool calls before the security module.
+- `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
 - `scripts/` contains lab helpers and repo checks.
 - `docs/quality-bar.md` is the shared definition of good work.
@@ -54,6 +56,8 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 ```
 
+`scripts/setup_codex_devnet.py` also keeps the local BarryFlights MCP server registered in the repo-local Codex home. The lab introduces that server later; do not move risky MCP examples into the first install module.
+
 - Later, to install and configure OpenCode for comparison, run:
 
 ```bash
@@ -88,6 +92,13 @@ opencode run \
 
 ```bash
 python3 -m dojo_app.maze_game
+```
+
+- To verify the local BarryFlights MCP tool path, run:
+
+```bash
+.venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
+.venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
 ```
 
 - To inspect the source maze data, run:
@@ -152,5 +163,6 @@ python3 scripts/defenseclaw_skill_demo.py
 - The DefenseClaw mini-demo passes when skill samples or admission-gate code changed.
 - Agent instructions still match the quality bar.
 - The Maze game runs without hiding credentials, private keys, or network calls.
+- The local BarryFlights MCP server stays clean; risky MCP behavior belongs in the security module.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
 - The current session note in `.second-brain/sessions/current-session.md` reflects the latest task state.

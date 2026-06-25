@@ -5,6 +5,13 @@ cd "$repo_root" || exit 1
 
 mkdir -p data .lab-state .second-brain/decisions
 
+if [ ! -d .venv ]; then
+  python3 -m venv .venv
+fi
+
+.venv/bin/python -m pip install -q --upgrade pip
+.venv/bin/python -m pip install -q -r requirements.txt
+
 if [ ! -f data/tasks.json ]; then
   printf '[]\n' > data/tasks.json
 fi

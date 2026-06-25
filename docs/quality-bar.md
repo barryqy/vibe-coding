@@ -11,6 +11,7 @@ Good vibe coding still has a quality bar.
 - Tests and checks are run after the edit.
 - Security-sensitive changes get an extra review.
 - Model routes and data sources are named before the app sends prompts.
+- Local MCP tools are called through an explicit client before they are treated as trusted context.
 - Agent skills and extensions are scanned before they are trusted.
 - Durable decisions are written down once, then reused.
 
@@ -54,6 +55,7 @@ The command checks:
 - unsafe code, secret, and PII patterns are not present in the app or helper scripts
 - agent instructions and tool configs still point at the same workflow
 - Codex and OpenCode model-route helpers stay repo-local under `.lab-state/`
+- the local BarryFlights MCP server can be called without personal credentials
 
 ## DefenseClaw Admission Check
 

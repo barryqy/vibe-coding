@@ -38,7 +38,12 @@ def main() -> int:
         "model": f"devnet/{model}",
         "permission": {
             "edit": "allow",
-            "bash": "ask",
+            "bash": {
+                "python3 -m dojo_app.barryflights_mcp_client*": "allow",
+                "python3 -m dojo_app.maze_game*": "allow",
+                "python3 scripts/check_repo.py*": "allow",
+                "*": "ask",
+            },
             "webfetch": "deny",
             "websearch": "deny",
         },

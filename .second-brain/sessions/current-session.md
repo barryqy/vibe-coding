@@ -8,7 +8,7 @@ status: active
 ## Current State
 
 - Codex starts first with the supplied lab model route.
-- BarryFlights MCP evidence is saved before the Maze work.
+- The local BarryFlights MCP check comes before the Maze work.
 - Agents keep the session note current as task state changes.
 
 ## Next Action
