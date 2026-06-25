@@ -79,7 +79,7 @@ def main() -> int:
     require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
     require("OpenCode Next Task" in session_note, "current-session.md must carry the OpenCode next task", errors)
     require("render_player_maze" in session_note, "current-session.md must ask for visible player rendering", errors)
-    require("PLAY_MODE_ENABLED = False" in maze_game, "maze_game.py must keep play mode locked for the OpenCode exercise", errors)
+    require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
     require("PLAY_MODE_ENABLED = True" in session_note, "current-session.md must ask OpenCode to unlock play mode", errors)
     require("python3 -m unittest tests.test_maze_game" in session_note, "current-session.md must include the focused Maze test", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
