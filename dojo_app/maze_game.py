@@ -185,7 +185,7 @@ def repair_maze_file(path: str | None = None) -> tuple[list[str], str, str]:
         source = "default-fallback"
 
     maze_path.parent.mkdir(parents=True, exist_ok=True)
-    maze_path.write_text(render_tiles(maze) + "\n", encoding="utf-8")
+    maze_path.write_text(render_raw(maze) + "\n", encoding="utf-8")
     return maze, source, maze_format
 
 
@@ -208,10 +208,36 @@ def render_tiles(maze: list[str]) -> str:
     return "\n".join(lines)
 
 
-def render_maze(maze: list[str], mode: str = "tiles") -> str:
+def render_amaze(maze: list[str]) -> str:
+    if len(maze) <= 2 or len(maze[0]) <= 2:
+        return render_raw(maze)
+
+    lines = []
+    for y in range(1, len(maze) - 1):
+        top = ""
+        body = ""
+        row = maze[y]
+        for x in range(1, len(row) - 1):
+            cell = row[x]
+            north_wall = y == 1 or cell == "#" or maze[y - 1][x] == "#"
+            west_wall = x == 1 or cell == "#" or row[x - 1] == "#"
+            marker = cell if cell in {"S", "E", "@"} else " "
+            top += "+" + ("---" if north_wall else "   ")
+            body += ("|" if west_wall else " ") + f" {marker} "
+        lines.append(top + "+")
+        lines.append(body + "|")
+    lines.append("+" + "---+" * (len(maze[0]) - 2))
+    return "\n".join(lines)
+
+
+def render_maze(maze: list[str], mode: str = "amaze") -> str:
     if mode == "raw":
         return render_raw(maze)
-    return render_tiles(maze)
+    if mode == "tiles":
+        return render_tiles(maze)
+    if mode == "amaze":
+        return render_amaze(maze)
+    raise ValueError(f"unsupported render mode: {mode}")
 
 
 def move_player(maze: list[str], position: tuple[int, int], key: str) -> tuple[int, int]:
@@ -243,7 +269,7 @@ def move_player(maze: list[str], position: tuple[int, int], key: str) -> tuple[i
 def render_player_maze(
     maze: list[str],
     position: tuple[int, int],
-    render: str = "tiles",
+    render: str = "amaze",
 ) -> str:
     rows = [list(row) for row in maze]
     x, y = position
@@ -295,7 +321,7 @@ def read_move(input_func=input) -> str:
 
 def run_play_maze(
     maze: list[str],
-    render: str = "tiles",
+    render: str = "amaze",
     input_func=input,
     output_func=print,
 ) -> None:
@@ -325,7 +351,7 @@ def run_play_maze(
 
 def run_static_maze(
     maze: list[str],
-    render: str = "tiles",
+    render: str = "amaze",
     source: str = "generated",
 ) -> None:
     start = find_cell(maze, "S")
@@ -366,9 +392,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--maze-file", help="Optional file containing a 12x12 maze")
     parser.add_argument(
         "--render",
-        choices=["tiles", "raw"],
-        default="tiles",
-        help="Use tiles for a readable board, or raw to inspect the source maze",
+        choices=["amaze", "tiles", "raw"],
+        default="amaze",
+        help="Use amaze for a +---+ board, tiles for block walls, or raw to inspect source data",
     )
     parser.add_argument("--play", action="store_true", help="Play the maze in the terminal")
     parser.add_argument(
