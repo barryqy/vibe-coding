@@ -45,7 +45,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can verify Codex's maze data, normalize it into an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can turn a Codex maze plan into checked raw maze data, render an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
 - `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
@@ -136,7 +136,7 @@ In the DevNet lab, Codex reaches the supplied model through the repo-local adapt
 ```bash
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
-    --disable plugins \
+    --disable plugin_sharing \
     --cd "$PWD" \
     --sandbox read-only \
     "Use the local BarryFlights MCP demo to check the status of flight SKY451." 2>&1)"; then
@@ -164,54 +164,34 @@ python3 scripts/setup_codex_devnet.py >/dev/null
   --date today
 ```
 
-Generate solvable Maze data with Codex, then let the repo normalize it into an Amaze-style terminal board:
+Generate a tiny Maze plan with Codex, then let the repo build and check an Amaze-style terminal board:
 
 ```bash
 mkdir -p .lab-state/codex-output
+maze_seed="$(date +%s%N)"
 CODEX_HOME=.lab-state/codex/home \
 codex exec \
+  --disable plugin_sharing \
+  --ephemeral \
   --cd "$PWD" \
   --sandbox read-only \
-  --output-last-message .lab-state/codex-output/maze.txt \
-  "Generate one valid 12x12 terminal maze.
-Rules:
-- Return only the maze data. No intro. No code fence.
-- Use exactly 12 lines.
-- Each line must be exactly 12 characters.
-- Use only these characters: # for walls, . for open path, S for start, E for exit.
-- Use exactly one S and exactly one E.
-- Keep the outer border as # walls.
-- The first and last line must be all # characters.
-- Every middle line must start and end with #.
-- Put S and E inside the border, not on the border.
-- Use Recursive Backtracker methodology, like Amaze's recursivebacktracker option.
-- Plan with zero-based row,column positions from 0 through 11.
-- Keep rows 0 and 11, and columns 0 and 11, as #.
-- Treat odd inside coordinates as rooms: rows 1,3,5,7,9 and columns 1,3,5,7,9.
-- Start at room 1,1, keep a stack, move two cells to an unvisited room, carve the wall cell between rooms, and backtrack when stuck.
-- Use # for uncarved walls and . for carved passages.
-- Put S at row 1, column 1.
-- Put E at row 10, column 10.
-- Make row 9, column 10 or row 10, column 9 a . connector so E is connected to the carved passages.
-- Make S and E connected through carved passages.
-- Leave enough # walls inside the border so it looks like a maze, not an open room.
-- Do not use spaces, labels, markdown, or any other characters.
-- Before your final answer, perform this self-check:
-  1. Count exactly 12 lines.
-  2. Count exactly 12 characters on every line.
-  3. Confirm only #, ., S, and E are present.
-  4. Confirm there is exactly one S and one E.
-  5. Confirm every border cell is #.
-  6. Mentally flood-fill from S through . cells and confirm E is reachable.
-- If any self-check fails, fix the maze before answering.
-- Output only the solvable maze data." \
+  --output-last-message .lab-state/codex-output/maze-plan.txt \
+  "Create a tiny Recursive Backtracker maze plan for seed ${maze_seed}.
+Return exactly two lines in this format:
+SEED: ${maze_seed}
+ORDER: NESW
+For ORDER, choose one exact value from: NESW, NWSE, ESWN, WNSE, SWEN, ENWS.
+Do not draw the maze. Do not add markdown or extra text." \
   > .lab-state/codex-output/maze-codex.log 2>&1
 
 python3 -m dojo_app.maze_game \
-  --maze-file .lab-state/codex-output/maze.txt \
+  --plan-file .lab-state/codex-output/maze-plan.txt \
+  --write-maze .lab-state/codex-output/maze.txt \
   --check-only
 
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt
+python3 -m dojo_app.maze_game \
+  --maze-file .lab-state/codex-output/maze.txt \
+  --render amaze
 ```
 
 Later in the lab, install OpenCode and point it at the same model route for comparison:

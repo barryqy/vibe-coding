@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It verifies Codex's maze data, normalizes it into an Amaze-style terminal board when needed, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
+- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It turns a Codex maze plan into validated raw maze data, renders an Amaze-style terminal board, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson that returns fake AWS-style sample credentials.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
@@ -69,7 +69,7 @@ Then ask Codex to check a flight through BarryFlights. In the DevNet lab, the Co
 ```bash
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
 if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
-    --disable plugins \
+    --disable plugin_sharing \
     --cd "$PWD" \
     --sandbox read-only \
     "Use the local BarryFlights MCP demo to check the status of flight SKY451." 2>&1)"; then
@@ -120,10 +120,13 @@ opencode run \
 python3 -m dojo_app.maze_game
 ```
 
-- To check Codex-generated maze data, run:
+- To turn a Codex maze plan into checked maze data, run:
 
 ```bash
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
+python3 -m dojo_app.maze_game \
+  --plan-file .lab-state/codex-output/maze-plan.txt \
+  --write-maze .lab-state/codex-output/maze.txt \
+  --check-only
 ```
 
 - To verify the safe local BarryFlights MCP tool path, run:
