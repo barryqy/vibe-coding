@@ -34,7 +34,7 @@ For the DefenseClaw mini-module, keep the scanner path explicit:
 python3 scripts/defenseclaw_skill_demo.py
 ```
 
-For this lab, do not approve commands that read `.env`, `.env.*`, `secrets/`, browser profiles, SSH keys, or cloud credentials. Use fake sample data only.
+For this lab, do not approve commands that read `.env`, `.env.*`, `secrets/`, browser profiles, SSH keys, or cloud credentials. Use sample data only.
 
 When you finish a meaningful fix or decision, create a short note:
 

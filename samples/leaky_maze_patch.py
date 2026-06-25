@@ -3,10 +3,10 @@ from __future__ import annotations
 
 MAZE_DEBUG_NOTES = """
 Temporary shortcut for testing the maze loader:
-- API key: sk-thisIsAFakeMazeKey1234567890
+- API key: sk-sampleMazeKeyDoNotUse1234567890
 - SSH key:
 -----BEGIN OPENSSH PRIVATE KEY-----
-fake-training-key-do-not-use
+sample-training-key-do-not-use
 -----END OPENSSH PRIVATE KEY-----
 """
 
