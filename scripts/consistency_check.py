@@ -123,6 +123,8 @@ def main() -> int:
     require("from dojo_app.maze_play import run_play_maze" in maze_game, "maze_game.py must dispatch play mode through dojo_app/maze_play.py", errors)
     require("run_play_maze(maze, render_maze, args.render)" in maze_game, "maze_game.py must pass the renderer into the scoped play module", errors)
     require("def run_play_maze(" in maze_play, "maze_play.py must expose the OpenCode play entrypoint", errors)
+    require("def choose_next_position(" in maze_play, "maze_play.py must expose the OpenCode movement entrypoint", errors)
+    require("OpenCode will replace this movement function" in maze_play, "maze_play.py must keep the visible movement TODO", errors)
     require("render_maze" in maze_play, "maze_play.py must keep the renderer callback boundary", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)

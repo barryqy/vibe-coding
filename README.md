@@ -236,7 +236,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Keep exactly one run_play_maze definition and preserve this signature: run_play_maze(maze, render_maze, render='amaze') -> int. Replace only the body of the existing function. Build a playable terminal Maze loop: find S as the player start, show the player as @ in a display copy, print(render_maze(display_maze, render)) after each move, use w/a/s/d for movement, q to quit, # as walls, and E as the win tile. Print MAZE_PLAY=ready at start, MAZE_PLAY=quit when q is pressed, and MAZE_PLAY=pass before returning 0. After editing, run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then run printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Fix the code before stopping unless that smoke test prints MAZE_PLAY=pass. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add another def run_play_maze line. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Replace only the body of choose_next_position(maze, position, command). Do not edit run_play_maze; it already handles input, rendering, quit, and return codes. Implement w/a/s/d movement: w=(-1,0), s=(1,0), a=(0,-1), d=(0,1). If the target is outside the maze or is #, return the current position. Otherwise return the target position. After editing, run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then run printf 'd\nq\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Fix the code before stopping unless that smoke test exits cleanly and prints MAZE_PLAY=quit. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
   --file dojo_app/maze_play.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -257,7 +257,7 @@ After the interactive change, play it:
 
 ```bash
 python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
-printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
+printf 'd\nq\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 After that, compare both agents with one shared prompt:
