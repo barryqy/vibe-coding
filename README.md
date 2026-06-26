@@ -235,7 +235,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain for project context. Turn the existing static Maze renderer into a playable terminal Maze. Implement real movement for w/a/s/d and q to quit, mark the player with @, redraw the board during real terminal play without shelling out to clear, keep the existing static render and check-only behavior working, and support piped input such as printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
   --file dojo_app/maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -255,7 +255,7 @@ python3 -m dojo_app.maze_game --render raw
 After the interactive change, play it:
 
 ```bash
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
+printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 After that, compare both agents with one shared prompt:

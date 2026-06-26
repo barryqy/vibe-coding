@@ -1,14 +1,8 @@
 from __future__ import annotations
 
 import argparse
-import os
 import random
 import re
-import select
-import sys
-import termios
-import time
-import tty
 from pathlib import Path
 
 
@@ -32,8 +26,6 @@ TILE_CELLS = {
     "E": "E ",
     "@": "@ ",
 }
-CLEAR_SCREEN = "\033[2J\033[H"
-PLAY_MODE_ENABLED = False
 DEFAULT_MAZE = [
     "############",
     "#S.........#",
@@ -301,132 +293,6 @@ def render_maze(maze: list[str], mode: str = "amaze") -> str:
     raise ValueError(f"unsupported render mode: {mode}")
 
 
-def move_player(maze: list[str], position: tuple[int, int], key: str) -> tuple[int, int]:
-    moves = {
-        "w": (0, -1),
-        "up": (0, -1),
-        "s": (0, 1),
-        "down": (0, 1),
-        "a": (-1, 0),
-        "left": (-1, 0),
-        "d": (1, 0),
-        "right": (1, 0),
-    }
-    delta = moves.get(key.strip().lower())
-    if not delta:
-        return position
-
-    next_x = position[0] + delta[0]
-    next_y = position[1] + delta[1]
-    if next_y < 0 or next_y >= len(maze):
-        return position
-    if next_x < 0 or next_x >= len(maze[next_y]):
-        return position
-    if maze[next_y][next_x] == "#":
-        return position
-    return next_x, next_y
-
-
-def render_player_maze(
-    maze: list[str],
-    position: tuple[int, int],
-    render: str = "amaze",
-) -> str:
-    rows = [list(row) for row in maze]
-    x, y = position
-    rows[y][x] = "@"
-    with_player = ["".join(row) for row in rows]
-    return render_maze(with_player, render)
-
-
-def read_tty_move(input_stream=sys.stdin, output_stream=sys.stdout) -> str:
-    fd = input_stream.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setcbreak(fd)
-        output_stream.write("move> ")
-        output_stream.flush()
-        first = os.read(fd, 1).decode(errors="ignore")
-
-        if first == "\x1b":
-            sequence = first
-            deadline = time.monotonic() + 0.2
-            while len(sequence) < 3 and time.monotonic() < deadline:
-                timeout = max(0, deadline - time.monotonic())
-                ready, _, _ = select.select([fd], [], [], timeout)
-                if not ready:
-                    break
-                sequence += os.read(fd, 1).decode(errors="ignore")
-            moves = {
-                "\x1b[A": "up",
-                "\x1b[B": "down",
-                "\x1b[C": "right",
-                "\x1b[D": "left",
-            }
-            output_stream.write("\n")
-            output_stream.flush()
-            return moves.get(sequence, "")
-
-        output_stream.write("\n")
-        output_stream.flush()
-        return first.lower()
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-
-def read_move(input_func=input) -> str:
-    if input_func is input and sys.stdin.isatty():
-        return read_tty_move()
-    return input_func("move> ").strip().lower()
-
-
-def interactive_screen(output_func=print) -> bool:
-    return output_func is print and sys.stdout.isatty()
-
-
-def clear_screen(output_func=print) -> bool:
-    if not interactive_screen(output_func):
-        return False
-    print(CLEAR_SCREEN, end="")
-    return True
-
-
-def run_play_maze(
-    maze: list[str],
-    render: str = "amaze",
-    input_func=input,
-    output_func=print,
-) -> None:
-    position = find_cell(maze, "S")
-    exit_cell = find_cell(maze, "E")
-    use_clear = interactive_screen(output_func)
-
-    if not use_clear:
-        output_func("MAZE_PLAY=ready")
-        output_func("controls=w/a/s/d or arrow keys, q to quit")
-    while True:
-        if use_clear:
-            clear_screen(output_func)
-            output_func("MAZE_PLAY=ready")
-            output_func("controls=w/a/s/d or arrow keys, q to quit")
-        output_func(render_player_maze(maze, position, render))
-        if position == exit_cell:
-            output_func("MAZE_PLAY=escaped")
-            output_func("MAZE_PLAY=pass")
-            return
-
-        move = read_move(input_func)
-        if move in {"q", "quit", "exit"}:
-            output_func("MAZE_PLAY=quit")
-            output_func("MAZE_PLAY=pass")
-            return
-
-        new_position = move_player(maze, position, move)
-        if new_position == position:
-            output_func("move=blocked")
-        position = new_position
-
-
 def run_static_maze(
     maze: list[str],
     render: str = "amaze",
@@ -511,11 +377,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.play:
-        if not PLAY_MODE_ENABLED:
-            print("MAZE_PLAY=locked")
-            return 1
-        run_play_maze(maze, args.render)
-        return 0
+        print("MAZE_PLAY=not-implemented")
+        print("reason=OpenCode will add the playable loop in the next lab step")
+        return 1
 
     run_static_maze(maze, args.render, source)
     return 0

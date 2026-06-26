@@ -11,7 +11,7 @@ status: active
 - Codex can check flight status through the local BarryFlights MCP server.
 - The Maze app can use the repo-local MazeMaker skill to build checked 12x12 maze data and render it as an Amaze-style terminal board.
 - The MazeMaker skill pattern lives at `.second-brain/patterns/mazemaker-skill.md`.
-- The Maze app includes a locked play mode that can be enabled by a small code change; play mode redraws the board on each move in a real terminal.
+- The Maze app is static-only right now; `--play` returns `MAZE_PLAY=not-implemented` until a coding agent adds the movement loop.
 - The second brain is shared context for any agent that works in this repo.
 
 ## Recent Work
@@ -27,7 +27,7 @@ status: active
 
 - Do not store secrets or one-time credentials in the second brain.
 - Keep Maze changes small and reviewable.
-- Do not add network calls, credential reads, shell clear commands, curses, or external packages to the Maze game.
+- Do not add feature flags, network calls, credential reads, shell clear commands, curses, or external packages to the Maze game.
 
 ## Verification
 

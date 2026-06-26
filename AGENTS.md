@@ -6,7 +6,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used for the main Codex exercise. It turns MazeMaker output into validated raw maze data, renders an Amaze-style terminal board, keeps `--render raw` for debugging source maze data, and has a locked `--play` mode that OpenCode enables later.
+- `dojo_app/maze_game.py` is the tiny terminal Maze app used for the main Codex exercise. It turns MazeMaker output into validated raw maze data, renders an Amaze-style terminal board, keeps `--render raw` for debugging source maze data, and starts with a static-only `--play` placeholder that OpenCode implements later.
 - `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill. Its bundled `scripts/build_maze.py` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson that returns fake AWS-style sample credentials.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
@@ -103,7 +103,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the second brain and make the Maze playable, run a direct prompt:
+- To let OpenCode read the second brain and make the Maze playable, run a direct prompt. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -111,7 +111,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Make the Maze interactive so I can play it in the terminal. Keep the change small and use the existing play-mode path. Do not add external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain for project context. Turn the existing static Maze renderer into a playable terminal Maze. Implement real movement for w/a/s/d and q to quit, mark the player with @, redraw the board during real terminal play without shelling out to clear, keep the existing static render and check-only behavior working, and support piped input such as printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
   --file dojo_app/maze_game.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -156,10 +156,10 @@ CODEX_HOME=.lab-state/codex/home codex exec \
 python3 -m dojo_app.maze_game --render raw
 ```
 
-- After OpenCode makes the Maze playable, the play command should look like this:
+- After OpenCode makes the Maze playable, the smoke command should show `MAZE_PLAY=pass`:
 
 ```bash
-python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
+printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 - To compare Codex and OpenCode on the Maze prompt, run:
