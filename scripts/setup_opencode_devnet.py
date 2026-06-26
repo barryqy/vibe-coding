@@ -38,10 +38,14 @@ def main() -> int:
         "instructions": INSTRUCTIONS,
         "model": f"devnet/{model}",
         "permission": {
-            "edit": "allow",
+            "edit": {
+                "*": "deny",
+                "dojo_app/maze_play.py": "allow",
+            },
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 -m dojo_app.maze_game*": "allow",
+                "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
                 "python3 skills/mazemaker/scripts/build_maze.py*": "allow",
                 "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
@@ -77,7 +81,7 @@ def main() -> int:
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
     print("kb=.second-brain")
-    print("edit_permission=allow")
+    print("edit_permission=dojo_app/maze_play.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 

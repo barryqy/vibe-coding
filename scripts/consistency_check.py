@@ -20,6 +20,7 @@ REQUIRED_FILES = [
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
+    Path("dojo_app/maze_play.py"),
     Path("skills/mazemaker/SKILL.md"),
     Path("skills/mazemaker/scripts/build_maze.py"),
     Path("skills/mazemaker/agents/openai.yaml"),
@@ -80,6 +81,7 @@ def main() -> int:
         root / ".second-brain/patterns/mazemaker-skill.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/mazemaker-skill.md").exists() else ""
     maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
+    maze_play = (root / "dojo_app/maze_play.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_play.py").exists() else ""
     mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
     mazemaker_script = (root / "skills/mazemaker/scripts/build_maze.py").read_text(encoding="utf-8") if (root / "skills/mazemaker/scripts/build_maze.py").exists() else ""
 
@@ -116,7 +118,12 @@ def main() -> int:
     old_mazemaker_label = "MazeMaker " + "MCP"
     require(old_mazemaker_label not in agents + resolver_note + maze_pattern + session_note, "MazeMaker should be described as a skill only", errors)
     require("PLAY_MODE_ENABLED" not in maze_game, "maze_game.py must not hide play mode behind a switch", errors)
+    require("PLAY_MODE_ENABLED" not in maze_play, "maze_play.py must not hide play mode behind a switch", errors)
     require("--play" in maze_game, "maze_game.py must expose a play flag for the OpenCode exercise", errors)
+    require("from dojo_app.maze_play import run_play_maze" in maze_game, "maze_game.py must dispatch play mode through dojo_app/maze_play.py", errors)
+    require("run_play_maze(maze, render_maze, args.render)" in maze_game, "maze_game.py must pass the renderer into the scoped play module", errors)
+    require("def run_play_maze(" in maze_play, "maze_play.py must expose the OpenCode play entrypoint", errors)
+    require("render_maze" in maze_play, "maze_play.py must keep the renderer callback boundary", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
     require("--check-only" in maze_game, "maze_game.py must expose a check-only path for Codex diagrams", errors)
@@ -191,6 +198,11 @@ def main() -> int:
         errors,
     )
     require(
+        "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*" in bash_perms,
+        "opencode.json must allow the focused Maze syntax check",
+        errors,
+    )
+    require(
         "python3 -m dojo_app.maze_game*" in bash_perms,
         "opencode.json must allow the Maze game command",
         errors,
@@ -237,13 +249,15 @@ def main() -> int:
         errors,
     )
     require(
-        edit_perm == "allow",
-        "opencode.json must allow edits so noninteractive OpenCode lab prompts do not hang",
+        isinstance(edit_perm, dict)
+        and edit_perm.get("*") == "deny"
+        and edit_perm.get("dojo_app/maze_play.py") == "allow",
+        "opencode.json must restrict OpenCode edits to dojo_app/maze_play.py",
         errors,
     )
     require(
-        '"edit": "allow"' in opencode_setup and '"webfetch": "deny"' in opencode_setup,
-        "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping network permissions denied",
+        '"dojo_app/maze_play.py": "allow"' in opencode_setup and '"webfetch": "deny"' in opencode_setup,
+        "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping edits scoped and network permissions denied",
         errors,
     )
     require(

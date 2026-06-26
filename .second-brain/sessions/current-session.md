@@ -11,7 +11,8 @@ status: active
 - Codex can check flight status through the local BarryFlights MCP server.
 - The Maze app can use the repo-local MazeMaker skill to build checked 12x12 maze data and render it as an Amaze-style terminal board.
 - The MazeMaker skill pattern lives at `.second-brain/patterns/mazemaker-skill.md`.
-- The Maze app is static-only right now; `--play` returns `MAZE_PLAY=not-implemented` until a coding agent adds the movement loop.
+- `dojo_app/maze_game.py` is stable runner code; it dispatches play mode into `dojo_app/maze_play.py`.
+- `dojo_app/maze_play.py` is the scoped coding-agent file. It is a placeholder until a coding agent adds the movement loop.
 - The second brain is shared context for any agent that works in this repo.
 
 ## Recent Work
@@ -26,10 +27,11 @@ status: active
 ## Boundaries
 
 - Do not store secrets or one-time credentials in the second brain.
-- Keep Maze changes small and reviewable.
+- Keep Maze play changes in `dojo_app/maze_play.py` unless the current task explicitly says otherwise.
 - Do not add feature flags, network calls, credential reads, shell clear commands, curses, or external packages to the Maze game.
 
 ## Verification
 
 - python3 -m unittest tests.test_maze_game
+- python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 - python3 scripts/check_repo.py
