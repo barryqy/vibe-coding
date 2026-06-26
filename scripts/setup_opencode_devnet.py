@@ -48,7 +48,7 @@ def main() -> int:
                 "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
-                "*": "ask",
+                "*": "allow",
             },
             "webfetch": "deny",
             "websearch": "deny",

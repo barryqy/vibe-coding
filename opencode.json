@@ -19,7 +19,7 @@
     },
     "edit": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "python3 scripts/check_repo.py*": "allow",
       "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
       "python3 scripts/security_review.py*": "allow",

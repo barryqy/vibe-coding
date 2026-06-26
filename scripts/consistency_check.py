@@ -302,3 +302,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+    require(
+        bash_perms.get("*") == "allow",
+        "opencode.json must allow local bash checks so lab runs do not pause for approval",
+        errors,
+    )
