@@ -256,6 +256,17 @@ class MazeGameTests(unittest.TestCase):
             ["maze", "render_maze", "render"],
         )
 
+    def test_play_module_exposes_simple_movement_map(self):
+        self.assertEqual(
+            maze_play.MOVE_DELTAS,
+            {
+                "w": (-1, 0),
+                "s": (1, 0),
+                "a": (0, -1),
+                "d": (0, 1),
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

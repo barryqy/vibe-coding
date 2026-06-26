@@ -5,10 +5,16 @@ from collections.abc import Callable
 
 MazeRenderer = Callable[[list[str], str], str]
 Position = tuple[int, int]
+MOVE_DELTAS: dict[str, Position] = {
+    "w": (-1, 0),
+    "s": (1, 0),
+    "a": (0, -1),
+    "d": (0, 1),
+}
 
 
 def choose_next_position(maze: list[str], position: Position, command: str) -> Position:
-    # OpenCode exercise: replace only this body with w/a/s/d movement rules.
+    # OpenCode exercise: replace only this body with MOVE_DELTAS boundary rules.
     raise NotImplementedError("OpenCode will replace this movement function")
 
 
