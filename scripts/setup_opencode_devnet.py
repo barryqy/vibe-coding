@@ -38,10 +38,7 @@ def main() -> int:
         "instructions": INSTRUCTIONS,
         "model": f"devnet/{model}",
         "permission": {
-            "edit": {
-                "*": "deny",
-                "dojo_app/maze_play.py": "allow",
-            },
+            "edit": "allow",
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 -m dojo_app.maze_game*": "allow",
@@ -81,7 +78,8 @@ def main() -> int:
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
     print("kb=.second-brain")
-    print("edit_permission=dojo_app/maze_play.py")
+    print("edit_permission=allow")
+    print("task_file=dojo_app/maze_play.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 

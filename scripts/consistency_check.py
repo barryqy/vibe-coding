@@ -249,15 +249,18 @@ def main() -> int:
         errors,
     )
     require(
-        isinstance(edit_perm, dict)
-        and edit_perm.get("*") == "deny"
-        and edit_perm.get("dojo_app/maze_play.py") == "allow",
-        "opencode.json must restrict OpenCode edits to dojo_app/maze_play.py",
+        edit_perm == "allow",
+        "opencode.json must allow edits so noninteractive OpenCode lab prompts do not hang",
         errors,
     )
     require(
-        '"dojo_app/maze_play.py": "allow"' in opencode_setup and '"webfetch": "deny"' in opencode_setup,
-        "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping edits scoped and network permissions denied",
+        '"edit": "allow"' in opencode_setup and '"webfetch": "deny"' in opencode_setup,
+        "setup_opencode_devnet.py must attach OpenCode to the lab KB while keeping network permissions denied",
+        errors,
+    )
+    require(
+        "task_file=dojo_app/maze_play.py" in opencode_setup,
+        "setup_opencode_devnet.py must report the Maze play task file",
         errors,
     )
     require(
