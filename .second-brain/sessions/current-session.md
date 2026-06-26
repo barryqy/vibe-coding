@@ -12,7 +12,7 @@ status: active
 - The Maze app can use the repo-local MazeMaker skill to build checked 12x12 maze data and render it as an Amaze-style terminal board.
 - The MazeMaker skill pattern lives at `.second-brain/patterns/mazemaker-skill.md`.
 - `dojo_app/maze_game.py` is stable runner code; it dispatches play mode into `dojo_app/maze_play.py`.
-- `dojo_app/maze_play.py` is the scoped coding-agent file. It is a placeholder until a coding agent adds the movement loop.
+- `dojo_app/maze_play.py` is the scoped coding-agent file. Its play harness handles single-key input and redraw; the movement function is the placeholder a coding agent fills.
 - The second brain is shared context for any agent that works in this repo.
 
 ## Recent Work

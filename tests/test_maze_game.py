@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 from dojo_app import maze_game
 from dojo_app import maze_play
@@ -266,6 +267,25 @@ class MazeGameTests(unittest.TestCase):
                 "d": (0, 1),
             },
         )
+
+    def test_play_clear_screen_writes_terminal_redraw_sequence(self):
+        output = io.StringIO()
+
+        maze_play.clear_screen(output)
+
+        self.assertEqual(output.getvalue(), "\033[H\033[2J")
+
+    def test_play_mode_does_not_clear_when_piped(self):
+        output = io.StringIO()
+
+        with mock.patch("sys.stdin", io.StringIO("q\n")), redirect_stdout(output):
+            result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        text = output.getvalue()
+        self.assertEqual(result, 0)
+        self.assertIn("MAZE_PLAY=ready", text)
+        self.assertIn("MAZE_PLAY=quit", text)
+        self.assertNotIn("\033[H\033[2J", text)
 
 
 if __name__ == "__main__":

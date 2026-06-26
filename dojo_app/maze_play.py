@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+import termios
+import tty
 from collections.abc import Callable
 
 
@@ -37,35 +40,114 @@ def maze_with_player(maze: list[str], position: Position) -> list[str]:
     return display
 
 
+def live_terminal() -> bool:
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def clear_screen(stream=None) -> None:
+    target = sys.stdout if stream is None else stream
+    target.write("\033[H\033[2J")
+    target.flush()
+
+
+def enable_single_key_input():
+    try:
+        stdin_fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(stdin_fd)
+        tty.setcbreak(stdin_fd)
+        return old_settings
+    except (AttributeError, OSError, termios.error, ValueError):
+        return None
+
+
+def restore_input_mode(old_settings) -> None:
+    if old_settings is None:
+        return
+    try:
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
+    except (AttributeError, OSError, termios.error, ValueError):
+        return
+
+
+def read_command(single_key: bool) -> str:
+    if not single_key:
+        return input("move> ").strip().lower()
+
+    sys.stdout.write("move> ")
+    sys.stdout.flush()
+    command = sys.stdin.read(1)
+    print()
+    return command.strip().lower()
+
+
+def draw_frame(
+    maze: list[str],
+    player: Position,
+    render_maze: MazeRenderer,
+    render: str,
+    redraw: bool,
+    show_header: bool,
+    status: str = "",
+) -> None:
+    if redraw:
+        clear_screen()
+    if show_header:
+        print("MAZE_PLAY=ready")
+        print("controls=w/a/s/d, q to quit")
+    if status:
+        print(status)
+    print(render_maze(maze_with_player(maze, player), render))
+
+
 def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "amaze") -> int:
     player = find_start(maze)
-    print("MAZE_PLAY=ready")
-    print("controls=w/a/s/d, q to quit")
+    redraw = live_terminal()
+    old_settings = enable_single_key_input() if redraw else None
+    single_key = old_settings is not None
+    first_frame = True
+    status = ""
 
-    while True:
-        print(render_maze(maze_with_player(maze, player), render))
-        try:
-            command = input("move> ").strip().lower()
-        except EOFError:
-            print("MAZE_PLAY=quit")
-            return 0
+    try:
+        while True:
+            draw_frame(
+                maze,
+                player,
+                render_maze,
+                render,
+                redraw,
+                first_frame or redraw,
+                status,
+            )
+            first_frame = False
+            status = ""
 
-        if command == "q":
-            print("MAZE_PLAY=quit")
-            return 0
-        if command not in {"w", "a", "s", "d"}:
-            print("move=ignored")
-            continue
+            try:
+                command = read_command(single_key)
+            except EOFError:
+                print("MAZE_PLAY=quit")
+                return 0
 
-        try:
-            player = choose_next_position(maze, player, command)
-        except NotImplementedError:
-            print("MAZE_PLAY=not-implemented")
-            print("reason=OpenCode will replace choose_next_position in dojo_app/maze_play.py")
-            return 1
+            if not command:
+                status = "move=ignored"
+                continue
+            if command == "q":
+                print("MAZE_PLAY=quit")
+                return 0
+            if command not in MOVE_DELTAS:
+                status = "move=ignored"
+                continue
 
-        row, col = player
-        if maze[row][col] == "E":
-            print(render_maze(maze_with_player(maze, player), render))
-            print("MAZE_PLAY=win")
-            return 0
+            try:
+                player = choose_next_position(maze, player, command)
+            except NotImplementedError:
+                print("MAZE_PLAY=not-implemented")
+                print("reason=OpenCode will replace choose_next_position in dojo_app/maze_play.py")
+                return 1
+
+            row, col = player
+            if maze[row][col] == "E":
+                draw_frame(maze, player, render_maze, render, redraw, redraw)
+                print("MAZE_PLAY=win")
+                return 0
+    finally:
+        restore_input_mode(old_settings)
