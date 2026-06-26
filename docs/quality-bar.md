@@ -61,13 +61,14 @@ The command checks:
 
 ## DefenseClaw Admission Check
 
-Run this before trusting a new agent skill:
+Run these before trusting new agent capabilities:
 
 ```bash
 python3 scripts/defenseclaw_skill_demo.py
+python3 scripts/defenseclaw_mcp_demo.py
 ```
 
-The demo compares one intentionally unsafe skill with one clean skill. The lesson is not that every scanner is perfect. The lesson is that agent capabilities need an admission gate before they can read files, run code, or send data away.
+The demos compare clean and intentionally unsafe Skills and MCP servers. The lesson is not that every scanner is perfect. The lesson is that agent capabilities need an admission gate before they can read files, run code, or send data away.
 
 ## Security Line
 

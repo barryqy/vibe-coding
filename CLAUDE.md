@@ -33,6 +33,7 @@ For the DefenseClaw mini-module, keep the scanner path explicit:
 ```bash
 ./scripts/install_defenseclaw_cli.sh
 python3 scripts/defenseclaw_skill_demo.py
+python3 scripts/defenseclaw_mcp_demo.py
 ```
 
 For this lab, do not approve commands that read `.env`, `.env.*`, `secrets/`, browser profiles, SSH keys, or cloud credentials. Use sample data only.
