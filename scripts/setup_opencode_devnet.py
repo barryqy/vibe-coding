@@ -42,6 +42,7 @@ def main() -> int:
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 -m dojo_app.maze_game*": "allow",
+                "printf * | python3 -m dojo_app.maze_game*": "allow",
                 "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
                 "python3 skills/mazemaker/scripts/build_maze.py*": "allow",
                 "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
