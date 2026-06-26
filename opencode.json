@@ -17,10 +17,7 @@
       "*.env.*": "deny",
       "secrets/**": "deny"
     },
-    "edit": {
-      "*": "deny",
-      "dojo_app/maze_play.py": "allow"
-    },
+    "edit": "allow",
     "bash": {
       "*": "ask",
       "python3 scripts/check_repo.py*": "allow",

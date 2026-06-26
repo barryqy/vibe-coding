@@ -104,7 +104,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the second brain and make the Maze playable, run a direct prompt. Keep the edit scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
+- To let OpenCode read the second brain and make the Maze playable, run a direct prompt. Keep the task scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
