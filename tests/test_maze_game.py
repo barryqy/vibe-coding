@@ -5,7 +5,6 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
 
 from dojo_app import maze_game
 
@@ -179,56 +178,6 @@ class MazeGameTests(unittest.TestCase):
             maze_game.render_maze(maze_game.DEFAULT_MAZE, "raw"),
             "\n".join(maze_game.DEFAULT_MAZE),
         )
-
-    def test_move_player_respects_paths_and_walls(self):
-        start = maze_game.find_cell(maze_game.DEFAULT_MAZE, "S")
-
-        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "d"), (2, 1))
-        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "right"), (2, 1))
-        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "a"), start)
-        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "up"), start)
-        self.assertEqual(maze_game.move_player(maze_game.DEFAULT_MAZE, start, "nonsense"), start)
-
-    def test_render_player_maze_marks_player(self):
-        start = maze_game.find_cell(maze_game.DEFAULT_MAZE, "S")
-        raw = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start, "raw")
-        amaze = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start)
-        tiles = maze_game.render_player_maze(maze_game.DEFAULT_MAZE, start, "tiles")
-
-        self.assertIn("@", raw)
-        self.assertNotIn("S", raw)
-        self.assertIn("| @ ", amaze)
-        self.assertIn("+---+", amaze)
-        self.assertIn("@ ", tiles)
-        self.assertIn("██", tiles)
-
-    def test_play_loop_can_quit(self):
-        output = io.StringIO()
-        moves = iter(["q"])
-
-        with redirect_stdout(output):
-            maze_game.run_play_maze(
-                maze_game.DEFAULT_MAZE,
-                input_func=lambda _prompt: next(moves),
-            )
-
-        text = output.getvalue()
-        self.assertIn("MAZE_PLAY=ready", text)
-        self.assertIn("MAZE_PLAY=quit", text)
-        self.assertIn("MAZE_PLAY=pass", text)
-
-    def test_clear_screen_only_runs_for_tty_output(self):
-        self.assertFalse(maze_game.clear_screen(output_func=lambda _text: None))
-
-        class FakeTTY(io.StringIO):
-            def isatty(self):
-                return True
-
-        fake_stdout = FakeTTY()
-        with patch("sys.stdout", fake_stdout):
-            self.assertTrue(maze_game.clear_screen())
-
-        self.assertEqual(fake_stdout.getvalue(), maze_game.CLEAR_SCREEN)
 
     def test_static_run_prints_stable_markers(self):
         output = io.StringIO()

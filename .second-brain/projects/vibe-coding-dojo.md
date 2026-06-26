@@ -11,7 +11,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 
 ## Current Files
 
-- `dojo_app/maze_game.py` contains Maze parsing, solvability checks, rendering, and play mode.
+- `dojo_app/maze_game.py` contains Maze parsing, solvability checks, rendering, and a static-only `--play` placeholder for OpenCode to implement.
 - `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill.
 - `skills/mazemaker/scripts/build_maze.py` creates checked Recursive Backtracker maze data.
 - `.second-brain/patterns/mazemaker-skill.md` tells agents to use the MazeMaker skill for new Maze artifacts.
@@ -24,6 +24,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 
 - Keep maze generation checked and repeatable when a fixed seed is used.
 - When a task asks for a new Maze artifact, use the MazeMaker skill pattern from `.second-brain/patterns/mazemaker-skill.md`.
+- When a task asks for playable Maze behavior, implement real movement and redraw behavior in `dojo_app/maze_game.py`; do not add or flip a feature flag.
 - Do not add network calls, credential reads, shell clear commands, curses, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.

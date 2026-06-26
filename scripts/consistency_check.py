@@ -115,8 +115,8 @@ def main() -> int:
     require("MAZEMAKER_SKILL=pass" in mazemaker_script, "MazeMaker skill script must print the pass marker", errors)
     old_mazemaker_label = "MazeMaker " + "MCP"
     require(old_mazemaker_label not in agents + resolver_note + maze_pattern + session_note, "MazeMaker should be described as a skill only", errors)
-    require("PLAY_MODE_ENABLED =" in maze_game, "maze_game.py must keep the play-mode switch for the OpenCode exercise", errors)
-    require("clear_screen(" in maze_game, "maze_game.py must redraw play mode in an interactive terminal", errors)
+    require("PLAY_MODE_ENABLED" not in maze_game, "maze_game.py must not hide play mode behind a switch", errors)
+    require("--play" in maze_game, "maze_game.py must expose a play flag for the OpenCode exercise", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
     require("--check-only" in maze_game, "maze_game.py must expose a check-only path for Codex diagrams", errors)
