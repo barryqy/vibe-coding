@@ -208,6 +208,11 @@ def main() -> int:
         errors,
     )
     require(
+        "printf * | python3 -m dojo_app.maze_game*" in bash_perms,
+        "opencode.json must allow the piped Maze smoke test",
+        errors,
+    )
+    require(
         "python3 -m dojo_app.barryflights_mcp_client*" in bash_perms,
         "opencode.json must allow the local BarryFlights MCP client",
         errors,
