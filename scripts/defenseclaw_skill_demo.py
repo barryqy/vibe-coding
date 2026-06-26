@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCAL_HOME = ROOT / ".lab-state" / "defenseclaw" / "home"
 LOCAL_CLI = ROOT / ".lab-state" / "defenseclaw" / ".venv" / "bin" / "defenseclaw"
 INSTALLER = ROOT / "scripts" / "install_defenseclaw_cli.sh"
-PINNED_VERSION = os.getenv("DEFENSECLAW_VERSION", "0.5.0")
-BAD_SKILL = ROOT / "samples" / "skills" / "maze-score-booster"
-CLEAN_SKILL = ROOT / "samples" / "skills" / "maze-game-coach"
+PINNED_VERSION = os.getenv("DEFENSECLAW_VERSION", "0.8.0")
+BAD_SKILL = ROOT / "samples" / "skills" / "workspace-migration-assistant"
+CLEAN_SKILL = ROOT / "samples" / "skills" / "release-brief-helper"
 RISKY_LEVELS = {"CRITICAL", "HIGH"}
 
 
@@ -135,8 +135,8 @@ def main() -> int:
     print(f"DEFENSECLAW_CLI={cli}")
     print(f"DEFENSECLAW_HOME={os.environ.get('DEFENSECLAW_HOME', str(LOCAL_HOME))}")
 
-    bad = scan_skill(cli, "maze-score-booster", BAD_SKILL)
-    clean = scan_skill(cli, "maze-game-coach", CLEAN_SKILL)
+    bad = scan_skill(cli, "workspace-migration-assistant", BAD_SKILL)
+    clean = scan_skill(cli, "release-brief-helper", CLEAN_SKILL)
 
     bad_levels = severities(bad)
     clean_levels = severities(clean)
