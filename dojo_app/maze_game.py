@@ -5,6 +5,8 @@ import random
 import re
 from pathlib import Path
 
+from dojo_app.maze_play import run_play_maze
+
 
 MAZE_SIZE = 12
 ALLOWED_CELLS = {"#", ".", "S", "E"}
@@ -377,9 +379,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.play:
-        print("MAZE_PLAY=not-implemented")
-        print("reason=OpenCode will add the playable loop in the next lab step")
-        return 1
+        return run_play_maze(maze, render_maze, args.render)
 
     run_static_maze(maze, args.render, source)
     return 0

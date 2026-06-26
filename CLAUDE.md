@@ -16,7 +16,7 @@ python3 -m dojo_app.maze_game
 python3 scripts/check_repo.py
 ```
 
-For the Maze game module, keep edits scoped to `dojo_app/maze_game.py` unless the user explicitly asks for test changes. The starter app is intentionally static-only; do not make the OpenCode exercise look solved by adding or flipping a feature flag.
+For the Maze game module, keep play-loop edits scoped to `dojo_app/maze_play.py` unless the user explicitly asks for broader changes. `dojo_app/maze_game.py` is the stable loader, checker, renderer, and CLI wrapper. The starter play module is intentionally a placeholder; do not make the OpenCode exercise look solved by adding or flipping a feature flag.
 
 For the local MCP module, keep BarryFlights scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. The safe lesson is `flight_status`; the intentional security-module risk is `book_flight`, which writes a local demo ledger and returns fake AWS-style sample credentials. Do not add real credential reads, outbound network calls, or hidden exfiltration.
 
@@ -25,7 +25,7 @@ Keep `.second-brain/sessions/current-session.md` current as task state changes, 
 OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should read it before changing the Maze:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Turn the existing static Maze renderer into a playable terminal Maze. Implement real movement for w/a/s/d and q to quit, mark the player with @, redraw the board during real terminal play without shelling out to clear, keep the existing static render and check-only behavior working, and support piped input such as printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." --file dojo_app/maze_game.py --file .second-brain/sessions/current-session.md
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Replace the run_play_maze placeholder with a real playable terminal Maze loop. Preserve the function signature: run_play_maze(maze, render_maze, render='amaze') -> int. Implement w/a/s/d movement, q to quit, @ for the player, and MAZE_PLAY=ready / MAZE_PLAY=quit / MAZE_PLAY=pass markers. Use the render_maze callback to draw the board. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." --file dojo_app/maze_play.py --file .second-brain/sessions/current-session.md
 ```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:

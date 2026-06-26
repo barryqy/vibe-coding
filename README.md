@@ -45,7 +45,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ## What Is Here
 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
-- `dojo_app/maze_game.py` is the tiny terminal Maze game used during the lab. It can check raw maze data, render an Amaze-style terminal board, and keep `--render raw` for debugging the source maze data.
+- `dojo_app/maze_game.py` is the stable tiny terminal Maze app used during the lab. It can check raw maze data, render an Amaze-style terminal board, keep `--render raw` for debugging the source maze data, and dispatch play mode into `dojo_app/maze_play.py`.
+- `dojo_app/maze_play.py` is the scoped OpenCode exercise file. It starts as a placeholder and becomes the playable movement loop.
 - `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill used to create checked Maze artifacts.
 - `skills/mazemaker/scripts/build_maze.py` writes solvable Recursive Backtracker maze data to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
@@ -235,8 +236,8 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Turn the existing static Maze renderer into a playable terminal Maze. Implement real movement for w/a/s/d and q to quit, mark the player with @, redraw the board during real terminal play without shelling out to clear, keep the existing static render and check-only behavior working, and support piped input such as printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
-  --file dojo_app/maze_game.py \
+  "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Replace the run_play_maze placeholder with a real playable terminal Maze loop. Preserve the function signature: run_play_maze(maze, render_maze, render='amaze') -> int. Implement w/a/s/d movement, q to quit, @ for the player, and MAZE_PLAY=ready / MAZE_PLAY=quit / MAZE_PLAY=pass markers. Use the render_maze callback to draw the board. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  --file dojo_app/maze_play.py \
   --file .second-brain/sessions/current-session.md
 ```
 
@@ -255,6 +256,7 @@ python3 -m dojo_app.maze_game --render raw
 After the interactive change, play it:
 
 ```bash
+python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 printf 'q\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 

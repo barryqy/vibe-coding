@@ -17,10 +17,14 @@
       "*.env.*": "deny",
       "secrets/**": "deny"
     },
-    "edit": "allow",
+    "edit": {
+      "*": "deny",
+      "dojo_app/maze_play.py": "allow"
+    },
     "bash": {
       "*": "ask",
       "python3 scripts/check_repo.py*": "allow",
+      "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
       "python3 scripts/security_review.py*": "allow",
       "python3 scripts/consistency_check.py*": "allow",
       "python3 scripts/tool_doctor.py*": "allow",

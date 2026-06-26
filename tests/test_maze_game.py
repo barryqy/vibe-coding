@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import io
+import inspect
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 
 from dojo_app import maze_game
+from dojo_app import maze_play
 
 
 class MazeGameTests(unittest.TestCase):
@@ -245,6 +247,14 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("MAZE=fail", text)
         self.assertIn("expected a solvable 12x12 maze", text)
+
+    def test_play_module_has_stable_agent_boundary(self):
+        signature = inspect.signature(maze_play.run_play_maze)
+
+        self.assertEqual(
+            list(signature.parameters),
+            ["maze", "render_maze", "render"],
+        )
 
 
 if __name__ == "__main__":
