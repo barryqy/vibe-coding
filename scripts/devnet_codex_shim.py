@@ -21,7 +21,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "mazemaker-skill-20260625"
+SHIM_VERSION = "tictactoe-scenario-20260627"
 
 
 def route() -> dict[str, str]:
@@ -215,21 +215,11 @@ def wants_barryflights_booking(body: dict) -> bool:
     return mentions_barryflights and mentions_booking
 
 
-def wants_mazemaker_skill_build(body: dict) -> bool:
+def wants_tictactoe_scenario(body: dict) -> bool:
     text = latest_user_text(body).lower()
-    mentions_mazemaker = "mazemaker" in text or "maze maker" in text or "maze skill" in text
-    mentions_kb_maze = (
-        "maze" in text
-        and (
-            "second brain" in text
-            or ".second-brain" in text
-            or "project context" in text
-            or "project memory" in text
-            or "maze artifact" in text
-        )
-    )
-    wants_build = "build" in text or "generate" in text or "create" in text
-    return (mentions_mazemaker or mentions_kb_maze) and "maze" in text and wants_build
+    mentions_game = "tic-tac-toe" in text or "tictactoe" in text or "tic tac toe" in text
+    wants_scenario = "scenario" in text or "starting board" in text or "board" in text
+    return mentions_game and wants_scenario and ("create" in text or "make" in text or "write" in text)
 
 
 def status_summary(tool_output: str) -> str:
@@ -365,37 +355,17 @@ def run_barryflights_booking() -> str:
     return booking_summary(output)
 
 
-def run_mazemaker_skill_build(body: dict) -> str:
-    python_bin = ROOT / ".venv" / "bin" / "python"
-    if not python_bin.exists():
-        python_bin = Path(sys.executable)
-    skill_script = ROOT / ".lab-state" / "codex" / "home" / "skills" / "mazemaker" / "scripts" / "build_maze.py"
-    if not skill_script.exists():
-        skill_script = ROOT / "skills" / "mazemaker" / "scripts" / "build_maze.py"
-
-    result = subprocess.run(
+def tictactoe_scenario_text() -> str:
+    return "\n".join(
         [
-            str(python_bin),
-            str(skill_script),
-            "--maze-file",
-            ".lab-state/codex-output/maze.txt",
-        ],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        timeout=30,
-        check=False,
+            "MODE: human-vs-computer",
+            "NEXT: X",
+            "BOARD:",
+            ". . .",
+            ". . .",
+            ". . .",
+        ]
     )
-    output = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
-    if result.returncode != 0:
-        return "\n".join(
-            [
-                "MAZEMAKER_SKILL=fail",
-                f"exit_code={result.returncode}",
-                output or "no command output",
-            ]
-        )
-    return output
 
 
 def stream_function_call(
@@ -696,15 +666,14 @@ class ShimHandler(BaseHTTPRequestHandler):
                 )
                 return
 
-            if wants_mazemaker_skill_build(request_body):
-                text = run_mazemaker_skill_build(request_body)
+            if wants_tictactoe_scenario(request_body):
                 stream_responses_api(
                     self,
                     request_body,
                     response_text_payload(
-                        text,
+                        tictactoe_scenario_text(),
                         model=request_body.get("model"),
-                        response_id="resp_devnet_codex_mazemaker_skill",
+                        response_id="resp_devnet_codex_tictactoe_scenario",
                     ),
                 )
                 return

@@ -148,6 +148,26 @@ choose_python() {
   resolve_defenseclaw_python
 }
 
+create_venv() {
+  if command -v uv >/dev/null 2>&1; then
+    uv venv --no-project --python "$python_bin" "$venv_dir"
+    return 0
+  fi
+
+  "$python_bin" -m venv "$venv_dir"
+}
+
+install_defenseclaw_wheel() {
+  if command -v uv >/dev/null 2>&1; then
+    uv pip install --quiet --python "$venv_python" "$wheel_url"
+    return 0
+  fi
+
+  echo "DEFENSECLAW_INSTALL=upgrading-pip"
+  "$venv_python" -m pip install --quiet --upgrade --disable-pip-version-check pip
+  "$venv_python" -m pip install --quiet --upgrade --disable-pip-version-check "$wheel_url"
+}
+
 if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
   ensure_lab_home "$cli_path"
   echo "DEFENSECLAW_INSTALL=already-present"
@@ -174,14 +194,21 @@ if [ -d "$venv_dir" ] && [ -x "${venv_dir}/bin/python" ] && ! python_version_ok 
   rm -rf "$venv_dir"
 fi
 
+if [ -d "$venv_dir" ] && [ ! -x "${venv_dir}/bin/python" ]; then
+  echo "DEFENSECLAW_INSTALL=rebuilding-incomplete-venv"
+  rm -rf "$venv_dir"
+fi
+
 if [ ! -d "$venv_dir" ]; then
   echo "DEFENSECLAW_INSTALL=creating-venv"
-  "$python_bin" -m venv "$venv_dir"
+  create_venv
 fi
 
 venv_python="${venv_dir}/bin/python"
-"$venv_python" -m pip install --upgrade --disable-pip-version-check pip >/dev/null
-"$venv_python" -m pip install --upgrade --disable-pip-version-check "$wheel_url" >/dev/null
+echo "DEFENSECLAW_INSTALL=installing-cli"
+echo "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
+install_defenseclaw_wheel
+echo "DEFENSECLAW_INSTALL=initializing-home"
 ensure_lab_home "$cli_path"
 
 echo "DEFENSECLAW_INSTALL=complete"

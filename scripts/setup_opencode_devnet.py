@@ -15,7 +15,7 @@ INSTRUCTIONS = [
     ".second-brain/RESOLVER.md",
     ".second-brain/schema.md",
     ".second-brain/projects/vibe-coding-dojo.md",
-    ".second-brain/patterns/mazemaker-skill.md",
+    ".second-brain/patterns/tictactoe-scenario.md",
     ".second-brain/sessions/current-session.md",
 ]
 
@@ -41,11 +41,9 @@ def main() -> int:
             "edit": "allow",
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
-                "python3 -m dojo_app.maze_game*": "allow",
-                "printf * | python3 -m dojo_app.maze_game*": "allow",
-                "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
-                "python3 skills/mazemaker/scripts/build_maze.py*": "allow",
-                "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
+                "python3 -m dojo_app.tictactoe_game*": "allow",
+                "printf * | python3 -m dojo_app.tictactoe_game*": "allow",
+                "python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
                 "*": "allow",
@@ -80,7 +78,7 @@ def main() -> int:
     print(f"model=devnet/{model}")
     print("kb=.second-brain")
     print("edit_permission=allow")
-    print("task_file=dojo_app/maze_play.py")
+    print("task_file=dojo_app/tictactoe_play.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     return 0
 
