@@ -58,6 +58,22 @@ class DevnetCodexShimTests(unittest.TestCase):
 
         self.assertTrue(devnet_codex_shim.wants_tictactoe_scenario(body))
 
+    def test_project_note_prompt_does_not_route_to_scenario(self):
+        body = {
+            "input": [
+                {
+                    "role": "user",
+                    "content": (
+                        "Write the content for .second-brain/projects/vibe-coding-dojo.md. "
+                        "Tic-tac-toe scenario requests should follow "
+                        ".second-brain/patterns/tictactoe-scenario.md."
+                    ),
+                }
+            ]
+        }
+
+        self.assertFalse(devnet_codex_shim.wants_tictactoe_scenario(body))
+
     def test_tictactoe_scenario_text_is_checkable(self):
         text = devnet_codex_shim.tictactoe_scenario_text()
         scenario = tictactoe_game.parse_scenario(text)

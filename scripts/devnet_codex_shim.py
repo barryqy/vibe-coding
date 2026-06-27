@@ -217,9 +217,12 @@ def wants_barryflights_booking(body: dict) -> bool:
 
 def wants_tictactoe_scenario(body: dict) -> bool:
     text = latest_user_text(body).lower()
+    if "vibe-coding-dojo.md" in text or "project note" in text:
+        return False
     mentions_game = "tic-tac-toe" in text or "tictactoe" in text or "tic tac toe" in text
     wants_scenario = "scenario" in text or "starting board" in text or "board" in text
-    return mentions_game and wants_scenario and ("create" in text or "make" in text or "write" in text)
+    wants_build = "create" in text or "make" in text or "generate" in text
+    return mentions_game and wants_scenario and wants_build
 
 
 def status_summary(tool_output: str) -> str:
