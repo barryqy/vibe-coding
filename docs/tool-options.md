@@ -13,6 +13,7 @@ In this dojo, the Codex path uses:
 - `codex --version` to confirm Codex is installed
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
+- `usage` to check token counts recorded by the local adapter
 - `.agents/skills/rps-cli/SKILL.md` as the documented project skill location
 - `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --cd "$PWD" --sandbox read-only --output-last-message GAME_CONTRACT.md 'Use $rps-cli and the second brain...'` to create the game contract
 
@@ -31,6 +32,7 @@ In this dojo, the OpenCode path uses:
 - `opencode --version` to confirm OpenCode is installed
 - `python3 scripts/setup_opencode_devnet.py` to generate the local provider config
 - `python3 scripts/start_opencode_model_adapter.py` to start the local model adapter
+- `usage` to check token counts before or after longer OpenCode runs
 - `.opencode/skills/rps-cli/SKILL.md` as the documented project skill location
 - `opencode run 'Use the attached project memory, rps-cli skill, and GAME_CONTRACT.md...' --file ...` with the prompt before repeated `--file` attachments
 

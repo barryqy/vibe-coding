@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import signal
 import subprocess
 import sys
 import time
@@ -12,6 +14,11 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+try:
+    from model_usage import record_model_error, record_model_response
+except ModuleNotFoundError:
+    from scripts.model_usage import record_model_error, record_model_response
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE = ROOT / ".lab-state"
@@ -19,6 +26,7 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
+SHIM_VERSION = "opencode-usage-20260627"
 
 
 def route() -> dict[str, str]:
@@ -115,7 +123,9 @@ def call_devnet(body: dict) -> dict:
         method="POST",
     )
     with urllib.request.urlopen(request, timeout=45) as response:
-        return json.loads(response.read().decode("utf-8"))
+        payload = json.loads(response.read().decode("utf-8"))
+        record_model_response("opencode", clean_body.get("model") or config["model"], payload, response.headers)
+        return payload
 
 
 def http_error_message(exc: urllib.error.HTTPError) -> str:
@@ -237,6 +247,9 @@ class ShimHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self) -> None:
+        if self.path.rstrip("/") == "/v1/devnet-shim-info":
+            json_response(self, 200, {"version": SHIM_VERSION})
+            return
         if self.path.rstrip("/") == "/v1/models":
             model = route()["model"]
             json_response(self, 200, {"object": "list", "data": [{"id": model, "object": "model"}]})
@@ -256,7 +269,9 @@ class ShimHandler(BaseHTTPRequestHandler):
             if has_tool_result(request_body):
                 payload = tool_result_fallback(request_body)
             else:
-                json_response(self, 400, {"error": {"message": http_error_message(exc)}})
+                message = http_error_message(exc)
+                record_model_error("opencode", route()["model"], message)
+                json_response(self, 400, {"error": {"message": message}})
                 return
         except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:
             json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
@@ -271,17 +286,79 @@ class ShimHandler(BaseHTTPRequestHandler):
 
 def ready(host: str, port: int) -> bool:
     try:
-        with urllib.request.urlopen(f"http://{host}:{port}/v1/models", timeout=1) as response:
-            return response.status == 200
+        with urllib.request.urlopen(f"http://{host}:{port}/v1/devnet-shim-info", timeout=1) as response:
+            if response.status != 200:
+                return False
+            body = json.loads(response.read().decode("utf-8"))
+            return body.get("version") == SHIM_VERSION
     except Exception:
         return False
+
+
+def port_has_listener(host: str, port: int) -> bool:
+    try:
+        with urllib.request.urlopen(f"http://{host}:{port}/v1/models", timeout=0.5):
+            return True
+    except urllib.error.HTTPError:
+        return True
+    except Exception:
+        return False
+
+
+def stop_existing(host: str, port: int) -> None:
+    pids = []
+    if PID.exists():
+        raw = PID.read_text(encoding="utf-8").strip()
+        if raw.isdigit():
+            pids.append(int(raw))
+
+    for command in (
+        ["ss", "-ltnp"],
+        ["lsof", "-ti", f"TCP:{port}", "-sTCP:LISTEN"],
+        ["fuser", f"{port}/tcp"],
+    ):
+        try:
+            result = subprocess.run(
+                command,
+                text=True,
+                capture_output=True,
+                timeout=2,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        combined = f"{result.stdout}\n{result.stderr}"
+        if command[:2] == ["ss", "-ltnp"]:
+            for match in re.finditer(rf":{port}\b.*?pid=(\d+)", combined):
+                pids.append(int(match.group(1)))
+            continue
+        for token in combined.replace("\n", " ").split():
+            if token.isdigit():
+                pids.append(int(token))
+
+    for pid in sorted(set(pids)):
+        if pid == os.getpid():
+            continue
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            continue
+
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline:
+        if not port_has_listener(host, port):
+            return
+        time.sleep(0.1)
 
 
 def ensure(host: str, port: int) -> int:
     if ready(host, port):
         print("OPENCODE_MODEL_ADAPTER=ready")
         print(f"local_url=http://{host}:{port}/v1")
+        print(f"shim_version={SHIM_VERSION}")
         return 0
+
+    stop_existing(host, port)
 
     STATE.mkdir(parents=True, exist_ok=True)
     with LOG.open("ab") as log:
@@ -298,6 +375,7 @@ def ensure(host: str, port: int) -> int:
         if ready(host, port):
             print("OPENCODE_MODEL_ADAPTER=ready")
             print(f"local_url=http://{host}:{port}/v1")
+            print(f"shim_version={SHIM_VERSION}")
             return 0
         time.sleep(0.25)
 

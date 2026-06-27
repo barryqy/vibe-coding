@@ -24,6 +24,7 @@ The main coding boundary is intentionally clear:
 - `play.py` is created during the OpenCode build stage.
 - `dojo_app/barryflights_mcp_server.py` contains the local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
+- `scripts/model_usage.py` is exposed as `usage` by setup and reports adapter-recorded token counts.
 - `scripts/check_repo.py` is the repo-level verification command.
 
 ## Boundaries
@@ -33,6 +34,7 @@ The main coding boundary is intentionally clear:
 - Keep OpenCode build prompts focused on `GAME_CONTRACT.md`, `play.py`, and `GAME_README.md`.
 - Do not add network calls, credential reads, shell clear commands, curses, or external packages to the game.
 - Keep the local BarryFlights `flight_status` path clean; risky MCP behavior belongs in the security module.
+- Treat remaining model budget as platform-owned. The local `usage` command shows exact token counts and any gateway-reported budget details, but it should not invent a hard remaining budget when the route does not expose one.
 
 ## Verification
 

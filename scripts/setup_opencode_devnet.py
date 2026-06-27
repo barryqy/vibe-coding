@@ -21,14 +21,34 @@ INSTRUCTIONS = [
 ]
 
 
+def install_usage_command() -> None:
+    source = ROOT / "scripts" / "model_usage.py"
+    target = Path.home() / ".local" / "bin" / "usage"
+    if not source.exists():
+        return
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        target.unlink()
+    except FileNotFoundError:
+        pass
+    try:
+        target.symlink_to(source)
+    except FileExistsError:
+        target.unlink()
+        target.symlink_to(source)
+
+
 def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
     model = os.getenv("LLM_MODEL", "gpt-4o")
+    install_usage_command()
 
     if not base_url or not api_key:
         print("OPENCODE_DEVNET_CONFIG=skipped")
         print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
+        print("usage_command=usage")
         return 0
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -90,6 +110,7 @@ def main() -> int:
     print("task_file=play.py")
     print("edit_permission=allow")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
+    print("usage_command=usage")
     return 0
 
 

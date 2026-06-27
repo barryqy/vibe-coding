@@ -47,6 +47,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route and BarryFlights MCP server.
 - `scripts/setup_opencode_devnet.py` creates a repo-local OpenCode provider config for the DevNet model route and shared KB files.
+- `scripts/model_usage.py` is exposed as `usage` during setup. It shows token counts recorded by the local Codex and OpenCode adapters, plus any hard budget details the lab model route reports.
 - `samples/guardrails/`, `samples/skills/`, `samples/mcp/`, and `samples/leaky_rps_patch.py` contain the DefenseClaw scenario and admission-gate examples.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 
@@ -55,6 +56,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 ```bash
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
+usage
 rm -f GAME_CONTRACT.md play.py
 
 CODEX_HOME=.lab-state/codex/home \
@@ -70,6 +72,7 @@ grep -q '^APP: play.py$' GAME_CONTRACT.md
 grep -q '^DOCS: GAME_README.md$' GAME_CONTRACT.md
 grep -q '^MARKER: RPS_SELF_TEST=pass$' GAME_CONTRACT.md
 test ! -f play.py
+usage
 ```
 
 ## OpenCode Build
@@ -86,6 +89,7 @@ export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
+usage
 
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 OPENCODE_DISABLE_AUTOUPDATE=true \
@@ -108,6 +112,7 @@ python3 -m py_compile play.py
 python3 play.py --self-test
 printf 'rock\nq\n' | python3 play.py
 printf 'lizard\nq\n' | python3 play.py
+usage
 ```
 
 ## Security Checks

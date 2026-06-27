@@ -15,6 +15,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `play.py` and `GAME_README.md` are generated during the lab by OpenCode and are not prebuilt in this repo.
 - `docs/quality-bar.md` is the shared definition of good work.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
+- `scripts/model_usage.py` is installed as `usage` by setup scripts. It reports local token counts and any hard budget details the lab model route exposes.
 - `samples/guardrails/`, `samples/skills/`, `samples/mcp/`, and `samples/leaky_rps_patch.py` contain clean and intentionally unsafe examples for DefenseClaw.
 
 ## Working Rules
@@ -58,6 +59,7 @@ codex --version
 ```bash
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
+usage
 ```
 
 `scripts/setup_codex_devnet.py` creates the repo-local Codex config, points it at the lab model, reports the Codex skill path, and registers the local BarryFlights MCP server.
@@ -125,6 +127,7 @@ export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
+usage
 ```
 
 ## OpenCode Build Stage
@@ -215,6 +218,12 @@ If you touched the risk samples or DefenseClaw helper:
 python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
 python3 scripts/defenseclaw_mcp_demo.py
+```
+
+Check model usage before and after longer agent runs:
+
+```bash
+usage
 ```
 
 ## Definition Of Done

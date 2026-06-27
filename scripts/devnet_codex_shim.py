@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -14,6 +15,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
+try:
+    from model_usage import record_model_error, record_model_response
+except ModuleNotFoundError:
+    from scripts.model_usage import record_model_error, record_model_response
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE = ROOT / ".lab-state"
@@ -21,7 +27,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "barryflights-mcp-20260627"
+SHIM_VERSION = "barryflights-mcp-usage-20260627"
 
 
 def route() -> dict[str, str]:
@@ -136,7 +142,9 @@ def call_devnet(body: dict) -> dict:
         method="POST",
     )
     with urllib.request.urlopen(request, timeout=45) as response:
-        return json.loads(response.read().decode("utf-8"))
+        payload = json.loads(response.read().decode("utf-8"))
+        record_model_response("codex", model, payload, response.headers)
+        return payload
 
 
 def http_error_message(exc: urllib.error.HTTPError) -> str:
@@ -648,7 +656,9 @@ class ShimHandler(BaseHTTPRequestHandler):
 
             payload = call_devnet(request_body)
         except urllib.error.HTTPError as exc:
-            json_response(self, 400, {"error": {"message": http_error_message(exc)}})
+            message = http_error_message(exc)
+            record_model_error("codex", route()["model"], message)
+            json_response(self, 400, {"error": {"message": message}})
             return
         except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:
             json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
@@ -676,6 +686,7 @@ def stop_existing(host: str, port: int) -> None:
             pids.append(int(raw))
 
     for command in (
+        ["ss", "-ltnp"],
         ["lsof", "-ti", f"TCP:{port}", "-sTCP:LISTEN"],
         ["fuser", f"{port}/tcp"],
     ):
@@ -690,6 +701,10 @@ def stop_existing(host: str, port: int) -> None:
         except (OSError, subprocess.TimeoutExpired):
             continue
         combined = f"{result.stdout}\n{result.stderr}"
+        if command[:2] == ["ss", "-ltnp"]:
+            for match in re.finditer(rf":{port}\b.*?pid=(\d+)", combined):
+                pids.append(int(match.group(1)))
+            continue
         for token in combined.replace("\n", " ").split():
             if token.isdigit():
                 pids.append(int(token))

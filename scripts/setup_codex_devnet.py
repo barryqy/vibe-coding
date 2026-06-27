@@ -15,6 +15,24 @@ MODEL_CATALOG = HOME / "model-catalog.json"
 SHIM_BASE_URL = "http://127.0.0.1:8776/v1"
 
 
+def install_usage_command() -> None:
+    source = ROOT / "scripts" / "model_usage.py"
+    target = Path.home() / ".local" / "bin" / "usage"
+    if not source.exists():
+        return
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        target.unlink()
+    except FileNotFoundError:
+        pass
+    try:
+        target.symlink_to(source)
+    except FileExistsError:
+        target.unlink()
+        target.symlink_to(source)
+
+
 def mcp_python() -> Path:
     venv_python = ROOT / ".venv" / "bin" / "python"
     if venv_python.exists():
@@ -136,6 +154,7 @@ def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
     model = os.getenv("LLM_MODEL", "gpt-4o")
+    install_usage_command()
 
     if not base_url or not api_key:
         ensure_mcp_config()
@@ -143,6 +162,7 @@ def main() -> int:
         print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
         print("local_mcp=barryflights")
         print("repo_skill=.agents/skills/rps-cli")
+        print("usage_command=usage")
         return 0
 
     HOME.mkdir(parents=True, exist_ok=True)
@@ -183,6 +203,7 @@ def main() -> int:
     print("adapter=python3 scripts/start_codex_model_adapter.py")
     print("local_mcp=barryflights")
     print("repo_skill=.agents/skills/rps-cli")
+    print("usage_command=usage")
     return 0
 
 
