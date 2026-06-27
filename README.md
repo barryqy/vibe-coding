@@ -73,7 +73,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
-- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the tic-tac-toe scenario pattern.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the tic-tac-toe scenario/play patterns.
+- `skills/tictactoe-cli/SKILL.md` gives agents the tic-tac-toe play rules without hiding the implementation in Python helper code.
 
 ## Optional Model Routes
 
@@ -230,7 +231,7 @@ opencode run \
   --title tictactoe-playable \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Replace the placeholder body with a terminal play loop. Support both scenario.mode values: human-vs-human and human-vs-computer. Use positions 1-9 for moves, q to quit, X and O turns, win detection, draw detection, and a simple computer move that wins if possible, blocks if needed, otherwise chooses center, a corner, then a side. Do not rename run_tictactoe, replace it with main, or move the play entry point into a class. After editing, run python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py and python3 -m dojo_app.tictactoe_game --check-play-interface. If either check fails, fix the code and run both checks again. Do not edit dojo_app/tictactoe_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain, .second-brain/patterns/tictactoe-playable-cli.md, and skills/tictactoe-cli/SKILL.md. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Implement real terminal play for human-vs-human and human-vs-computer. Do not leave the computer player random-only. Run the verification commands from the playable tic-tac-toe pattern, fix failures, and stop only after they pass." \
   --file dojo_app/tictactoe_play.py \
   --file .second-brain/sessions/current-session.md
 ```

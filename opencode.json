@@ -7,6 +7,8 @@
     ".second-brain/schema.md",
     ".second-brain/projects/vibe-coding-dojo.md",
     ".second-brain/patterns/tictactoe-scenario.md",
+    ".second-brain/patterns/tictactoe-playable-cli.md",
+    "skills/tictactoe-cli/SKILL.md",
     ".second-brain/sessions/current-session.md"
   ],
   "permission": {
@@ -22,6 +24,9 @@
       "*": "allow",
       "python3 scripts/check_repo.py*": "allow",
       "python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py*": "allow",
+      "python3 -m py_compile play.py*": "allow",
+      "python3 play.py*": "allow",
+      "printf * | timeout 10 python3 play.py*": "allow",
       "python3 scripts/security_review.py*": "allow",
       "python3 scripts/consistency_check.py*": "allow",
       "python3 scripts/tool_doctor.py*": "allow",

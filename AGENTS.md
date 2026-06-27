@@ -22,6 +22,8 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
 - `.second-brain/patterns/tictactoe-scenario.md` tells agents how to create small tic-tac-toe scenarios.
+- `.second-brain/patterns/tictactoe-playable-cli.md` tells agents how to build playable tic-tac-toe without hidden game logic.
+- `skills/tictactoe-cli/SKILL.md` gives OpenCode the tic-tac-toe play rules and verification loop.
 
 ## Working Rules
 
@@ -113,7 +115,7 @@ opencode run \
   --title tictactoe-playable \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Replace the placeholder body with a terminal play loop. Support both scenario.mode values: human-vs-human and human-vs-computer. Use positions 1-9 for moves, q to quit, X and O turns, win detection, draw detection, and a simple computer move that wins if possible, blocks if needed, otherwise chooses center, a corner, then a side. Do not rename run_tictactoe, replace it with main, or move the play entry point into a class. After editing, run python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py and python3 -m dojo_app.tictactoe_game --check-play-interface. If either check fails, fix the code and run both checks again. Do not edit dojo_app/tictactoe_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain, .second-brain/patterns/tictactoe-playable-cli.md, and skills/tictactoe-cli/SKILL.md. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Implement real terminal play for human-vs-human and human-vs-computer. Do not leave the computer player random-only. Run the verification commands from the playable tic-tac-toe pattern, fix failures, and stop only after they pass." \
   --file dojo_app/tictactoe_play.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -164,6 +166,8 @@ python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py
 python3 -m dojo_app.tictactoe_game --check-play-interface
 printf 'q\n' | python3 -m dojo_app.tictactoe_game --scenario-file .lab-state/codex-output/tictactoe-scenario.txt --play
 ```
+
+- For a raw empty-directory tic-tac-toe build, use `skills/tictactoe-cli/SKILL.md` and require `python3 play.py --smoke-test` to print `TICTACTOE_SMOKE=pass`. A smoke test that only prints a board is not enough.
 
 - To compare Codex and OpenCode on the same prompt shape, run:
 

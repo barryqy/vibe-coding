@@ -16,7 +16,9 @@ REQUIRED_FILES = [
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
     Path(".second-brain/patterns/tictactoe-scenario.md"),
+    Path(".second-brain/patterns/tictactoe-playable-cli.md"),
     Path(".second-brain/sessions/current-session.md"),
+    Path("skills/tictactoe-cli/SKILL.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
     Path("dojo_app/tictactoe_game.py"),
@@ -83,6 +85,12 @@ def main() -> int:
     tictactoe_pattern = (
         root / ".second-brain/patterns/tictactoe-scenario.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/tictactoe-scenario.md").exists() else ""
+    tictactoe_play_pattern = (
+        root / ".second-brain/patterns/tictactoe-playable-cli.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/tictactoe-playable-cli.md").exists() else ""
+    tictactoe_skill = (
+        root / "skills/tictactoe-cli/SKILL.md"
+    ).read_text(encoding="utf-8") if (root / "skills/tictactoe-cli/SKILL.md").exists() else ""
     tictactoe_game = (root / "dojo_app/tictactoe_game.py").read_text(encoding="utf-8") if (root / "dojo_app/tictactoe_game.py").exists() else ""
     tictactoe_play = (root / "dojo_app/tictactoe_play.py").read_text(encoding="utf-8") if (root / "dojo_app/tictactoe_play.py").exists() else ""
 
@@ -112,7 +120,12 @@ def main() -> int:
     require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
     require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
     require("patterns/tictactoe-scenario.md" in resolver_note, "RESOLVER.md must point tic-tac-toe tasks to the scenario pattern", errors)
+    require("patterns/tictactoe-playable-cli.md" in resolver_note, "RESOLVER.md must point playable tic-tac-toe tasks to the playable pattern", errors)
+    require("skills/tictactoe-cli/SKILL.md" in resolver_note, "RESOLVER.md must point playable tic-tac-toe tasks to the tic-tac-toe skill", errors)
     require("TICTACTOE_CHECK=pass" in tictactoe_pattern, "tictactoe-scenario.md must describe the scenario check marker", errors)
+    require("TICTACTOE_SMOKE=pass" in tictactoe_play_pattern, "tictactoe-playable-cli.md must describe a real smoke marker", errors)
+    require("random-only" in tictactoe_skill, "tictactoe skill must forbid random-only computer play", errors)
+    require("TICTACTOE_SMOKE=pass" in tictactoe_skill, "tictactoe skill must describe the raw app smoke marker", errors)
     require("--write-clean" in tictactoe_game, "tictactoe_game.py must normalize model prose into the tiny scenario format", errors)
     require("PLAY_MODE_ENABLED" not in tictactoe_game + tictactoe_play, "tic-tac-toe must not hide play mode behind a switch", errors)
     require("--play" in tictactoe_game, "tictactoe_game.py must expose a play flag for the OpenCode exercise", errors)
@@ -122,6 +135,7 @@ def main() -> int:
     require("human-vs-computer" in tictactoe_game and "human-vs-human" in tictactoe_game, "tic-tac-toe game must know both play modes", errors)
     require("python3 -m unittest tests.test_tictactoe_game" in session_note, "current-session.md must include the focused tic-tac-toe test", errors)
     require("--check-play-interface" in session_note, "current-session.md must include the tic-tac-toe play interface check", errors)
+    require("tictactoe-playable-cli.md" in session_note, "current-session.md must include the playable tic-tac-toe pattern", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
     require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
@@ -158,6 +172,16 @@ def main() -> int:
     require(
         ".second-brain/patterns/tictactoe-scenario.md" in instructions,
         "opencode.json must load the tic-tac-toe scenario pattern",
+        errors,
+    )
+    require(
+        ".second-brain/patterns/tictactoe-playable-cli.md" in instructions,
+        "opencode.json must load the playable tic-tac-toe pattern",
+        errors,
+    )
+    require(
+        "skills/tictactoe-cli/SKILL.md" in instructions,
+        "opencode.json must load the tic-tac-toe CLI skill",
         errors,
     )
 
@@ -211,6 +235,11 @@ def main() -> int:
         "opencode.json must allow the piped tic-tac-toe smoke test",
         errors,
     )
+    require(
+        "python3 play.py*" in bash_perms,
+        "opencode.json must allow raw tic-tac-toe play.py smoke tests",
+        errors,
+    )
     require("python3 -m dojo_app.barryflights_mcp_client*" in bash_perms, "opencode.json must allow the local BarryFlights MCP client", errors)
     require(
         "[mcp_servers.barryflights]" in codex_setup,
@@ -258,6 +287,11 @@ def main() -> int:
     require(
         ".second-brain/patterns/tictactoe-scenario.md" in opencode_setup,
         "setup_opencode_devnet.py must attach the tic-tac-toe scenario pattern",
+        errors,
+    )
+    require(
+        ".second-brain/patterns/tictactoe-playable-cli.md" in opencode_setup and "skills/tictactoe-cli/SKILL.md" in opencode_setup,
+        "setup_opencode_devnet.py must attach the playable tic-tac-toe pattern and skill",
         errors,
     )
     require(
