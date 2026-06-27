@@ -219,12 +219,12 @@ def run_scenario_check(scenario: Scenario) -> None:
 
 
 def run_static_scenario(scenario: Scenario) -> None:
-    print("TICTACTOE=ready")
-    print("mode=static")
-    print(f"scenario_mode={scenario.mode}")
-    print(f"next={scenario.next_player}")
+    print("Tic-tac-toe starting board")
+    print(f"Game mode: {scenario.mode.replace('-vs-', ' vs ')}")
+    print(f"Next player: {scenario.next_player}")
+    print("Open squares are numbered 1-9 for the next move.")
     print(render_board(scenario.board))
-    print("TICTACTOE=pass")
+    print("Scenario is ready for play mode.")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -238,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         scenario = load_scenario(args.scenario_file)
     except (OSError, ValueError) as exc:
-        marker = "TICTACTOE_CHECK=fail" if args.check_only else "TICTACTOE=fail"
+        marker = "TICTACTOE_CHECK=fail" if args.check_only else "TICTACTOE_BOARD=fail"
         print(marker)
         print(f"reason={exc}")
         return 1
