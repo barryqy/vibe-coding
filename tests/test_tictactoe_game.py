@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import io
+import sys
 import tempfile
+import types
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from dojo_app import tictactoe_game
 from dojo_app import tictactoe_play
@@ -152,6 +155,29 @@ class TicTacToeGameTests(unittest.TestCase):
 
         self.assertEqual(result, 1)
         self.assertIn("TICTACTOE_PLAY=not-implemented", output.getvalue())
+
+    def test_play_interface_check_confirms_runner(self):
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            result = tictactoe_game.main(["--check-play-interface"])
+
+        self.assertEqual(result, 0)
+        self.assertIn("function=run_tictactoe", output.getvalue())
+        self.assertIn("TICTACTOE_PLAY_IMPORT=pass", output.getvalue())
+
+    def test_play_missing_runner_prints_clear_failure(self):
+        output = io.StringIO()
+        fake_module = types.ModuleType("dojo_app.tictactoe_play")
+
+        with patch.dict(sys.modules, {"dojo_app.tictactoe_play": fake_module}):
+            with redirect_stdout(output):
+                result = tictactoe_game.main(["--play"])
+
+        self.assertEqual(result, 1)
+        text = output.getvalue()
+        self.assertIn("TICTACTOE_PLAY=fail", text)
+        self.assertIn("must define run_tictactoe", text)
 
 
 if __name__ == "__main__":

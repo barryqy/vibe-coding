@@ -105,7 +105,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the second brain and make tic-tac-toe playable, run a direct prompt. Keep the task scoped to `dojo_app/tictactoe_play.py`; `dojo_app/tictactoe_game.py` is stable scenario checking and CLI plumbing. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
+- To let OpenCode read the second brain and make tic-tac-toe playable, run a direct prompt. Keep the task scoped to `dojo_app/tictactoe_play.py`; `dojo_app/tictactoe_game.py` is stable scenario checking and CLI plumbing. Keep the public play entry point exactly named `run_tictactoe(scenario)`. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -113,7 +113,7 @@ opencode run \
   --title tictactoe-playable \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain for project context. Edit exactly one file: dojo_app/tictactoe_play.py. Replace run_tictactoe(scenario) with a terminal play loop. Support both scenario.mode values: human-vs-human and human-vs-computer. Use positions 1-9 for moves, q to quit, X and O turns, win detection, draw detection, and a simple computer move that wins if possible, blocks if needed, otherwise chooses center, a corner, then a side. After editing, run only python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py. If compile fails, fix the code and run py_compile again. Do not edit dojo_app/tictactoe_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Read the second brain for project context. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Replace the placeholder body with a terminal play loop. Support both scenario.mode values: human-vs-human and human-vs-computer. Use positions 1-9 for moves, q to quit, X and O turns, win detection, draw detection, and a simple computer move that wins if possible, blocks if needed, otherwise chooses center, a corner, then a side. Do not rename run_tictactoe, replace it with main, or move the play entry point into a class. After editing, run python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py and python3 -m dojo_app.tictactoe_game --check-play-interface. If either check fails, fix the code and run both checks again. Do not edit dojo_app/tictactoe_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
   --file dojo_app/tictactoe_play.py \
   --file .second-brain/sessions/current-session.md
 ```
@@ -161,6 +161,7 @@ cat .lab-state/codex-output/tictactoe-scenario.txt
 
 ```bash
 python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py
+python3 -m dojo_app.tictactoe_game --check-play-interface
 printf 'q\n' | python3 -m dojo_app.tictactoe_game --scenario-file .lab-state/codex-output/tictactoe-scenario.txt --play
 ```
 

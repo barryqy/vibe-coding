@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -227,13 +228,41 @@ def run_static_scenario(scenario: Scenario) -> None:
     print("Scenario is ready for play mode.")
 
 
+def load_play_runner():
+    try:
+        module = importlib.import_module("dojo_app.tictactoe_play")
+    except Exception as exc:
+        return None, f"could not import dojo_app.tictactoe_play: {exc}"
+
+    runner = getattr(module, "run_tictactoe", None)
+    if not callable(runner):
+        return None, "dojo_app/tictactoe_play.py must define run_tictactoe(scenario)"
+    return runner, ""
+
+
+def run_play_interface_check() -> bool:
+    print("TICTACTOE_PLAY_IMPORT=ready")
+    runner, reason = load_play_runner()
+    if runner is None:
+        print("TICTACTOE_PLAY_IMPORT=fail")
+        print(f"reason={reason}")
+        return False
+    print("function=run_tictactoe")
+    print("TICTACTOE_PLAY_IMPORT=pass")
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Check or play a tiny terminal tic-tac-toe scenario.")
     parser.add_argument("--scenario-file", help="File containing MODE, NEXT, and BOARD lines")
     parser.add_argument("--write-clean", help="Write the parsed scenario back in the tiny format")
     parser.add_argument("--check-only", action="store_true", help="Validate the scenario without playing")
+    parser.add_argument("--check-play-interface", action="store_true", help="Check that play mode can be imported")
     parser.add_argument("--play", action="store_true", help="Play from the scenario")
     args = parser.parse_args(argv)
+
+    if args.check_play_interface:
+        return 0 if run_play_interface_check() else 1
 
     try:
         scenario = load_scenario(args.scenario_file)
@@ -256,9 +285,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.play:
-        from dojo_app.tictactoe_play import run_tictactoe
-
-        return run_tictactoe(scenario)
+        runner, reason = load_play_runner()
+        if runner is None:
+            print("TICTACTOE_PLAY=fail")
+            print(f"reason={reason}")
+            return 1
+        try:
+            return runner(scenario)
+        except Exception as exc:
+            print("TICTACTOE_PLAY=fail")
+            print(f"reason={exc}")
+            return 1
 
     run_static_scenario(scenario)
     return 0
