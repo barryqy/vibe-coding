@@ -54,12 +54,12 @@ def check_guardrails() -> bool:
 
 def check_code() -> bool:
     unsafe_agent = read_sample("samples/unsafe_agent_patch.py")
-    leaky_maze = read_sample("samples/leaky_maze_patch.py")
+    leaky_rps = read_sample("samples/leaky_rps_patch.py")
     unsafe_report = read_sample("samples/unsafe_report_patch.py")
 
     checks = [
         ("exec-write", has(r"\beval\s*\(|shell\s*=\s*True", unsafe_agent), "dynamic-code-or-shell-execution"),
-        ("private-key", has(r"BEGIN OPENSSH PRIVATE KEY|sk-[A-Za-z0-9]{20,}", leaky_maze), "secret-material-in-source"),
+        ("private-key", has(r"BEGIN OPENSSH PRIVATE KEY|sk-[A-Za-z0-9]{20,}", leaky_rps), "secret-material-in-source"),
         ("sql-query", has(r"SELECT .+\{user_id\}|execute\(query\)", unsafe_report), "sql-built-from-user-input"),
         ("os-command", has(r"\bos\.system\s*\(", unsafe_report), "shell-command-from-generated-code"),
     ]

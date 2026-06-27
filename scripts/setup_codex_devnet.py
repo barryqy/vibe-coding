@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -13,8 +12,6 @@ STATE = ROOT / ".lab-state" / "codex"
 HOME = STATE / "home"
 CONFIG = HOME / "config.toml"
 MODEL_CATALOG = HOME / "model-catalog.json"
-SKILLS_HOME = HOME / "skills"
-MAZEMAKER_SKILL_SOURCE = ROOT / "skills" / "mazemaker"
 SHIM_BASE_URL = "http://127.0.0.1:8776/v1"
 
 
@@ -78,16 +75,8 @@ def remove_mcp_section(text: str, server_name: str) -> str:
     return text[:section_start] + text[section_end:]
 
 
-def install_mazemaker_skill() -> None:
-    target = SKILLS_HOME / "mazemaker"
-    if target.exists():
-        shutil.rmtree(target)
-    shutil.copytree(MAZEMAKER_SKILL_SOURCE, target)
-
-
 def ensure_mcp_config() -> None:
     HOME.mkdir(parents=True, exist_ok=True)
-    install_mazemaker_skill()
     if CONFIG.exists():
         text = CONFIG.read_text(encoding="utf-8")
         original_text = text
@@ -97,20 +86,9 @@ def ensure_mcp_config() -> None:
             f"args = [{toml_string('-m')}, {toml_string('dojo_app.barryflights_mcp_server')}]",
         )
         text = ensure_mcp_cwd(text, "barryflights")
-        missing = []
         if "[mcp_servers.barryflights]" not in text:
-            missing.extend(
-                [
-                    "[mcp_servers.barryflights]",
-                    f"command = {toml_string(str(mcp_python()))}",
-                    f"args = [{toml_string('-m')}, {toml_string('dojo_app.barryflights_mcp_server')}]",
-                    f"cwd = {toml_string(str(ROOT))}",
-                    "",
-                ]
-            )
-        if missing:
-            CONFIG.write_text(text.rstrip() + "\n\n" + "\n".join(missing), encoding="utf-8")
-        elif text != original_text:
+            text = text.rstrip() + "\n\n" + mcp_config_text()
+        if text != original_text:
             CONFIG.write_text(text, encoding="utf-8")
         return
 
@@ -164,11 +142,10 @@ def main() -> int:
         print("CODEX_MODEL_ROUTE=skipped")
         print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
         print("local_mcp=barryflights")
-        print("local_skill=mazemaker")
+        print("repo_skill=.agents/skills/rps-cli")
         return 0
 
     HOME.mkdir(parents=True, exist_ok=True)
-    install_mazemaker_skill()
     MODEL_CATALOG.write_text(
         json.dumps(model_catalog(model), indent=2) + "\n",
         encoding="utf-8",
@@ -181,7 +158,7 @@ def main() -> int:
                 "model_context_window = 128000",
                 f"model_catalog_json = {toml_string(str(MODEL_CATALOG))}",
                 'approval_policy = "never"',
-                'sandbox = "read-only"',
+                'sandbox_mode = "read-only"',
                 'web_search = "disabled"',
                 'model_reasoning_effort = "none"',
                 'model_reasoning_summary = "none"',
@@ -205,7 +182,7 @@ def main() -> int:
     print("model_context_window=128000")
     print("adapter=python3 scripts/start_codex_model_adapter.py")
     print("local_mcp=barryflights")
-    print(f"local_skill={(SKILLS_HOME / 'mazemaker').relative_to(ROOT)}")
+    print("repo_skill=.agents/skills/rps-cli")
     return 0
 
 
