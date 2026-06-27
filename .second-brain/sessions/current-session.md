@@ -34,4 +34,5 @@ status: active
 
 - python3 -m unittest tests.test_tictactoe_game
 - python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py
+- python3 -m dojo_app.tictactoe_game --check-play-interface
 - python3 scripts/check_repo.py
