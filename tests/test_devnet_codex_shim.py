@@ -4,7 +4,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dojo_app import tictactoe_game
 from scripts import devnet_codex_shim
 
 
@@ -43,45 +42,27 @@ class DevnetCodexShimTests(unittest.TestCase):
         self.assertTrue(devnet_codex_shim.wants_barryflights_booking(body))
         self.assertFalse(devnet_codex_shim.wants_barryflights_status(body))
 
-    def test_tictactoe_prompt_routes_to_scenario(self):
+    def test_maze_prompt_routes_to_mazemaker_skill(self):
         body = {
             "input": [
                 {
                     "role": "user",
                     "content": (
                         "Read the second brain for project context, then create "
-                        "one tic-tac-toe scenario for this repo."
+                        "the next Maze artifact for this repo."
                     ),
                 }
             ]
         }
 
-        self.assertTrue(devnet_codex_shim.wants_tictactoe_scenario(body))
+        self.assertTrue(devnet_codex_shim.wants_mazemaker_skill_build(body))
 
-    def test_project_note_prompt_does_not_route_to_scenario(self):
-        body = {
-            "input": [
-                {
-                    "role": "user",
-                    "content": (
-                        "Write the content for .second-brain/projects/vibe-coding-dojo.md. "
-                        "Tic-tac-toe scenario requests should follow "
-                        ".second-brain/patterns/tictactoe-scenario.md."
-                    ),
-                }
-            ]
-        }
+    def test_mazemaker_skill_route_writes_maze(self):
+        text = devnet_codex_shim.run_mazemaker_skill_build({"input": "create maze"})
 
-        self.assertFalse(devnet_codex_shim.wants_tictactoe_scenario(body))
-
-    def test_tictactoe_scenario_text_is_checkable(self):
-        text = devnet_codex_shim.tictactoe_scenario_text()
-        scenario = tictactoe_game.parse_scenario(text)
-
-        self.assertIn("MODE: human-vs-computer", text)
-        self.assertIn("NEXT: X", text)
-        self.assertIn("BOARD:", text)
-        self.assertEqual(scenario.board, tuple("........."))
+        self.assertIn("MAZEMAKER_SKILL=pass", text)
+        self.assertIn("skill=mazemaker", text)
+        self.assertTrue((devnet_codex_shim.ROOT / ".lab-state/codex-output/maze.txt").exists())
 
 
 if __name__ == "__main__":

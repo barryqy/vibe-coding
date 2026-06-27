@@ -13,10 +13,10 @@ In this dojo, the Codex path uses:
 - `codex --version` to confirm Codex is installed
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
-- `python3 scripts/setup_codex_devnet.py` to include the local BarryFlights MCP server in the repo-local Codex home
+- `python3 scripts/setup_codex_devnet.py` to include the local BarryFlights MCP server and install the MazeMaker skill into the repo-local Codex home
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from Codex
-- `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --cd "$PWD" --output-last-message .lab-state/codex-output/tictactoe-scenario.txt "Read the second brain for project context, then create one tic-tac-toe scenario..."` to let Codex create a small scenario directly
-- `python3 -m dojo_app.tictactoe_game --scenario-file .lab-state/codex-output/tictactoe-scenario.txt --check-only` to verify the scenario
+- `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --cd "$PWD" --output-last-message .lab-state/codex-output/mazemaker-skill.txt "Read the second brain for project context, then create the next Maze artifact..."` to let Codex find the MazeMaker skill pattern from the KB
+- `python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only` to verify the tool-created maze artifact
 - `AGENTS.md` for shared project guidance
 - `CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
 
@@ -36,7 +36,7 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
 - `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from OpenCode
-- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title tictactoe-playable --agent build --model devnet/gpt-4o "Read the second brain, .second-brain/patterns/tictactoe-playable-cli.md, and skills/tictactoe-cli/SKILL.md..."` for the scoped tic-tac-toe play prompt
+- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py..."` for the scoped Maze play prompt
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass
@@ -76,4 +76,4 @@ Useful official docs:
 
 ## Recommendation for This Lab
 
-Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and the second-brain-guided tic-tac-toe scenario. Bring in OpenCode later to read the same second brain and implement the playable loop with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.
+Use Codex CLI with the DevNet model proxy for the required first result, the local BarryFlights MCP status-check mission, and the second-brain-driven MazeMaker skill build. Bring in OpenCode later to read the same second brain and implement the generated Maze's playable loop with a direct, small prompt. Keep Claude Code as an optional follow-up only when sign-in is already available.

@@ -25,7 +25,7 @@ def main() -> int:
     print("resource_security_leaderboard=https://leaderboard.aidefense.cisco.com/")
     print("resource_model_ancestry=https://cs.co/ma")
     print("model_ancestry_example=Cursor Composer 2 and China-based Moonshot AI Kimi K2.5")
-    print("game_next=python3 -m dojo_app.tictactoe_game")
+    print("maze_next=python3 -m dojo_app.maze_game")
     return 0
 
 
