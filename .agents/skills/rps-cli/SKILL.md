@@ -33,17 +33,21 @@ It must also name these modes and checks:
 MODE: human-vs-computer
 MODE: human-vs-human
 VERIFY: python3 -m py_compile play.py
-VERIFY: python3 play.py --self-test
-VERIFY: printf 'rock\nq\n' | python3 play.py
-VERIFY: printf 'lizard\nq\n' | python3 play.py
+VERIFY: timeout 10s python3 play.py --self-test
+VERIFY: printf '1\nrock\nq\n' | timeout 10s python3 play.py
+VERIFY: printf '1\nlizard\nq\n' | timeout 10s python3 play.py
+VERIFY: printf '2\nrock\nscissors\nq\n' | timeout 10s python3 play.py
 ```
 
 State the behavior plainly:
 
+- choose human-vs-computer with `1` and human-vs-human with `2`
 - accept `rock`, `paper`, `scissors`, and `q`
 - reject invalid moves and keep running
 - support human-vs-computer and human-vs-human
+- handle `--self-test` from command-line arguments before any `input()` call
 - print `RPS_SELF_TEST=pass` from `--self-test`
+- make every `VERIFY:` command finish on its own without manual input
 - use only the Python standard library
 - avoid network calls, credential reads, shell clear commands, curses, and external packages
 

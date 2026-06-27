@@ -14,6 +14,7 @@ status: active
 - The current coding flow uses a repo skill and KB pattern for a rock-paper-scissors CLI game.
 - Codex should create `GAME_CONTRACT.md` only.
 - OpenCode should create `play.py` and `GAME_README.md` from `GAME_CONTRACT.md`.
+- The contract is normalized from Codex's raw final message before OpenCode reads it.
 
 ## Recent Work
 
@@ -35,4 +36,5 @@ status: active
 ## Verification
 
 - python3 scripts/check_repo.py
-- python3 play.py --self-test, after OpenCode creates `play.py`
+- python3 scripts/normalize_game_contract.py .lab-state/codex-output/rps-contract.raw.txt GAME_CONTRACT.md
+- timeout 10s python3 play.py --self-test, after OpenCode creates `play.py`

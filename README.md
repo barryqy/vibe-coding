@@ -57,6 +57,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 usage
+mkdir -p .lab-state/codex-output
 rm -f GAME_CONTRACT.md play.py
 
 CODEX_HOME=.lab-state/codex/home \
@@ -65,8 +66,12 @@ codex exec \
   --ephemeral \
   --cd "$PWD" \
   --sandbox read-only \
-  --output-last-message GAME_CONTRACT.md \
+  --output-last-message .lab-state/codex-output/rps-contract.raw.txt \
   'Use $rps-cli and the second brain for project context. Create the rock-paper-scissors CLI contract for this repo. Return only the contract body. Do not create play.py or GAME_README.md.'
+
+python3 scripts/normalize_game_contract.py \
+  .lab-state/codex-output/rps-contract.raw.txt \
+  GAME_CONTRACT.md
 
 grep -q '^APP: play.py$' GAME_CONTRACT.md
 grep -q '^DOCS: GAME_README.md$' GAME_CONTRACT.md
@@ -109,9 +114,10 @@ opencode run \
 test -f play.py
 test -f GAME_README.md
 python3 -m py_compile play.py
-python3 play.py --self-test
-printf 'rock\nq\n' | python3 play.py
-printf 'lizard\nq\n' | python3 play.py
+timeout 10s python3 play.py --self-test
+printf '1\nrock\nq\n' | timeout 10s python3 play.py
+printf '1\nlizard\nq\n' | timeout 10s python3 play.py
+printf '2\nrock\nscissors\nq\n' | timeout 10s python3 play.py
 usage
 ```
 

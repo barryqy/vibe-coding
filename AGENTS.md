@@ -96,15 +96,18 @@ Use the documented Codex skill path and the second-brain KB. The output file is 
 
 ```bash
 rm -f GAME_CONTRACT.md play.py
+mkdir -p .lab-state/codex-output
 CODEX_HOME=.lab-state/codex/home \
 codex exec \
   --disable plugin_sharing \
   --ephemeral \
   --cd "$PWD" \
   --sandbox read-only \
-  --output-last-message GAME_CONTRACT.md \
+  --output-last-message .lab-state/codex-output/rps-contract.raw.txt \
   'Use $rps-cli and the second brain for project context. Create the rock-paper-scissors CLI contract for this repo. Return only the contract body. Do not create play.py or GAME_README.md.' \
   > .lab-state/codex-output/rps-contract.log 2>&1
+
+python3 scripts/normalize_game_contract.py .lab-state/codex-output/rps-contract.raw.txt GAME_CONTRACT.md
 
 grep -q '^APP: play.py$' GAME_CONTRACT.md
 grep -q '^DOCS: GAME_README.md$' GAME_CONTRACT.md
@@ -157,9 +160,10 @@ Verify the generated app:
 test -f play.py
 test -f GAME_README.md
 python3 -m py_compile play.py
-python3 play.py --self-test
-printf 'rock\nq\n' | python3 play.py
-printf 'lizard\nq\n' | python3 play.py
+timeout 10s python3 play.py --self-test
+printf '1\nrock\nq\n' | timeout 10s python3 play.py
+printf '1\nlizard\nq\n' | timeout 10s python3 play.py
+printf '2\nrock\nscissors\nq\n' | timeout 10s python3 play.py
 ```
 
 ## Security And Review

@@ -41,7 +41,8 @@ After OpenCode builds the app:
 test -f play.py
 test -f GAME_README.md
 python3 -m py_compile play.py
-python3 play.py --self-test
-printf 'rock\nq\n' | python3 play.py
-printf 'lizard\nq\n' | python3 play.py
+timeout 10s python3 play.py --self-test
+printf '1\nrock\nq\n' | timeout 10s python3 play.py
+printf '1\nlizard\nq\n' | timeout 10s python3 play.py
+printf '2\nrock\nscissors\nq\n' | timeout 10s python3 play.py
 ```

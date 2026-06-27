@@ -28,6 +28,8 @@ REQUIRED_FILES = [
     Path("scripts/barrybot_demo.py"),
     Path("scripts/install_ai_tools.sh"),
     Path("scripts/check_repo.py"),
+    Path("scripts/normalize_game_contract.py"),
+    Path("tests/test_game_contract.py"),
     Path("scripts/devnet_codex_shim.py"),
     Path("tests/test_devnet_codex_shim.py"),
     Path("scripts/model_usage.py"),
@@ -113,6 +115,7 @@ def main() -> int:
     require("scripts/defenseclaw_mcp_demo.py" in agents, "AGENTS.md must mention the DefenseClaw MCP demo", errors)
     require("barryflights_mcp_server.py" in agents, "AGENTS.md must mention the local BarryFlights MCP server", errors)
     require("GAME_CONTRACT.md" in agents, "AGENTS.md must describe the RPS contract file", errors)
+    require("normalize_game_contract.py" in agents, "AGENTS.md must normalize the Codex contract output", errors)
     require("play.py" in agents, "AGENTS.md must describe the generated RPS app file", errors)
     require(".agents/skills/rps-cli/SKILL.md" in agents, "AGENTS.md must mention the Codex skill path", errors)
     require(".opencode/skills/rps-cli/SKILL.md" in agents, "AGENTS.md must mention the OpenCode skill path", errors)
@@ -138,10 +141,13 @@ def main() -> int:
 
     require("GAME_CONTRACT.md" in pattern_note, "RPS pattern must describe the contract file", errors)
     require("test ! -f play.py" in pattern_note, "RPS pattern must keep Codex contract stage from creating play.py", errors)
-    require("python3 play.py --self-test" in pattern_note, "RPS pattern must include the generated app self-test", errors)
+    require("timeout 10s python3 play.py --self-test" in pattern_note, "RPS pattern must include the timeout-safe generated app self-test", errors)
+    require("printf '1\\nrock\\nq\\n' | timeout 10s python3 play.py" in pattern_note, "RPS pattern must select human-vs-computer before valid move smoke test", errors)
+    require("printf '2\\nrock\\nscissors\\nq\\n' | timeout 10s python3 play.py" in pattern_note, "RPS pattern must include a human-vs-human smoke test", errors)
 
     require("The repo does not ship a prebuilt rock-paper-scissors app" in project_note, "project note must call out no prebuilt game", errors)
     require("Codex should create `GAME_CONTRACT.md` only" in session_note, "session note must keep the Codex contract boundary", errors)
+    require("normalized from Codex's raw final message" in session_note, "session note must describe contract normalization", errors)
     require("OpenCode should create `play.py` and `GAME_README.md`" in session_note, "session note must keep the OpenCode build boundary", errors)
     require("shared context for any agent" in session_note, "session note must describe the second brain as shared agent context", errors)
 
@@ -155,6 +161,9 @@ def main() -> int:
         require("APP: play.py" in skill_text, f"{skill_path} must require the app marker", errors)
         require("DOCS: GAME_README.md" in skill_text, f"{skill_path} must require the docs marker", errors)
         require("RPS_SELF_TEST=pass" in skill_text, f"{skill_path} must require the pass marker", errors)
+        require("printf '1\\nrock\\nq\\n' | timeout 10s python3 play.py" in skill_text, f"{skill_path} must select human-vs-computer before valid move smoke test", errors)
+        require("printf '2\\nrock\\nscissors\\nq\\n' | timeout 10s python3 play.py" in skill_text, f"{skill_path} must include a human-vs-human smoke test", errors)
+        require("before any `input()` call" in skill_text, f"{skill_path} must keep self-test noninteractive", errors)
         require("Do not create `play.py` or `GAME_README.md`" in skill_text, f"{skill_path} must keep contract-only prompts honest", errors)
 
     for config_path in [root / "opencode.json", root / ".claude/settings.json"]:

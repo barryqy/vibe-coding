@@ -15,7 +15,7 @@ In this dojo, the Codex path uses:
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
 - `usage` to check token counts recorded by the local adapter
 - `.agents/skills/rps-cli/SKILL.md` as the documented project skill location
-- `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --cd "$PWD" --sandbox read-only --output-last-message GAME_CONTRACT.md 'Use $rps-cli and the second brain...'` to create the game contract
+- `CODEX_HOME=.lab-state/codex/home codex exec --disable plugin_sharing --ephemeral --cd "$PWD" --sandbox read-only --output-last-message .lab-state/codex-output/rps-contract.raw.txt 'Use $rps-cli and the second brain...'` plus `python3 scripts/normalize_game_contract.py ... GAME_CONTRACT.md` to create a clean game contract
 
 Useful official docs:
 

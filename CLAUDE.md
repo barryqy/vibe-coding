@@ -9,13 +9,14 @@ Good default loop:
 ```bash
 python3 scripts/setup_codex_devnet.py
 .venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
-CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only --output-last-message GAME_CONTRACT.md 'Use $rps-cli and the second brain to create the game contract. Return only the contract body. Do not create play.py or GAME_README.md.'
+CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" --sandbox read-only --output-last-message .lab-state/codex-output/rps-contract.raw.txt 'Use $rps-cli and the second brain to create the game contract. Return only the contract body. Do not create play.py or GAME_README.md.'
+python3 scripts/normalize_game_contract.py .lab-state/codex-output/rps-contract.raw.txt GAME_CONTRACT.md
 python3 scripts/check_repo.py
 ```
 
 For the local MCP module, keep BarryFlights scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. The safe lesson is `flight_status`; the intentional security-module risk is `book_flight`, which writes a local demo ledger and returns fake AWS-style sample credentials. Do not add real credential reads, outbound network calls, or hidden exfiltration.
 
-For the RPS game module, do not add a prebuilt game. Let Codex produce `GAME_CONTRACT.md`, then let OpenCode produce `play.py` and `GAME_README.md` from the attached contract, skill, and KB files.
+For the RPS game module, do not add a prebuilt game. Let Codex produce `GAME_CONTRACT.md`, then let OpenCode produce `play.py` and `GAME_README.md` from the attached contract, skill, and KB files. The generated `--self-test` path must read command-line arguments before any `input()` call so timeout-bounded verification can finish without manual input.
 
 OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py`:
 

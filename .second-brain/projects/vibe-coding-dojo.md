@@ -41,5 +41,6 @@ The main coding boundary is intentionally clear:
 - python3 scripts/check_repo.py
 - grep -q '^APP: play.py$' GAME_CONTRACT.md
 - grep -q '^MARKER: RPS_SELF_TEST=pass$' GAME_CONTRACT.md
+- python3 scripts/normalize_game_contract.py .lab-state/codex-output/rps-contract.raw.txt GAME_CONTRACT.md
 - python3 -m py_compile play.py
-- python3 play.py --self-test
+- timeout 10s python3 play.py --self-test
