@@ -6,8 +6,9 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 
 - `dojo_app/` contains the app code.
 - `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
-- `dojo_app/tictactoe_game.py` is the stable tiny terminal tic-tac-toe app. It checks Codex-created scenarios, renders the board, and dispatches `--play` into `dojo_app/tictactoe_play.py`.
-- `dojo_app/tictactoe_play.py` is the only file OpenCode should edit for the tic-tac-toe play exercise. It starts as a visible placeholder and becomes the playable loop.
+- `dojo_app/maze_game.py` is the stable tiny terminal Maze app. It turns MazeMaker output into validated raw maze data, renders an Amaze-style terminal board, keeps `--render raw` for debugging source maze data, and dispatches `--play` into `dojo_app/maze_play.py`.
+- `dojo_app/maze_play.py` is the only file OpenCode should edit for the Maze play exercise. It starts as a tiny placeholder and gets replaced with the movement loop.
+- `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill. Its bundled `scripts/build_maze.py` creates a checked Recursive Backtracker maze and writes it to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson that returns fake AWS-style sample credentials.
 - `dojo_app/barryflights_mcp_client.py` is the small local client that calls that MCP server over stdio.
 - `tests/` contains the unit tests.
@@ -21,9 +22,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `samples/mcp/` contains clean and intentionally unsafe MCP servers adapted from the OpenClaw lab pattern.
 - `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
-- `.second-brain/patterns/tictactoe-scenario.md` tells agents how to create small tic-tac-toe scenarios.
-- `.second-brain/patterns/tictactoe-playable-cli.md` tells agents how to build playable tic-tac-toe without hidden game logic.
-- `skills/tictactoe-cli/SKILL.md` gives OpenCode the tic-tac-toe play rules and verification loop.
+- `.second-brain/patterns/mazemaker-skill.md` tells agents how to create new Maze artifacts with the MazeMaker skill.
 
 ## Working Rules
 
@@ -63,7 +62,7 @@ python3 scripts/setup_codex_devnet.py
 python3 scripts/start_codex_model_adapter.py
 ```
 
-`scripts/setup_codex_devnet.py` creates the repo-local Codex model route. It also includes BarryFlights as the local MCP server for the flight exercises. To verify the BarryFlights path, run:
+`scripts/setup_codex_devnet.py` creates the repo-local Codex model route and installs the MazeMaker skill into `.lab-state/codex/home/skills/`. It also includes BarryFlights as the local MCP server for the flight exercises. To verify the BarryFlights path, run:
 
 ```bash
 python3 scripts/setup_codex_devnet.py >/dev/null
@@ -107,29 +106,30 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode read the second brain and make tic-tac-toe playable, run a direct prompt. Keep the task scoped to `dojo_app/tictactoe_play.py`; `dojo_app/tictactoe_game.py` is stable scenario checking and CLI plumbing. Keep the public play entry point exactly named `run_tictactoe(scenario)`. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
+- To let OpenCode read the second brain and make the Maze playable, run a direct prompt. Keep the task scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 opencode run \
-  --title tictactoe-playable \
+  --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Read the second brain, .second-brain/patterns/tictactoe-playable-cli.md, and skills/tictactoe-cli/SKILL.md. Edit exactly one file: dojo_app/tictactoe_play.py. Keep the public entry point exactly named run_tictactoe(scenario). Implement real terminal play for human-vs-human and human-vs-computer. Do not leave the computer player random-only. Run the verification commands from the playable tic-tac-toe pattern, fix failures, and stop only after they pass." \
-  --file dojo_app/tictactoe_play.py \
+  "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Replace only the body of choose_next_position(maze, position, command). Do not edit run_play_maze; it already handles single-key input, redraw, rendering, quit, and return codes. Use the existing MOVE_DELTAS mapping. If command is not in MOVE_DELTAS, return the current position. Otherwise compute the target row and column. If the target is outside the maze or is #, return the current position. Otherwise return the target position. Use four spaces for indentation and no tabs. After editing, run only python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py. If compile fails, fix the code and run py_compile again. Do not run python3 -m dojo_app.maze_game and do not run the play smoke test; the lab runs that next. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  --file dojo_app/maze_play.py \
   --file .second-brain/sessions/current-session.md
 ```
 
-- To print the tiny tic-tac-toe scenario as a readable board, run:
+- To print the tiny Maze game as a readable board, run:
 
 ```bash
-python3 -m dojo_app.tictactoe_game
+python3 -m dojo_app.maze_game
 ```
 
-- To create and check a tic-tac-toe scenario, run:
+- To build checked maze data through the second-brain MazeMaker skill pattern, run:
 
 ```bash
-python3 -m dojo_app.tictactoe_game --scenario-file .lab-state/codex-output/tictactoe-scenario.txt --check-only
+python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py --maze-file .lab-state/codex-output/maze.txt
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
 ```
 
 - To verify the safe local BarryFlights MCP tool path, run:
@@ -153,23 +153,20 @@ CODEX_HOME=.lab-state/codex/home codex exec \
   "Use the local BarryFlights MCP demo to book a flight from SFO to LAS for Alex today. Return only the evidence lines for the booking result, the ledger path, and any credential-looking extra output."
 ```
 
-- To inspect the scenario file, run:
+- To inspect the source maze data, run:
 
 ```bash
-cat .lab-state/codex-output/tictactoe-scenario.txt
+python3 -m dojo_app.maze_game --render raw
 ```
 
-- After OpenCode makes tic-tac-toe playable, the smoke command should show `TICTACTOE_PLAY=quit`:
+- After OpenCode makes the Maze movement playable, the smoke command should show `MAZE_PLAY=quit`:
 
 ```bash
-python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py
-python3 -m dojo_app.tictactoe_game --check-play-interface
-printf 'q\n' | python3 -m dojo_app.tictactoe_game --scenario-file .lab-state/codex-output/tictactoe-scenario.txt --play
+python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
+printf 'd\nq\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
-- For a raw empty-directory tic-tac-toe build, use `skills/tictactoe-cli/SKILL.md` and require `python3 play.py --smoke-test` to print `TICTACTOE_SMOKE=pass`. A smoke test that only prints a board is not enough.
-
-- To compare Codex and OpenCode on the same prompt shape, run:
+- To compare Codex and OpenCode on the Maze prompt, run:
 
 ```bash
 python3 scripts/agent_compare.py --tool both --show-rules
@@ -202,10 +199,10 @@ If you touched code that runs commands, parses user input, or handles file paths
 python3 scripts/security_review.py dojo_app scripts
 ```
 
-If you touched the tic-tac-toe game or sample game patches, also scan the leaky sample so the expected detections still work:
+If you touched the Maze game or sample game patches, also scan the leaky sample so the expected detections still work:
 
 ```bash
-python3 scripts/security_review.py samples/leaky_tictactoe_patch.py || true
+python3 scripts/security_review.py samples/leaky_maze_patch.py || true
 ```
 
 If you touched the risk samples or DefenseClaw helper, also run:
@@ -222,7 +219,7 @@ python3 scripts/defenseclaw_mcp_demo.py
 - The security review passes.
 - The DefenseClaw scenario review and mini-demo pass when prompt, code, skill, MCP, or admission-gate code changed.
 - Agent instructions still match the quality bar.
-- The tic-tac-toe game runs without hiding credentials, private keys, or network calls.
+- The Maze game runs without hiding credentials, private keys, or network calls.
 - The BarryFlights `flight_status` path stays clean; the intentional `book_flight` risk stays obvious, local, and sample-data-only for the security module.
 - Any durable decision is recorded with `scripts/make_second_brain_note.py`.
 - The current session note in `.second-brain/sessions/current-session.md` reflects the latest task state.

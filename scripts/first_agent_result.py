@@ -40,9 +40,9 @@ def prompt_for_first_result() -> str:
     return (
         "Read AGENTS.md and docs/quality-bar.md briefly. Do not edit files. "
         "This is a quick tool check for a short lab. Reply with four short bullets: "
-        "1) give the tic-tac-toe game a fun nickname, "
+        "1) give the Maze game a fun nickname, "
         "2) say what a coding agent does in one plain sentence, "
-        "3) suggest one tiny safe feature for the tic-tac-toe game, "
+        "3) suggest one tiny safe feature for the Maze game, "
         "4) end with the exact verification command: python3 scripts/check_repo.py."
     )
 
