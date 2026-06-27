@@ -12,6 +12,7 @@ This folder is shared memory for any coding agent working in this repo.
 ## Known Patterns
 
 - For tic-tac-toe scenario requests, read `patterns/tictactoe-scenario.md` before acting.
+- For playable tic-tac-toe requests, read `patterns/tictactoe-playable-cli.md` and `skills/tictactoe-cli/SKILL.md` before editing.
 
 ## Memory Lifecycle
 

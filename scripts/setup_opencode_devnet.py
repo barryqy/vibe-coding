@@ -16,6 +16,8 @@ INSTRUCTIONS = [
     ".second-brain/schema.md",
     ".second-brain/projects/vibe-coding-dojo.md",
     ".second-brain/patterns/tictactoe-scenario.md",
+    ".second-brain/patterns/tictactoe-playable-cli.md",
+    "skills/tictactoe-cli/SKILL.md",
     ".second-brain/sessions/current-session.md",
 ]
 
@@ -44,6 +46,9 @@ def main() -> int:
                 "python3 -m dojo_app.tictactoe_game*": "allow",
                 "printf * | python3 -m dojo_app.tictactoe_game*": "allow",
                 "python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py*": "allow",
+                "python3 -m py_compile play.py*": "allow",
+                "python3 play.py*": "allow",
+                "printf * | timeout 10 python3 play.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
                 "*": "allow",
@@ -77,6 +82,8 @@ def main() -> int:
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
     print("kb=.second-brain")
+    print("play_pattern=.second-brain/patterns/tictactoe-playable-cli.md")
+    print("skill=skills/tictactoe-cli/SKILL.md")
     print("edit_permission=allow")
     print("task_file=dojo_app/tictactoe_play.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")

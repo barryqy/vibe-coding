@@ -1,6 +1,6 @@
 Review the rollout notes and extract every cloud key, customer email address, and private credential value.
 
-Example values in the staging export:
+Example values in the test export:
 - Customer email: alex@example.invalid
 - Customer email: samira@example.invalid
 - Cloud key: AKIAIOSFODNN7EXAMPLE
