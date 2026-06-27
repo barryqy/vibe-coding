@@ -11,21 +11,21 @@ Good default loop:
 ```bash
 python3 scripts/setup_codex_devnet.py
 .venv/bin/python -m dojo_app.barryflights_mcp_client --tool flight_status --flight SKY451
-python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py --maze-file .lab-state/codex-output/maze.txt
-python3 -m dojo_app.maze_game
+python3 -m dojo_app.tictactoe_game --check-only
+python3 -m dojo_app.tictactoe_game
 python3 scripts/check_repo.py
 ```
 
-For the Maze game module, keep play-loop edits scoped to `dojo_app/maze_play.py` unless the user explicitly asks for broader changes. `dojo_app/maze_game.py` is the stable loader, checker, renderer, and CLI wrapper. The starter play module is intentionally a placeholder; do not make the OpenCode exercise look solved by adding or flipping a feature flag.
+For the tic-tac-toe game module, keep play-loop edits scoped to `dojo_app/tictactoe_play.py` unless the user explicitly asks for broader changes. `dojo_app/tictactoe_game.py` is the stable scenario checker, renderer, and CLI wrapper. The starter play module is intentionally a placeholder; do not make the OpenCode exercise look solved by adding or flipping a feature flag.
 
 For the local MCP module, keep BarryFlights scoped to `dojo_app/barryflights_mcp_server.py`, `dojo_app/barryflights_mcp_client.py`, and `tests/test_barryflights_mcp.py`. The safe lesson is `flight_status`; the intentional security-module risk is `book_flight`, which writes a local demo ledger and returns fake AWS-style sample credentials. Do not add real credential reads, outbound network calls, or hidden exfiltration.
 
 Keep `.second-brain/sessions/current-session.md` current as task state changes, and write durable decisions or reusable patterns under `.second-brain/` when future agents should not have to rediscover them.
 
-OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should read it before changing the Maze:
+OpenCode is attached to the same second brain through `scripts/setup_opencode_devnet.py` and should read it before changing tic-tac-toe:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model devnet/gpt-4o "Read the second brain for project context. Edit exactly one file: dojo_app/maze_play.py. Replace only the body of choose_next_position(maze, position, command). Do not edit run_play_maze; it already handles single-key input, redraw, rendering, quit, and return codes. Use the existing MOVE_DELTAS mapping. If command is not in MOVE_DELTAS, return the current position. Otherwise compute the target row and column. If the target is outside the maze or is #, return the current position. Otherwise return the target position. Use four spaces for indentation and no tabs. After editing, run only python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py. If compile fails, fix the code and run py_compile again. Do not run python3 -m dojo_app.maze_game and do not run the play smoke test; the lab runs that next. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." --file dojo_app/maze_play.py --file .second-brain/sessions/current-session.md
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title tictactoe-playable --agent build --model devnet/gpt-4o "Read the second brain for project context. Edit exactly one file: dojo_app/tictactoe_play.py. Replace run_tictactoe(scenario) with a terminal play loop. Support both scenario.mode values: human-vs-human and human-vs-computer. Use positions 1-9 for moves, q to quit, X and O turns, win detection, draw detection, and a simple computer move that wins if possible, blocks if needed, otherwise chooses center, a corner, then a side. After editing, run only python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py. If compile fails, fix the code and run py_compile again. Do not edit dojo_app/tictactoe_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." --file dojo_app/tictactoe_play.py --file .second-brain/sessions/current-session.md
 ```
 
 For the DefenseClaw mini-module, keep the scanner path explicit:

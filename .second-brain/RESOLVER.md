@@ -11,7 +11,7 @@ This folder is shared memory for any coding agent working in this repo.
 
 ## Known Patterns
 
-- For Maze artifact requests, read `patterns/mazemaker-skill.md` before acting.
+- For tic-tac-toe scenario requests, read `patterns/tictactoe-scenario.md` before acting.
 
 ## Memory Lifecycle
 

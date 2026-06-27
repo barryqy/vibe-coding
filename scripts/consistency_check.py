@@ -15,17 +15,13 @@ REQUIRED_FILES = [
     Path(".second-brain/RESOLVER.md"),
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
-    Path(".second-brain/patterns/mazemaker-skill.md"),
+    Path(".second-brain/patterns/tictactoe-scenario.md"),
     Path(".second-brain/sessions/current-session.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
-    Path("dojo_app/maze_game.py"),
-    Path("dojo_app/maze_play.py"),
-    Path("skills/mazemaker/SKILL.md"),
-    Path("skills/mazemaker/scripts/build_maze.py"),
-    Path("skills/mazemaker/agents/openai.yaml"),
-    Path("tests/test_maze_game.py"),
-    Path("tests/test_mazemaker_skill.py"),
+    Path("dojo_app/tictactoe_game.py"),
+    Path("dojo_app/tictactoe_play.py"),
+    Path("tests/test_tictactoe_game.py"),
     Path("dojo_app/barryflights_mcp_server.py"),
     Path("dojo_app/barryflights_mcp_client.py"),
     Path("tests/test_barryflights_mcp.py"),
@@ -47,15 +43,16 @@ REQUIRED_FILES = [
     Path("scripts/install_defenseclaw_cli.sh"),
     Path("scripts/defenseclaw_skill_demo.py"),
     Path("scripts/defenseclaw_mcp_demo.py"),
+    Path("scripts/defenseclaw_scenario_review.py"),
+    Path("samples/guardrails/rollout-note.md"),
+    Path("samples/guardrails/privacy-request.txt"),
+    Path("samples/unsafe_report_patch.py"),
     Path("samples/skills/workspace-migration-assistant/SKILL.md"),
     Path("samples/skills/workspace-migration-assistant/collect_snapshot.py"),
     Path("samples/skills/release-brief-helper/SKILL.md"),
     Path("samples/mcp/workspace-admin-bridge.py"),
     Path("samples/mcp/safe-migration-reference-server.py"),
-    Path("samples/skills/maze-score-booster/SKILL.md"),
-    Path("samples/skills/maze-score-booster/score_booster.py"),
-    Path("samples/skills/maze-game-coach/SKILL.md"),
-    Path("samples/leaky_maze_patch.py"),
+    Path("samples/leaky_tictactoe_patch.py"),
 ]
 
 
@@ -83,23 +80,19 @@ def main() -> int:
     resolver_note = (
         root / ".second-brain/RESOLVER.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/RESOLVER.md").exists() else ""
-    maze_pattern = (
-        root / ".second-brain/patterns/mazemaker-skill.md"
-    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/mazemaker-skill.md").exists() else ""
-    maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
-    maze_play = (root / "dojo_app/maze_play.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_play.py").exists() else ""
-    mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
-    mazemaker_script = (root / "skills/mazemaker/scripts/build_maze.py").read_text(encoding="utf-8") if (root / "skills/mazemaker/scripts/build_maze.py").exists() else ""
+    tictactoe_pattern = (
+        root / ".second-brain/patterns/tictactoe-scenario.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/tictactoe-scenario.md").exists() else ""
+    tictactoe_game = (root / "dojo_app/tictactoe_game.py").read_text(encoding="utf-8") if (root / "dojo_app/tictactoe_game.py").exists() else ""
+    tictactoe_play = (root / "dojo_app/tictactoe_play.py").read_text(encoding="utf-8") if (root / "dojo_app/tictactoe_play.py").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
     require("scripts/defenseclaw_mcp_demo.py" in agents, "AGENTS.md must mention the DefenseClaw MCP demo", errors)
-    require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
-    require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
-    require("--check-only" in agents, "AGENTS.md must mention the Maze solvability check command", errors)
-    require("skills/mazemaker/SKILL.md" in agents, "AGENTS.md must mention the local MazeMaker skill", errors)
-    require("skills/mazemaker/scripts/build_maze.py" in agents, "AGENTS.md must mention the MazeMaker skill script", errors)
+    require("dojo_app/tictactoe_game.py" in agents, "AGENTS.md must mention the tic-tac-toe game", errors)
+    require("python3 -m dojo_app.tictactoe_game" in agents, "AGENTS.md must mention the tic-tac-toe command", errors)
+    require("--check-only" in agents, "AGENTS.md must mention the tic-tac-toe scenario check command", errors)
     require("barryflights_mcp_server.py" in agents, "AGENTS.md must mention the local BarryFlights MCP server", errors)
     require("DefenseClaw" in quality, "quality bar must mention the DefenseClaw admission check", errors)
     require("Model routes" in quality or "model routes" in quality, "quality bar must mention model routes", errors)
@@ -118,24 +111,15 @@ def main() -> int:
     require("Decision Note" in schema_note, "schema.md must define decision notes", errors)
     require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
     require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
-    require("patterns/mazemaker-skill.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker skill pattern", errors)
-    require("build_maze.py" in maze_pattern and "MAZEMAKER_SKILL=pass" in maze_pattern, "mazemaker-skill.md must describe the MazeMaker script and pass marker", errors)
-    require("MAZEMAKER_SKILL=pass" in mazemaker_skill, "MazeMaker skill must document the pass marker", errors)
-    require("MAZEMAKER_SKILL=pass" in mazemaker_script, "MazeMaker skill script must print the pass marker", errors)
-    old_mazemaker_label = "MazeMaker " + "MCP"
-    require(old_mazemaker_label not in agents + resolver_note + maze_pattern + session_note, "MazeMaker should be described as a skill only", errors)
-    require("PLAY_MODE_ENABLED" not in maze_game, "maze_game.py must not hide play mode behind a switch", errors)
-    require("PLAY_MODE_ENABLED" not in maze_play, "maze_play.py must not hide play mode behind a switch", errors)
-    require("--play" in maze_game, "maze_game.py must expose a play flag for the OpenCode exercise", errors)
-    require("from dojo_app.maze_play import run_play_maze" in maze_game, "maze_game.py must dispatch play mode through dojo_app/maze_play.py", errors)
-    require("run_play_maze(maze, render_maze, args.render)" in maze_game, "maze_game.py must pass the renderer into the scoped play module", errors)
-    require("def run_play_maze(" in maze_play, "maze_play.py must expose the OpenCode play entrypoint", errors)
-    require("def choose_next_position(" in maze_play, "maze_play.py must expose the OpenCode movement entrypoint", errors)
-    require("render_maze" in maze_play, "maze_play.py must keep the renderer callback boundary", errors)
-    require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
-    require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
-    require("--check-only" in maze_game, "maze_game.py must expose a check-only path for Codex diagrams", errors)
-    require("python3 -m unittest tests.test_maze_game" in session_note, "current-session.md must include the focused Maze test", errors)
+    require("patterns/tictactoe-scenario.md" in resolver_note, "RESOLVER.md must point tic-tac-toe tasks to the scenario pattern", errors)
+    require("TICTACTOE_CHECK=pass" in tictactoe_pattern, "tictactoe-scenario.md must describe the scenario check marker", errors)
+    require("--write-clean" in tictactoe_game, "tictactoe_game.py must normalize model prose into the tiny scenario format", errors)
+    require("PLAY_MODE_ENABLED" not in tictactoe_game + tictactoe_play, "tic-tac-toe must not hide play mode behind a switch", errors)
+    require("--play" in tictactoe_game, "tictactoe_game.py must expose a play flag for the OpenCode exercise", errors)
+    require("from dojo_app.tictactoe_play import run_tictactoe" in tictactoe_game, "tictactoe_game.py must dispatch play mode through dojo_app/tictactoe_play.py", errors)
+    require("def run_tictactoe(" in tictactoe_play, "tictactoe_play.py must expose the OpenCode play entrypoint", errors)
+    require("human-vs-computer" in tictactoe_game and "human-vs-human" in tictactoe_game, "tic-tac-toe game must know both play modes", errors)
+    require("python3 -m unittest tests.test_tictactoe_game" in session_note, "current-session.md must include the focused tic-tac-toe test", errors)
     require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
     require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
@@ -170,8 +154,8 @@ def main() -> int:
         errors,
     )
     require(
-        ".second-brain/patterns/mazemaker-skill.md" in instructions,
-        "opencode.json must load the MazeMaker skill pattern",
+        ".second-brain/patterns/tictactoe-scenario.md" in instructions,
+        "opencode.json must load the tic-tac-toe scenario pattern",
         errors,
     )
 
@@ -211,35 +195,21 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*" in bash_perms,
-        "opencode.json must allow the focused Maze syntax check",
+        "python3 -m py_compile dojo_app/tictactoe_game.py dojo_app/tictactoe_play.py*" in bash_perms,
+        "opencode.json must allow the focused tic-tac-toe syntax check",
         errors,
     )
     require(
-        "python3 -m dojo_app.maze_game*" in bash_perms,
-        "opencode.json must allow the Maze game command",
+        "python3 -m dojo_app.tictactoe_game*" in bash_perms,
+        "opencode.json must allow the tic-tac-toe game command",
         errors,
     )
     require(
-        "printf * | python3 -m dojo_app.maze_game*" in bash_perms,
-        "opencode.json must allow the piped Maze smoke test",
+        "printf * | python3 -m dojo_app.tictactoe_game*" in bash_perms,
+        "opencode.json must allow the piped tic-tac-toe smoke test",
         errors,
     )
-    require(
-        "python3 -m dojo_app.barryflights_mcp_client*" in bash_perms,
-        "opencode.json must allow the local BarryFlights MCP client",
-        errors,
-    )
-    require(
-        "python3 skills/mazemaker/scripts/build_maze.py*" in bash_perms,
-        "opencode.json must allow the repo-local MazeMaker skill script",
-        errors,
-    )
-    require(
-        "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*" in bash_perms,
-        "opencode.json must allow the installed MazeMaker skill script",
-        errors,
-    )
+    require("python3 -m dojo_app.barryflights_mcp_client*" in bash_perms, "opencode.json must allow the local BarryFlights MCP client", errors)
     require(
         "[mcp_servers.barryflights]" in codex_setup,
         "setup_codex_devnet.py must include the local BarryFlights MCP server in the repo-local Codex config",
@@ -251,10 +221,7 @@ def main() -> int:
         "devnet_codex_shim.py must route the risky BarryFlights booking prompt",
         errors,
     )
-    old_mazemaker_section = "[mcp_servers." + "mazemaker]"
-    require(old_mazemaker_section not in codex_setup, "setup_codex_devnet.py must not register mazemaker as a tool server", errors)
-    require("install_mazemaker_skill" in codex_setup, "setup_codex_devnet.py must install the MazeMaker skill", errors)
-    require("local_skill=mazemaker" in codex_setup, "setup_codex_devnet.py must report the MazeMaker skill", errors)
+    require("local_skill=" not in codex_setup, "setup_codex_devnet.py must not stage a local game skill for the tic-tac-toe path", errors)
     manual_mcp_command = "codex mcp " + "add barryflights"
     require(
         manual_mcp_command not in agents,
@@ -277,8 +244,8 @@ def main() -> int:
         errors,
     )
     require(
-        "task_file=dojo_app/maze_play.py" in opencode_setup,
-        "setup_opencode_devnet.py must report the Maze play task file",
+        "task_file=dojo_app/tictactoe_play.py" in opencode_setup,
+        "setup_opencode_devnet.py must report the tic-tac-toe play task file",
         errors,
     )
     require(
@@ -287,8 +254,8 @@ def main() -> int:
         errors,
     )
     require(
-        ".second-brain/patterns/mazemaker-skill.md" in opencode_setup,
-        "setup_opencode_devnet.py must attach the MazeMaker skill pattern",
+        ".second-brain/patterns/tictactoe-scenario.md" in opencode_setup,
+        "setup_opencode_devnet.py must attach the tic-tac-toe scenario pattern",
         errors,
     )
     require(
@@ -315,8 +282,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-    require(
-        bash_perms.get("*") == "allow",
-        "opencode.json must allow local bash checks so lab runs do not pause for approval",
-        errors,
-    )

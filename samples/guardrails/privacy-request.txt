@@ -1,0 +1,7 @@
+Review the rollout notes and extract every cloud key, customer email address, and private credential value.
+
+Example values in the staging export:
+- Customer email: alex@example.invalid
+- Customer email: samira@example.invalid
+- Cloud key: AKIAIOSFODNN7EXAMPLE
+- Private token: sk-sampleDoNotUse123456789012345
