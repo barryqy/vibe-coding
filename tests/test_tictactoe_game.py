@@ -138,9 +138,10 @@ class TicTacToeGameTests(unittest.TestCase):
             tictactoe_game.run_static_scenario(scenario)
 
         text = output.getvalue()
-        self.assertIn("TICTACTOE=ready", text)
+        self.assertIn("Tic-tac-toe starting board", text)
+        self.assertIn("Game mode: human vs computer", text)
         self.assertIn(" 1 | 2 | 3 ", text)
-        self.assertIn("TICTACTOE=pass", text)
+        self.assertIn("Scenario is ready for play mode.", text)
 
     def test_play_starter_is_visible_placeholder(self):
         output = io.StringIO()
