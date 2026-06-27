@@ -66,10 +66,11 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
 - `scripts/agent_compare.py` builds one shared Maze planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
+- `scripts/defenseclaw_scenario_review.py` reviews the prompt, privacy, generated-code, and MCP risk scenarios used in the DefenseClaw module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
-- `samples/skills/` contains the DefenseClaw admission-gate examples.
+- `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
 - `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
 
 ## Optional Model Routes
@@ -274,11 +275,13 @@ claude "Reply only with a tiny three-line ASCII cat. Do not mention commands, fi
 
 ## Explore DefenseClaw
 
-Install the pinned DefenseClaw CLI path, then scan one intentionally unsafe skill and one clean skill:
+Install the pinned DefenseClaw CLI path, review the local scenario set, then scan one intentionally unsafe skill and one clean skill:
 
 ```bash
 ./scripts/install_defenseclaw_cli.sh
+python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
+python3 scripts/defenseclaw_mcp_demo.py
 ```
 
 The expected markers are:
@@ -287,6 +290,7 @@ The expected markers are:
 DEFENSECLAW_BAD_SKILL=blocked
 DEFENSECLAW_CLEAN_SKILL=clean
 DEFENSECLAW_MINI=pass
+DEFENSECLAW_MCP=pass
 ```
 
 You can also scan an intentionally leaky sample file:
