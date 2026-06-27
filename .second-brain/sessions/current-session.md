@@ -9,6 +9,7 @@ status: active
 
 - Codex is installed and connected to the supplied lab model route.
 - Codex can check flight status through the local BarryFlights MCP server.
+- `usage` is available after setup and shows token counts recorded by the local adapters.
 - The second brain is shared context for any agent that works in this repo.
 - The current coding flow uses a repo skill and KB pattern for a rock-paper-scissors CLI game.
 - Codex should create `GAME_CONTRACT.md` only.
@@ -18,6 +19,7 @@ status: active
 
 - The KB structure has a resolver, schema, project notes, session notes, decisions, and patterns.
 - The RPS skill lives in the documented project skill locations for Codex and OpenCode.
+- The DevNet model route returns token usage on successful calls, but the staging probe did not find a separate remaining-budget endpoint.
 - Agents should read the KB before editing and update this note when task state changes.
 
 ## Open Questions

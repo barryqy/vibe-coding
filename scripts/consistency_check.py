@@ -30,6 +30,8 @@ REQUIRED_FILES = [
     Path("scripts/check_repo.py"),
     Path("scripts/devnet_codex_shim.py"),
     Path("tests/test_devnet_codex_shim.py"),
+    Path("scripts/model_usage.py"),
+    Path("tests/test_model_usage.py"),
     Path("scripts/start_codex_model_adapter.py"),
     Path("scripts/setup_codex_devnet.py"),
     Path("scripts/devnet_openai_shim.py"),
@@ -100,9 +102,12 @@ def main() -> int:
     codex_setup = read(root, "scripts/setup_codex_devnet.py")
     opencode_setup = read(root, "scripts/setup_opencode_devnet.py")
     codex_shim = read(root, "scripts/devnet_codex_shim.py")
+    opencode_shim = read(root, "scripts/devnet_openai_shim.py")
+    model_usage = read(root, "scripts/model_usage.py")
     scenario_review = read(root, "scripts/defenseclaw_scenario_review.py")
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
+    require("scripts/model_usage.py" in agents and "usage" in agents, "AGENTS.md must mention the usage command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw skill demo", errors)
     require("scripts/defenseclaw_mcp_demo.py" in agents, "AGENTS.md must mention the DefenseClaw MCP demo", errors)
@@ -181,15 +186,20 @@ def main() -> int:
 
     require("[mcp_servers.barryflights]" in codex_setup, "setup_codex_devnet.py must include BarryFlights MCP", errors)
     require("repo_skill=.agents/skills/rps-cli" in codex_setup, "setup_codex_devnet.py must report the documented Codex skill", errors)
+    require("usage_command=usage" in codex_setup, "setup_codex_devnet.py must report the usage command", errors)
     require("install_mazemaker_skill" not in codex_setup, "setup_codex_devnet.py must not install an old fake skill path", errors)
     require("sandbox_mode" in codex_setup, "setup_codex_devnet.py must use the current Codex sandbox key", errors)
 
     require(".opencode/skills/rps-cli/SKILL.md" in opencode_setup, "setup_opencode_devnet.py must attach the OpenCode skill", errors)
     require(".second-brain/patterns/rps-cli.md" in opencode_setup, "setup_opencode_devnet.py must attach the RPS pattern", errors)
     require("task_file=play.py" in opencode_setup, "setup_opencode_devnet.py must report the generated app task file", errors)
+    require("usage_command=usage" in opencode_setup, "setup_opencode_devnet.py must report the usage command", errors)
     require('"webfetch": "deny"' in opencode_setup and '"websearch": "deny"' in opencode_setup, "setup_opencode_devnet.py must keep network permissions denied", errors)
 
     require("wants_barryflights_booking" in codex_shim and "BARRYFLIGHTS_BOOKING=pass" in codex_shim, "devnet_codex_shim.py must route the risky BarryFlights booking prompt", errors)
+    require("record_model_response" in codex_shim, "devnet_codex_shim.py must record model usage", errors)
+    require("record_model_response" in opencode_shim, "devnet_openai_shim.py must record model usage", errors)
+    require("MODEL_USAGE=" in model_usage and "not-reported" in model_usage, "model_usage.py must print usage and not-reported budget status", errors)
     require("run_mazemaker_skill_build" not in codex_shim, "devnet_codex_shim.py must not fake skill output with local Python", errors)
     require("wants_mazemaker" not in codex_shim, "devnet_codex_shim.py must not special-case Maze prompts", errors)
     require("leaky_rps_patch.py" in scenario_review, "scenario review must point to the RPS leaky sample", errors)

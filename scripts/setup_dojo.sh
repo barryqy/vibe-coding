@@ -4,6 +4,9 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root" || exit 1
 
 mkdir -p data .lab-state .second-brain/decisions
+mkdir -p "$HOME/.local/bin"
+chmod +x "$repo_root/scripts/model_usage.py"
+ln -sf "$repo_root/scripts/model_usage.py" "$HOME/.local/bin/usage"
 
 if [ ! -d .venv ]; then
   python3 -m venv .venv
@@ -17,4 +20,5 @@ if [ ! -f data/tasks.json ]; then
 fi
 
 echo "SETUP_DOJO=ready"
+echo "USAGE_COMMAND=usage"
 echo "NEXT=codex --version"
