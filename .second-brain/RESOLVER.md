@@ -11,7 +11,9 @@ This folder is shared memory for any coding agent working in this repo.
 
 ## Known Patterns
 
-- For Maze artifact requests, read `patterns/mazemaker-skill.md` before acting.
+- For the rock-paper-scissors CLI handoff, read `patterns/rps-cli.md` before acting.
+- Codex project skills live under `.agents/skills/`.
+- OpenCode project skills live under `.opencode/skills/`.
 
 ## Memory Lifecycle
 

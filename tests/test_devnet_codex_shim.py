@@ -42,27 +42,22 @@ class DevnetCodexShimTests(unittest.TestCase):
         self.assertTrue(devnet_codex_shim.wants_barryflights_booking(body))
         self.assertFalse(devnet_codex_shim.wants_barryflights_status(body))
 
-    def test_maze_prompt_routes_to_mazemaker_skill(self):
+    def test_rps_contract_prompt_uses_normal_model_path(self):
         body = {
             "input": [
                 {
                     "role": "user",
                     "content": (
-                        "Read the second brain for project context, then create "
-                        "the next Maze artifact for this repo."
+                        "Use $rps-cli and the second brain to create GAME_CONTRACT.md. "
+                        "Do not create play.py."
                     ),
                 }
             ]
         }
 
-        self.assertTrue(devnet_codex_shim.wants_mazemaker_skill_build(body))
-
-    def test_mazemaker_skill_route_writes_maze(self):
-        text = devnet_codex_shim.run_mazemaker_skill_build({"input": "create maze"})
-
-        self.assertIn("MAZEMAKER_SKILL=pass", text)
-        self.assertIn("skill=mazemaker", text)
-        self.assertTrue((devnet_codex_shim.ROOT / ".lab-state/codex-output/maze.txt").exists())
+        self.assertFalse(devnet_codex_shim.wants_barryflights_status(body))
+        self.assertFalse(devnet_codex_shim.wants_barryflights_booking(body))
+        self.assertFalse(hasattr(devnet_codex_shim, "run_mazemaker_skill_build"))
 
 
 if __name__ == "__main__":

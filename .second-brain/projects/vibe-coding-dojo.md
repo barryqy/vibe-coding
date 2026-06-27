@@ -9,27 +9,35 @@ status: active
 
 This repo is a small AI coding dojo. Coding agents use the supplied lab model route, read the same second brain before editing, and keep task state current as they work.
 
+The main coding handoff is intentionally honest:
+
+- Codex creates `GAME_CONTRACT.md` from the repo skill and KB.
+- OpenCode creates `play.py` and `GAME_README.md` from that contract.
+- The repo does not ship a prebuilt rock-paper-scissors app for the exercise.
+
 ## Current Files
 
-- `dojo_app/maze_game.py` contains Maze parsing, solvability checks, rendering, and the stable `--play` dispatch.
-- `dojo_app/maze_play.py` contains the scoped play-loop entrypoint. The harness handles single-key input and redraw; OpenCode only fills the movement function.
-- `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill.
-- `skills/mazemaker/scripts/build_maze.py` creates checked Recursive Backtracker maze data.
-- `.second-brain/patterns/mazemaker-skill.md` tells agents to use the MazeMaker skill for new Maze artifacts.
-- `tests/test_maze_game.py` contains the direct Maze tests.
-- `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
+- `.agents/skills/rps-cli/SKILL.md` is the Codex project skill for the contract stage.
+- `.opencode/skills/rps-cli/SKILL.md` is the OpenCode project skill for the build stage.
+- `.second-brain/patterns/rps-cli.md` records the Codex-to-OpenCode handoff.
+- `GAME_CONTRACT.md` is created during the lab and should name the app, modes, and verification commands.
+- `play.py` is created during the OpenCode build stage.
+- `dojo_app/barryflights_mcp_server.py` contains the local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
 - `scripts/check_repo.py` is the repo-level verification command.
 
 ## Boundaries
 
-- Keep maze generation checked and repeatable when a fixed seed is used.
-- When a task asks for a new Maze artifact, use the MazeMaker skill pattern from `.second-brain/patterns/mazemaker-skill.md`.
-- When a task asks for playable Maze behavior, implement real movement in `dojo_app/maze_play.py`; do not edit the stable Maze loader, renderer, or play harness unless the task explicitly asks for it.
-- Do not add network calls, credential reads, shell clear commands, curses, or external packages.
-- Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
-- Keep changes scoped to the game and its direct tests unless the current task says otherwise.
+- Do not fake the game by running a bundled generator or hidden helper.
+- Keep contract-only Codex prompts from creating `play.py`.
+- Keep OpenCode build prompts focused on `GAME_CONTRACT.md`, `play.py`, and `GAME_README.md`.
+- Do not add network calls, credential reads, shell clear commands, curses, or external packages to the game.
+- Keep the local BarryFlights `flight_status` path clean; risky MCP behavior belongs in the security module.
 
 ## Verification
 
 - python3 scripts/check_repo.py
+- grep -q '^APP: play.py$' GAME_CONTRACT.md
+- grep -q '^MARKER: RPS_SELF_TEST=pass$' GAME_CONTRACT.md
+- python3 -m py_compile play.py
+- python3 play.py --self-test
