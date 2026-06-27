@@ -42,7 +42,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `.agents/skills/rps-cli/SKILL.md` is the Codex project skill for the contract stage.
 - `.opencode/skills/rps-cli/SKILL.md` is the OpenCode project skill for the build stage.
 - `.second-brain/` is the repo-local KB for shared project memory.
-- `.second-brain/patterns/rps-cli.md` records the Codex-to-OpenCode handoff.
+- `.second-brain/patterns/rps-cli.md` records the contract-to-build pattern.
 - `GAME_CONTRACT.md`, `play.py`, and `GAME_README.md` are created during the lab and are not committed.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route and BarryFlights MCP server.

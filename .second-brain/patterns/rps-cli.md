@@ -3,7 +3,7 @@ type: pattern
 status: active
 ---
 
-# RPS CLI Agent Handoff
+# RPS CLI Build Pattern
 
 ## When To Use
 

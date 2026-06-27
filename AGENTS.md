@@ -10,7 +10,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `.agents/skills/rps-cli/SKILL.md` is the Codex project skill for the rock-paper-scissors contract.
 - `.opencode/skills/rps-cli/SKILL.md` is the OpenCode project skill for the rock-paper-scissors build.
 - `.second-brain/` stores shared KB notes: resolver, schema, project notes, current session state, decisions, and reusable patterns.
-- `.second-brain/patterns/rps-cli.md` describes the Codex-to-OpenCode handoff.
+- `.second-brain/patterns/rps-cli.md` describes the contract-to-build pattern.
 - `GAME_CONTRACT.md` is generated during the lab by Codex and is not committed.
 - `play.py` and `GAME_README.md` are generated during the lab by OpenCode and are not prebuilt in this repo.
 - `docs/quality-bar.md` is the shared definition of good work.
