@@ -9,7 +9,7 @@ status: active
 
 This repo is a small AI coding dojo. Coding agents use the supplied lab model route, read the same second brain before editing, and keep task state current as they work.
 
-The main coding handoff is intentionally honest:
+The main coding boundary is intentionally clear:
 
 - Codex creates `GAME_CONTRACT.md` from the repo skill and KB.
 - OpenCode creates `play.py` and `GAME_README.md` from that contract.
@@ -19,7 +19,7 @@ The main coding handoff is intentionally honest:
 
 - `.agents/skills/rps-cli/SKILL.md` is the Codex project skill for the contract stage.
 - `.opencode/skills/rps-cli/SKILL.md` is the OpenCode project skill for the build stage.
-- `.second-brain/patterns/rps-cli.md` records the Codex-to-OpenCode handoff.
+- `.second-brain/patterns/rps-cli.md` records the contract-to-build pattern.
 - `GAME_CONTRACT.md` is created during the lab and should name the app, modes, and verification commands.
 - `play.py` is created during the OpenCode build stage.
 - `dojo_app/barryflights_mcp_server.py` contains the local BarryFlights MCP server.

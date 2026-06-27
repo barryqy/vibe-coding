@@ -10,7 +10,7 @@ status: active
 - Codex is installed and connected to the supplied lab model route.
 - Codex can check flight status through the local BarryFlights MCP server.
 - The second brain is shared context for any agent that works in this repo.
-- The current coding handoff uses a repo skill and KB pattern for a rock-paper-scissors CLI game.
+- The current coding flow uses a repo skill and KB pattern for a rock-paper-scissors CLI game.
 - Codex should create `GAME_CONTRACT.md` only.
 - OpenCode should create `play.py` and `GAME_README.md` from `GAME_CONTRACT.md`.
 
