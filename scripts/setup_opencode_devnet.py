@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
 OUT = ROOT / ".lab-state" / "opencode-devnet.json"
 SHIM_BASE_URL = "http://127.0.0.1:8765/v1"
 INSTRUCTIONS = [
@@ -18,6 +21,8 @@ INSTRUCTIONS = [
 def install_usage_command() -> None:
     source = ROOT / "scripts" / "model_usage.py"
     target = Path.home() / ".local" / "bin" / "usage"
+    cprint_source = ROOT / "scripts" / "cprint"
+    cprint_target = Path.home() / ".local" / "bin" / "cprint"
     if not source.exists():
         return
 
@@ -28,6 +33,13 @@ def install_usage_command() -> None:
         pass
     target.symlink_to(source)
 
+    if cprint_source.exists():
+        try:
+            cprint_target.unlink()
+        except FileNotFoundError:
+            pass
+        cprint_target.symlink_to(cprint_source)
+
 
 def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
@@ -36,9 +48,9 @@ def main() -> int:
     install_usage_command()
 
     if not base_url or not api_key:
-        print("OPENCODE_DEVNET_CONFIG=skipped")
-        print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
-        print("usage_command=usage")
+        print_status("OPENCODE_DEVNET_CONFIG=skipped")
+        print_status("reason=LLM_BASE_URL or LLM_API_KEY is missing")
+        print_status("usage_command=usage")
         return 0
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -86,14 +98,14 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
-    print("OPENCODE_DEVNET_CONFIG=ready")
-    print(f"path={OUT.relative_to(ROOT)}")
-    print(f"model=devnet/{model}")
-    print("kb_search=.second-brain")
-    print("edit_permission=allow")
-    print("task_file=dojo_app/maze_play.py")
-    print("adapter=python3 scripts/start_opencode_model_adapter.py")
-    print("usage_command=usage")
+    print_status("OPENCODE_DEVNET_CONFIG=ready")
+    print_status(f"path={OUT.relative_to(ROOT)}")
+    print_status(f"model=devnet/{model}")
+    print_status("kb_search=.second-brain")
+    print_status("edit_permission=allow")
+    print_status("task_file=dojo_app/maze_play.py")
+    print_status("adapter=python3 scripts/start_opencode_model_adapter.py")
+    print_status("usage_command=usage")
     return 0
 
 

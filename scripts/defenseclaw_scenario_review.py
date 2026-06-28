@@ -6,8 +6,10 @@ import re
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
 
 
 def read_sample(path: str) -> str:
@@ -15,7 +17,7 @@ def read_sample(path: str) -> str:
     try:
         return target.read_text(encoding="utf-8")
     except OSError as exc:
-        print(f"SCENARIO_REVIEW=missing {path}: {exc}")
+        print_status(f"SCENARIO_REVIEW=missing {path}: {exc}")
         raise SystemExit(1)
 
 
@@ -24,9 +26,9 @@ def has(pattern: str, text: str) -> bool:
 
 
 def print_case(name: str, risk: str, gate: str) -> None:
-    print(f"SCENARIO={name}")
-    print(f"RISK={risk}")
-    print(f"RECOMMENDED_GATE={gate}")
+    print_status(f"SCENARIO={name}")
+    print_status(f"RISK={risk}")
+    print_status(f"RECOMMENDED_GATE={gate}")
 
 
 def check_guardrails() -> bool:
@@ -36,18 +38,18 @@ def check_guardrails() -> bool:
     prompt_ok = has(r"ignore.+request|developer instructions|credential file", rollout)
     privacy_ok = has(r"cloud key|customer email|private token", privacy) and has(r"AKIA[0-9A-Z]{16}", privacy)
 
-    print("SCENARIO_GROUP=guardrails")
+    print_status("SCENARIO_GROUP=guardrails")
     if prompt_ok:
         print_case("prompt-injection", "hidden-instruction-in-user-content", "block-or-strip-before-model")
     else:
-        print("SCENARIO=prompt-injection")
-        print("RISK=missing")
+        print_status("SCENARIO=prompt-injection")
+        print_status("RISK=missing")
 
     if privacy_ok:
         print_case("privacy-extraction", "secret-and-pii-request", "block-before-model")
     else:
-        print("SCENARIO=privacy-extraction")
-        print("RISK=missing")
+        print_status("SCENARIO=privacy-extraction")
+        print_status("RISK=missing")
 
     return prompt_ok and privacy_ok
 
@@ -64,14 +66,14 @@ def check_code() -> bool:
         ("os-command", has(r"\bos\.system\s*\(", unsafe_report), "shell-command-from-generated-code"),
     ]
 
-    print("SCENARIO_GROUP=generated-code")
+    print_status("SCENARIO_GROUP=generated-code")
     passed = True
     for name, ok, risk in checks:
         if ok:
             print_case(name, risk, "send-back-for-rewrite")
         else:
-            print(f"SCENARIO={name}")
-            print("RISK=missing")
+            print_status(f"SCENARIO={name}")
+            print_status("RISK=missing")
             passed = False
     return passed
 
@@ -84,14 +86,14 @@ def check_mcp() -> bool:
         ("internal-fetch", has(r"169\.254\.169\.254|localhost|attacker", mcp), "internal-network-and-exfiltration-tool"),
     ]
 
-    print("SCENARIO_GROUP=mcp-tools")
+    print_status("SCENARIO_GROUP=mcp-tools")
     passed = True
     for name, ok, risk in checks:
         if ok:
             print_case(name, risk, "require-admission-scan")
         else:
-            print(f"SCENARIO={name}")
-            print("RISK=missing")
+            print_status(f"SCENARIO={name}")
+            print_status("RISK=missing")
             passed = False
     return passed
 
@@ -120,10 +122,10 @@ def main(argv: list[str]) -> int:
             passed = False
 
     if passed:
-        print("SCENARIO_REVIEW=pass")
+        print_status("SCENARIO_REVIEW=pass")
         return 0
 
-    print("SCENARIO_REVIEW=check-output")
+    print_status("SCENARIO_REVIEW=check-output")
     return 1
 
 

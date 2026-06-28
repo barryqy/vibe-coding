@@ -6,20 +6,22 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
 
 
 def run_step(name: str, cmd: list[str]) -> bool:
     result = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
     if result.returncode == 0:
-        print(f"[OK] {name}")
+        print_status(f"[OK] {name}")
         if result.stdout.strip():
             for line in result.stdout.strip().splitlines()[-4:]:
                 print(f"  {line}")
         return True
 
-    print(f"[FAIL] {name}")
+    print_status(f"[FAIL] {name}")
     if result.stdout:
         print(result.stdout.rstrip())
     if result.stderr:
@@ -33,10 +35,10 @@ def main() -> int:
     compiled = compileall.compile_dir(ROOT / "dojo_app", quiet=1)
     compiled = compileall.compile_dir(ROOT / "scripts", quiet=1) and compiled
     if compiled:
-        print("[OK] Python files compile")
+        print_status("[OK] Python files compile")
     else:
-        print("[FAIL] Python files compile")
-        print("REPO_CHECK=fail")
+        print_status("[FAIL] Python files compile")
+        print_status("REPO_CHECK=fail")
         return 1
 
     checks = [
@@ -51,10 +53,10 @@ def main() -> int:
 
     for name, cmd in checks:
         if not run_step(name, cmd):
-            print("REPO_CHECK=fail")
+            print_status("REPO_CHECK=fail")
             return 1
 
-    print("REPO_CHECK=pass")
+    print_status("REPO_CHECK=pass")
     return 0
 
 

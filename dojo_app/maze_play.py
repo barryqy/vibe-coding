@@ -5,6 +5,7 @@ import termios
 import tty
 from collections.abc import Callable
 
+from dojo_app.lab_output import print_status
 
 MazeRenderer = Callable[[list[str], str], str]
 Position = tuple[int, int]
@@ -92,10 +93,10 @@ def draw_frame(
     if redraw:
         clear_screen()
     if show_header:
-        print("MAZE_PLAY=ready")
+        print_status("MAZE_PLAY=ready")
         print("controls=w/a/s/d, q to quit")
     if status:
-        print(status)
+        print_status(status)
     print(render_maze(maze_with_player(maze, player), render))
 
 
@@ -124,14 +125,14 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
             try:
                 command = read_command(single_key)
             except EOFError:
-                print("MAZE_PLAY=quit")
+                print_status("MAZE_PLAY=quit")
                 return 0
 
             if not command:
                 status = "move=ignored"
                 continue
             if command == "q":
-                print("MAZE_PLAY=quit")
+                print_status("MAZE_PLAY=quit")
                 return 0
             if command not in MOVE_DELTAS:
                 status = "move=ignored"
@@ -140,14 +141,14 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
             try:
                 player = choose_next_position(maze, player, command)
             except NotImplementedError:
-                print("MAZE_PLAY=not-implemented")
+                print_status("MAZE_PLAY=not-implemented")
                 print("reason=OpenCode will replace choose_next_position in dojo_app/maze_play.py")
                 return 1
 
             row, col = player
             if maze[row][col] == "E":
                 draw_frame(maze, player, render_maze, render, redraw, redraw)
-                print("MAZE_PLAY=win")
+                print_status("MAZE_PLAY=win")
                 return 0
     finally:
         restore_input_mode(old_settings)

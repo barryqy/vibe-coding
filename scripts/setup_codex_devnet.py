@@ -7,8 +7,10 @@ import shutil
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
 STATE = ROOT / ".lab-state" / "codex"
 HOME = STATE / "home"
 CONFIG = HOME / "config.toml"
@@ -21,6 +23,8 @@ SHIM_BASE_URL = "http://127.0.0.1:8776/v1"
 def install_usage_command() -> None:
     source = ROOT / "scripts" / "model_usage.py"
     target = Path.home() / ".local" / "bin" / "usage"
+    cprint_source = ROOT / "scripts" / "cprint"
+    cprint_target = Path.home() / ".local" / "bin" / "cprint"
     if not source.exists():
         return
 
@@ -30,6 +34,13 @@ def install_usage_command() -> None:
     except FileNotFoundError:
         pass
     target.symlink_to(source)
+
+    if cprint_source.exists():
+        try:
+            cprint_target.unlink()
+        except FileNotFoundError:
+            pass
+        cprint_target.symlink_to(cprint_source)
 
 
 def mcp_python() -> Path:
@@ -176,11 +187,11 @@ def main() -> int:
 
     if not base_url or not api_key:
         ensure_mcp_config()
-        print("CODEX_MODEL_ROUTE=skipped")
-        print("reason=LLM_BASE_URL or LLM_API_KEY is missing")
-        print("local_mcp=barryflights")
-        print("local_skill=mazemaker")
-        print("usage_command=usage")
+        print_status("CODEX_MODEL_ROUTE=skipped")
+        print_status("reason=LLM_BASE_URL or LLM_API_KEY is missing")
+        print_status("local_mcp=barryflights")
+        print_status("local_skill=mazemaker")
+        print_status("usage_command=usage")
         return 0
 
     HOME.mkdir(parents=True, exist_ok=True)
@@ -213,16 +224,16 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print("CODEX_MODEL_ROUTE=ready")
-    print(f"codex_home={HOME.relative_to(ROOT)}")
-    print(f"config={CONFIG.relative_to(ROOT)}")
-    print(f"model={model}")
-    print(f"model_catalog={MODEL_CATALOG.relative_to(ROOT)}")
-    print("model_context_window=128000")
-    print("adapter=python3 scripts/start_codex_model_adapter.py")
-    print("local_mcp=barryflights")
-    print(f"local_skill={(SKILLS_HOME / 'mazemaker').relative_to(ROOT)}")
-    print("usage_command=usage")
+    print_status("CODEX_MODEL_ROUTE=ready")
+    print_status(f"codex_home={HOME.relative_to(ROOT)}")
+    print_status(f"config={CONFIG.relative_to(ROOT)}")
+    print_status(f"model={model}")
+    print_status(f"model_catalog={MODEL_CATALOG.relative_to(ROOT)}")
+    print_status("model_context_window=128000")
+    print_status("adapter=python3 scripts/start_codex_model_adapter.py")
+    print_status("local_mcp=barryflights")
+    print_status(f"local_skill={(SKILLS_HOME / 'mazemaker').relative_to(ROOT)}")
+    print_status("usage_command=usage")
     return 0
 
 

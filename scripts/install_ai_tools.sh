@@ -8,6 +8,11 @@ OPENCODE_INSTALL_VERSION="${OPENCODE_INSTALL_VERSION:-1.0.190}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 install_mode="${1:-all}"
 
+lab_status() {
+  PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m dojo_app.lab_output status "$1" 2>/dev/null \
+    || printf '%s\n' "$1"
+}
+
 case "$install_mode" in
   all | --all)
     install_mode="all"
@@ -70,7 +75,7 @@ ensure_codex_bubblewrap() {
   local install_home bundled
 
   if command -v bwrap >/dev/null 2>&1; then
-    echo "BUBBLEWRAP=system-present"
+    lab_status "BUBBLEWRAP=system-present"
     return 0
   fi
 
@@ -83,12 +88,12 @@ ensure_codex_bubblewrap() {
     export PATH="$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     if command -v bwrap >/dev/null 2>&1; then
-      echo "BUBBLEWRAP=bundled-codex"
+      lab_status "BUBBLEWRAP=bundled-codex"
       return 0
     fi
   fi
 
-  echo "BUBBLEWRAP=not-found"
+  lab_status "BUBBLEWRAP=not-found"
   return 0
 }
 
@@ -105,7 +110,7 @@ install_codex_native_package() {
   tmp_dir="$(mktemp -d)"
   archive="${tmp_dir}/${asset}"
 
-  echo "CODEX_INSTALL=fallback-native-package"
+  lab_status "CODEX_INSTALL=fallback-native-package"
   if ! curl -fsSL "$url" -o "$archive"; then
     rm -rf "$tmp_dir"
     return 1
@@ -116,7 +121,7 @@ install_codex_native_package() {
     return 1
   }
   if [ "$actual" != "$digest" ]; then
-    echo "CODEX_INSTALL=fallback-checksum-failed"
+    lab_status "CODEX_INSTALL=fallback-checksum-failed"
     rm -rf "$tmp_dir"
     return 1
   fi
@@ -156,50 +161,50 @@ install_codex_native_package() {
 
 install_codex() {
   if command -v codex >/dev/null 2>&1; then
-    echo "CODEX_INSTALL=already-present"
+    lab_status "CODEX_INSTALL=already-present"
     ensure_codex_bubblewrap
     return 0
   fi
 
-  echo "CODEX_INSTALL=starting"
+  lab_status "CODEX_INSTALL=starting"
   if curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh; then
     export PATH="$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
-    echo "CODEX_INSTALL=complete"
+    lab_status "CODEX_INSTALL=complete"
     ensure_codex_bubblewrap
     return 0
   fi
 
   if install_codex_native_package; then
-    echo "CODEX_INSTALL=complete"
+    lab_status "CODEX_INSTALL=complete"
     ensure_codex_bubblewrap
     return 0
   fi
 
   if command -v npm >/dev/null 2>&1; then
-    echo "CODEX_INSTALL=fallback-npm"
+    lab_status "CODEX_INSTALL=fallback-npm"
     mkdir -p "$HOME/.local/bin" "$HOME/.local/share/codex-npm"
     if npm install --prefix "$HOME/.local/share/codex-npm" "@openai/codex@${CODEX_INSTALL_VERSION}"; then
       ln -sf "$HOME/.local/share/codex-npm/node_modules/.bin/codex" "$HOME/.local/bin/codex"
       export PATH="$HOME/.local/bin:$PATH"
       hash -r 2>/dev/null || true
-      echo "CODEX_INSTALL=complete"
+      lab_status "CODEX_INSTALL=complete"
       ensure_codex_bubblewrap
       return 0
     fi
   fi
 
-  echo "CODEX_INSTALL=failed"
+  lab_status "CODEX_INSTALL=failed"
   return 0
 }
 
 install_opencode() {
   if command -v opencode >/dev/null 2>&1; then
-    echo "OPENCODE_INSTALL=already-present"
+    lab_status "OPENCODE_INSTALL=already-present"
     return 0
   fi
 
-  echo "OPENCODE_INSTALL=starting"
+  lab_status "OPENCODE_INSTALL=starting"
   mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" "$ROOT/.lab-state/opencode-download"
   archive="$ROOT/.lab-state/opencode-download/opencode-linux-x64.tar.gz"
   url="https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_INSTALL_VERSION}/opencode-linux-x64.tar.gz"
@@ -210,25 +215,25 @@ install_opencode() {
     ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
     export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
-    echo "OPENCODE_INSTALL=complete"
+    lab_status "OPENCODE_INSTALL=complete"
     return 0
   fi
 
-  echo "OPENCODE_INSTALL=failed"
+  lab_status "OPENCODE_INSTALL=failed"
   return 0
 }
 
 show_versions() {
   if command -v codex >/dev/null 2>&1; then
-    echo "CODEX_VERSION=$(codex --version 2>/dev/null | head -1)"
+    lab_status "CODEX_VERSION=$(codex --version 2>/dev/null | head -1)"
   else
-    echo "CODEX_VERSION=not-installed"
+    lab_status "CODEX_VERSION=not-installed"
   fi
 
   if command -v opencode >/dev/null 2>&1; then
-    echo "OPENCODE_VERSION=$(opencode --version 2>/dev/null | head -1)"
+    lab_status "OPENCODE_VERSION=$(opencode --version 2>/dev/null | head -1)"
   else
-    echo "OPENCODE_VERSION=not-installed"
+    lab_status "OPENCODE_VERSION=not-installed"
   fi
 }
 
@@ -249,13 +254,13 @@ show_versions
 
 case "$install_mode" in
   codex)
-    echo "NEXT_STEP=codex --version"
-    echo "OPENCODE_LATER=./scripts/install_ai_tools.sh --opencode-only"
+    lab_status "NEXT_STEP=codex --version"
+    lab_status "OPENCODE_LATER=./scripts/install_ai_tools.sh --opencode-only"
     ;;
   opencode)
-    echo "NEXT_STEP=python3 scripts/setup_opencode_devnet.py"
+    lab_status "NEXT_STEP=python3 scripts/setup_opencode_devnet.py"
     ;;
   all)
-    echo "NEXT_STEP=codex --version"
+    lab_status "NEXT_STEP=codex --version"
     ;;
 esac

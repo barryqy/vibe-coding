@@ -14,13 +14,16 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 try:
     from model_usage import record_model_error, record_model_response
 except ModuleNotFoundError:
     from scripts.model_usage import record_model_error, record_model_response
 
+from dojo_app.lab_output import print_status
 
-ROOT = Path(__file__).resolve().parents[1]
 STATE = ROOT / ".lab-state"
 LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
@@ -353,9 +356,9 @@ def stop_existing(host: str, port: int) -> None:
 
 def ensure(host: str, port: int) -> int:
     if ready(host, port):
-        print("OPENCODE_MODEL_ADAPTER=ready")
-        print(f"local_url=http://{host}:{port}/v1")
-        print(f"shim_version={SHIM_VERSION}")
+        print_status("OPENCODE_MODEL_ADAPTER=ready")
+        print_status(f"local_url=http://{host}:{port}/v1")
+        print_status(f"shim_version={SHIM_VERSION}")
         return 0
 
     stop_existing(host, port)
@@ -373,14 +376,14 @@ def ensure(host: str, port: int) -> int:
 
     for _ in range(30):
         if ready(host, port):
-            print("OPENCODE_MODEL_ADAPTER=ready")
-            print(f"local_url=http://{host}:{port}/v1")
-            print(f"shim_version={SHIM_VERSION}")
+            print_status("OPENCODE_MODEL_ADAPTER=ready")
+            print_status(f"local_url=http://{host}:{port}/v1")
+            print_status(f"shim_version={SHIM_VERSION}")
             return 0
         time.sleep(0.25)
 
-    print("OPENCODE_MODEL_ADAPTER=failed")
-    print(f"log={LOG.relative_to(ROOT)}")
+    print_status("OPENCODE_MODEL_ADAPTER=failed")
+    print_status(f"log={LOG.relative_to(ROOT)}")
     return 1
 
 

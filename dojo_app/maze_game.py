@@ -5,6 +5,7 @@ import random
 import re
 from pathlib import Path
 
+from dojo_app.lab_output import print_status
 from dojo_app.maze_play import run_play_maze
 
 
@@ -303,7 +304,7 @@ def run_static_maze(
     start = find_cell(maze, "S")
     exit_cell = find_cell(maze, "E")
 
-    print("MAZE=ready")
+    print_status("MAZE=ready")
     print("mode=static")
     print(f"source={source}")
     print("size=12x12")
@@ -311,7 +312,7 @@ def run_static_maze(
     print(f"exit={exit_cell[0]},{exit_cell[1]}")
     print(f"render={render}")
     print(render_maze(maze, render))
-    print("MAZE=pass")
+    print_status("MAZE=pass")
 
 
 def run_maze_check(maze: list[str], source: str = "generated", maze_format: str = "raw") -> None:
@@ -319,14 +320,14 @@ def run_maze_check(maze: list[str], source: str = "generated", maze_format: str 
     if path_length is None:
         raise ValueError("maze is not solvable")
 
-    print("MAZE_CHECK=ready")
+    print_status("MAZE_CHECK=ready")
     print(f"source={source}")
     print(f"format={maze_format}")
     print("size=12x12")
     print("border=ok")
     print("solvable=yes")
     print(f"path_length={path_length}")
-    print("MAZE_CHECK=pass")
+    print_status("MAZE_CHECK=pass")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -361,7 +362,7 @@ def main(argv: list[str] | None = None) -> int:
                 write_maze(args.write_maze, maze)
             run_maze_check(maze, source, maze_format)
         except (OSError, ValueError) as exc:
-            print("MAZE_CHECK=fail")
+            print_status("MAZE_CHECK=fail")
             print(f"reason={exc}")
             return 1
         return 0
@@ -374,7 +375,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.write_maze:
             write_maze(args.write_maze, maze)
     except (OSError, ValueError) as exc:
-        print("MAZE=fail")
+        print_status("MAZE=fail")
         print(f"reason={exc}")
         return 1
 

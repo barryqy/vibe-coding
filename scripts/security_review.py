@@ -5,6 +5,11 @@ import re
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
+
 
 SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", ".lab-state", "data"}
 PY_PATTERNS = [
@@ -74,13 +79,13 @@ def main(argv: list[str]) -> int:
             findings.append((severity, path, line_no, message))
 
     if findings:
-        print("SECURITY_REVIEW=fail")
+        print_status("SECURITY_REVIEW=fail")
         for severity, path, line_no, message in findings:
             location = f"{path}:{line_no}" if line_no else str(path)
-            print(f"[{severity}] {location} {message}")
+            print_status(f"[{severity}] {location} {message}")
         return 1
 
-    print("SECURITY_REVIEW=pass")
+    print_status("SECURITY_REVIEW=pass")
     print(f"Scanned {len(all_files)} files.")
     return 0
 

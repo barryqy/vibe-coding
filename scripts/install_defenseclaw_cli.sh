@@ -5,6 +5,11 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+lab_status() {
+  PYTHONPATH="$repo_root${PYTHONPATH:+:$PYTHONPATH}" python3 -m dojo_app.lab_output status "$1" 2>/dev/null \
+    || printf '%s\n' "$1"
+}
+
 DEFENSECLAW_VERSION="${DEFENSECLAW_VERSION:-0.8.0}"
 state_dir="${repo_root}/.lab-state/defenseclaw"
 venv_dir="${state_dir}/.venv"
@@ -163,25 +168,25 @@ install_defenseclaw_wheel() {
     return 0
   fi
 
-  echo "DEFENSECLAW_INSTALL=upgrading-pip"
+  lab_status "DEFENSECLAW_INSTALL=upgrading-pip"
   "$venv_python" -m pip install --quiet --upgrade --disable-pip-version-check pip
   "$venv_python" -m pip install --quiet --upgrade --disable-pip-version-check "$wheel_url"
 }
 
 if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
   ensure_lab_home "$cli_path"
-  echo "DEFENSECLAW_INSTALL=already-present"
-  echo "DEFENSECLAW_CLI=${cli_path}"
-  echo "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
+  lab_status "DEFENSECLAW_INSTALL=already-present"
+  lab_status "DEFENSECLAW_CLI=${cli_path}"
+  lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
   "$cli_path" version || true
   exit 0
 fi
 
 if command -v defenseclaw >/dev/null 2>&1 && global_cli_version_ok; then
   ensure_lab_home "$(command -v defenseclaw)"
-  echo "DEFENSECLAW_INSTALL=using-existing"
-  echo "DEFENSECLAW_CLI=$(command -v defenseclaw)"
-  echo "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
+  lab_status "DEFENSECLAW_INSTALL=using-existing"
+  lab_status "DEFENSECLAW_CLI=$(command -v defenseclaw)"
+  lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
   defenseclaw version || true
   exit 0
 fi
@@ -190,28 +195,28 @@ python_bin="$(choose_python)"
 mkdir -p "$state_dir"
 
 if [ -d "$venv_dir" ] && [ -x "${venv_dir}/bin/python" ] && ! python_version_ok "${venv_dir}/bin/python" 3 11; then
-  echo "DEFENSECLAW_INSTALL=rebuilding-venv"
+  lab_status "DEFENSECLAW_INSTALL=rebuilding-venv"
   rm -rf "$venv_dir"
 fi
 
 if [ -d "$venv_dir" ] && [ ! -x "${venv_dir}/bin/python" ]; then
-  echo "DEFENSECLAW_INSTALL=rebuilding-incomplete-venv"
+  lab_status "DEFENSECLAW_INSTALL=rebuilding-incomplete-venv"
   rm -rf "$venv_dir"
 fi
 
 if [ ! -d "$venv_dir" ]; then
-  echo "DEFENSECLAW_INSTALL=creating-venv"
+  lab_status "DEFENSECLAW_INSTALL=creating-venv"
   create_venv
 fi
 
 venv_python="${venv_dir}/bin/python"
-echo "DEFENSECLAW_INSTALL=installing-cli"
-echo "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
+lab_status "DEFENSECLAW_INSTALL=installing-cli"
+lab_status "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
 install_defenseclaw_wheel
-echo "DEFENSECLAW_INSTALL=initializing-home"
+lab_status "DEFENSECLAW_INSTALL=initializing-home"
 ensure_lab_home "$cli_path"
 
-echo "DEFENSECLAW_INSTALL=complete"
-echo "DEFENSECLAW_CLI=${cli_path}"
-echo "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
+lab_status "DEFENSECLAW_INSTALL=complete"
+lab_status "DEFENSECLAW_CLI=${cli_path}"
+lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
 "$cli_path" version || true

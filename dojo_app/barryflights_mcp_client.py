@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from dojo_app.barryflights_mcp_server import MCP_SERVER_NAME
+from dojo_app.lab_output import print_status
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -118,21 +119,21 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.list_tools:
             tools = asyncio.run(list_mcp_tools())
-            print("LOCAL_MCP=ready")
+            print_status("LOCAL_MCP=ready")
             print(f"server={MCP_SERVER_NAME}")
             print("tools=" + ",".join(tools))
-            print("LOCAL_MCP=pass")
+            print_status("LOCAL_MCP=pass")
             return 0
 
         response = asyncio.run(call_mcp_tool(args.tool, build_arguments(args)))
     except ModuleNotFoundError as exc:
         if exc.name == "mcp":
-            print("LOCAL_MCP=missing-dependency")
-            print("next=.venv/bin/python -m pip install -r requirements.txt")
+            print_status("LOCAL_MCP=missing-dependency")
+            print_status("next=.venv/bin/python -m pip install -r requirements.txt")
             return 1
         raise
 
-    print("BARRYFLIGHTS_LOCAL_MCP=ready")
+    print_status("BARRYFLIGHTS_LOCAL_MCP=ready")
     print(f"server={MCP_SERVER_NAME}")
     print(f"tool={args.tool}")
     if args.tool == "flight_status":
@@ -145,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
         write_evidence(Path(args.evidence_file), args.tool, response)
         print(f"evidence={args.evidence_file}")
 
-    print("BARRYFLIGHTS_LOCAL_MCP=pass")
+    print_status("BARRYFLIGHTS_LOCAL_MCP=pass")
     return 0
 
 

@@ -10,6 +10,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
+
 LOCAL_HOME = ROOT / ".lab-state" / "defenseclaw" / "home"
 LOCAL_CLI = ROOT / ".lab-state" / "defenseclaw" / ".venv" / "bin" / "defenseclaw"
 INSTALLER = ROOT / "scripts" / "install_defenseclaw_cli.sh"
@@ -132,8 +136,8 @@ def severities(result: dict) -> list[str]:
 
 def main() -> int:
     cli = ensure_defenseclaw()
-    print(f"DEFENSECLAW_CLI={cli}")
-    print(f"DEFENSECLAW_HOME={os.environ.get('DEFENSECLAW_HOME', str(LOCAL_HOME))}")
+    print_status(f"DEFENSECLAW_CLI={cli}")
+    print_status(f"DEFENSECLAW_HOME={os.environ.get('DEFENSECLAW_HOME', str(LOCAL_HOME))}")
 
     bad = scan_skill(cli, "workspace-migration-assistant", BAD_SKILL)
     clean = scan_skill(cli, "release-brief-helper", CLEAN_SKILL)
@@ -142,19 +146,19 @@ def main() -> int:
     clean_levels = severities(clean)
 
     if not any(level in RISKY_LEVELS for level in bad_levels):
-        print("DEFENSECLAW_BAD_SKILL=missed")
+        print_status("DEFENSECLAW_BAD_SKILL=missed")
         print(f"bad_skill_severities={','.join(bad_levels) or 'none'}")
         return 1
 
     if clean_levels:
-        print("DEFENSECLAW_CLEAN_SKILL=flagged")
+        print_status("DEFENSECLAW_CLEAN_SKILL=flagged")
         print(f"clean_skill_severities={','.join(clean_levels)}")
         return 1
 
-    print("DEFENSECLAW_BAD_SKILL=blocked")
+    print_status("DEFENSECLAW_BAD_SKILL=blocked")
     print(f"bad_skill_findings={len(bad.get('findings', []))}")
-    print("DEFENSECLAW_CLEAN_SKILL=clean")
-    print("DEFENSECLAW_MINI=pass")
+    print_status("DEFENSECLAW_CLEAN_SKILL=clean")
+    print_status("DEFENSECLAW_MINI=pass")
     return 0
 
 

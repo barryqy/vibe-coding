@@ -10,8 +10,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
 STATE_FILE = ROOT / ".lab-state" / "model-usage.json"
 INTERESTING_HEADER_WORDS = (
     "budget",
@@ -412,50 +414,50 @@ def print_usage(state: dict[str, Any]) -> int:
     if remaining_pct is not None and remaining_pct < 5:
         status = "nearly-empty"
 
-    print(f"MODEL_USAGE={status}")
-    print(f"usage_summary={usage_summary(state, calls)}")
-    print(f"budget_status={budget_status(budget, remaining_pct)}")
-    print(f"calls={calls}")
-    print(f"errors={intish(state.get('errors'))}")
-    print(f"input_tokens={intish(state.get('input_tokens'))}")
-    print(f"output_tokens={intish(state.get('output_tokens'))}")
-    print(f"total_tokens={intish(state.get('total_tokens'))}")
+    print_status(f"MODEL_USAGE={status}")
+    print_status(f"usage_summary={usage_summary(state, calls)}")
+    print_status(f"budget_status={budget_status(budget, remaining_pct)}")
+    print_status(f"calls={calls}")
+    print_status(f"errors={intish(state.get('errors'))}")
+    print_status(f"input_tokens={intish(state.get('input_tokens'))}")
+    print_status(f"output_tokens={intish(state.get('output_tokens'))}")
+    print_status(f"total_tokens={intish(state.get('total_tokens'))}")
 
     tools = state.get("tools") if isinstance(state.get("tools"), dict) else {}
     for tool in sorted(tools):
         item = tools.get(tool) if isinstance(tools.get(tool), dict) else {}
-        print(
+        print_status(
             f"{tool}_tokens={intish(item.get('total_tokens'))} "
             f"{tool}_calls={intish(item.get('calls'))}"
         )
 
-    print(f"budget_source={budget.get('source', 'unknown')}")
+    print_status(f"budget_source={budget.get('source', 'unknown')}")
     if budget.get("source") != "not-reported":
-        print(f"budget_limit={fmt_money(limit)}")
-        print(f"budget_spent={fmt_money(spent)}")
-    print(f"budget_remaining={fmt_money(remaining)}")
+        print_status(f"budget_limit={fmt_money(limit)}")
+        print_status(f"budget_spent={fmt_money(spent)}")
+    print_status(f"budget_remaining={fmt_money(remaining)}")
     if remaining_pct is not None:
-        print(f"budget_remaining_pct={remaining_pct:.1f}")
+        print_status(f"budget_remaining_pct={remaining_pct:.1f}")
 
     if budget.get("source") == "configured-estimate":
-        print("budget_note=estimated from configured rates; gateway-reported budget overrides this when available")
+        print_status("budget_note=estimated from configured rates; gateway-reported budget overrides this when available")
     elif budget.get("source") == "gateway":
-        print("budget_note=reported by the lab model route")
+        print_status("budget_note=reported by the lab model route")
     else:
-        print("budget_note=the lab route reports per-call token usage but not the hard remaining budget")
+        print_status("budget_note=the lab route reports per-call token usage but not the hard remaining budget")
 
     last_error = state.get("last_error")
     if isinstance(last_error, dict) and last_error.get("message"):
-        print(f"last_error={last_error['message']}")
+        print_status(f"last_error={last_error['message']}")
 
     if not calls:
-        print("next=run a Codex or OpenCode model call, then run usage again")
+        print_status("next=run a Codex or OpenCode model call, then run usage again")
     elif status in {"low", "nearly-empty"}:
-        print("next=avoid long interactive chats or large build prompts")
+        print_status("next=avoid long interactive chats or large build prompts")
     elif budget.get("source") == "not-reported":
-        print("next=continue with required lab checks; keep optional prompts short")
+        print_status("next=continue with required lab checks; keep optional prompts short")
     else:
-        print("next=continue with the lab checks")
+        print_status("next=continue with the lab checks")
     return 0
 
 
@@ -467,7 +469,7 @@ def main(argv: list[str]) -> int:
     path = state_file()
     if args.reset:
         write_state(blank_state(), path)
-        print("MODEL_USAGE=reset")
+        print_status("MODEL_USAGE=reset")
         return 0
 
     return print_usage(read_state(path))

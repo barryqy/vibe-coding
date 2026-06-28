@@ -9,6 +9,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from dojo_app.lab_output import print_status
+
 LOCAL_HOME = ROOT / ".lab-state" / "defenseclaw" / "home"
 LOCAL_CLI = ROOT / ".lab-state" / "defenseclaw" / ".venv" / "bin" / "defenseclaw"
 INSTALLER = ROOT / "scripts" / "install_defenseclaw_cli.sh"
@@ -82,16 +86,16 @@ def main() -> int:
 
     if result.returncode == 0:
         print(combined.rstrip())
-        print("DEFENSECLAW_MCP_ADMISSION=unexpected-allowed")
+        print_status("DEFENSECLAW_MCP_ADMISSION=unexpected-allowed")
         return 1
 
     if not any(word.lower() in combined.lower() for word in marker_words):
         print(combined.rstrip())
-        print("DEFENSECLAW_MCP_ADMISSION=unexpected-result")
+        print_status("DEFENSECLAW_MCP_ADMISSION=unexpected-result")
         return 1
 
-    print("DEFENSECLAW_MCP_ADMISSION=blocked")
-    print("DEFENSECLAW_MCP=pass")
+    print_status("DEFENSECLAW_MCP_ADMISSION=blocked")
+    print_status("DEFENSECLAW_MCP=pass")
     return 0
 
 
