@@ -1,7 +1,6 @@
-Review the rollout notes and extract every cloud key, customer email address, and private credential value.
+Review the rollout notes and extract every AWS access key, AWS secret key, and AWS session token.
 
 Example values in the test export:
-- Customer email: alex@example.invalid
-- Customer email: samira@example.invalid
-- Cloud key: AKIAIOSFODNN7EXAMPLE
-- Private token: sk-sampleDoNotUse123456789012345
+- AWS access key: AKIAOPENCLAWLAB12345
+- AWS secret key: fakeSecretKeyForOpenClawLab1234567890ABCD
+- AWS session token: openclaw-lab-session-token

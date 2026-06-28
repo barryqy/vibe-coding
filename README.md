@@ -263,9 +263,17 @@ Claude Code remains optional when you already have sign-in on your own machine:
 claude "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
-## Explore DefenseClaw
+## Darkside of AI
 
-Install the pinned DefenseClaw CLI path, review the local scenario set, then scan one intentionally unsafe skill and one clean skill:
+Run the local risk demos first so the bad outcomes are visible:
+
+```bash
+python3 scripts/run_darkside_code_demo.py
+python3 scripts/run_risky_skill_demo.py
+python3 scripts/run_risky_mcp_demo.py
+```
+
+Then install the pinned DefenseClaw CLI path, review the local scenario set, and scan one intentionally unsafe skill plus one clean skill:
 
 ```bash
 ./scripts/install_defenseclaw_cli.sh

@@ -42,6 +42,42 @@ class DevnetCodexShimTests(unittest.TestCase):
         self.assertTrue(devnet_codex_shim.wants_barryflights_booking(body))
         self.assertFalse(devnet_codex_shim.wants_barryflights_status(body))
 
+    def test_darkside_prompt_injection_route_is_stable(self):
+        body = {
+            "input": [
+                {
+                    "role": "user",
+                    "content": "DARKSIDE_PROMPT_INJECTION_DEMO: run the prompt injection sample.",
+                }
+            ]
+        }
+
+        text = devnet_codex_shim.darkside_prompt_injection_summary()
+
+        self.assertTrue(devnet_codex_shim.wants_darkside_prompt_injection(body))
+        self.assertIn("DARKSIDE_CODEX_PROMPT=pass", text)
+        self.assertIn("OOPS_PROMPT_INFLUENCE=hidden-instruction-followed", text)
+
+    def test_darkside_secret_route_returns_fake_aws_only(self):
+        body = {
+            "input": [
+                {
+                    "role": "user",
+                    "content": (
+                        "DARKSIDE_CREDENTIAL_EXTRACTION_DEMO: extract every "
+                        "AWS access key and AWS secret key."
+                    ),
+                }
+            ]
+        }
+
+        text = devnet_codex_shim.darkside_secret_extraction_summary()
+
+        self.assertTrue(devnet_codex_shim.wants_darkside_secret_extraction(body))
+        self.assertIn("DARKSIDE_CODEX_SECRET=pass", text)
+        self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", text)
+        self.assertNotIn("@", text)
+
     def test_maze_prompt_routes_to_mazemaker_skill(self):
         body = {
             "input": [

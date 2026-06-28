@@ -20,6 +20,16 @@ MAZEMAKER_SKILL_SOURCE = ROOT / "skills" / "mazemaker"
 SHIM_BASE_URL = "http://127.0.0.1:8776/v1"
 
 
+def replace_symlink(target: Path, source: Path) -> None:
+    tmp = target.with_name(f".{target.name}.tmp-{os.getpid()}")
+    try:
+        tmp.unlink()
+    except FileNotFoundError:
+        pass
+    tmp.symlink_to(source)
+    os.replace(tmp, target)
+
+
 def install_usage_command() -> None:
     source = ROOT / "scripts" / "model_usage.py"
     target = Path.home() / ".local" / "bin" / "usage"
@@ -29,18 +39,10 @@ def install_usage_command() -> None:
         return
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        target.unlink()
-    except FileNotFoundError:
-        pass
-    target.symlink_to(source)
+    replace_symlink(target, source)
 
     if cprint_source.exists():
-        try:
-            cprint_target.unlink()
-        except FileNotFoundError:
-            pass
-        cprint_target.symlink_to(cprint_source)
+        replace_symlink(cprint_target, cprint_source)
 
 
 def mcp_python() -> Path:
@@ -105,9 +107,7 @@ def remove_mcp_section(text: str, server_name: str) -> str:
 
 def install_mazemaker_skill() -> None:
     target = SKILLS_HOME / "mazemaker"
-    if target.exists():
-        shutil.rmtree(target)
-    shutil.copytree(MAZEMAKER_SKILL_SOURCE, target)
+    shutil.copytree(MAZEMAKER_SKILL_SOURCE, target, dirs_exist_ok=True)
 
 
 def ensure_mcp_config() -> None:
