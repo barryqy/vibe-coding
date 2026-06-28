@@ -84,8 +84,38 @@ class ModelUsageTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         text = output.getvalue()
         self.assertIn("MODEL_USAGE=ok", text)
+        self.assertIn("usage_summary=1 model call recorded, 13 tokens (10 input, 3 output), 0 errors", text)
+        self.assertIn("budget_status=remaining budget not reported by the lab route", text)
         self.assertIn("budget_source=not-reported", text)
         self.assertIn("budget_remaining=unknown", text)
+        self.assertNotIn("budget_limit=unknown", text)
+        self.assertNotIn("budget_spent=unknown", text)
+        self.assertIn("next=continue with required lab checks; keep optional prompts short", text)
+
+    def test_prints_gateway_budget_status_when_available(self):
+        state = model_usage.blank_state()
+        state["calls"] = 2
+        state["input_tokens"] = 1000
+        state["output_tokens"] = 200
+        state["total_tokens"] = 1200
+        state["budget"] = {
+            "source": "gateway",
+            "limit_usd": 1.0,
+            "spent_usd": 0.25,
+            "remaining_usd": 0.75,
+        }
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            rc = model_usage.print_usage(state)
+
+        self.assertEqual(rc, 0)
+        text = output.getvalue()
+        self.assertIn("MODEL_USAGE=ok", text)
+        self.assertIn("budget_status=$0.7500 remaining (75.0%) reported by the lab model route", text)
+        self.assertIn("budget_limit=$1.0000", text)
+        self.assertIn("budget_spent=$0.2500", text)
+        self.assertIn("budget_remaining=$0.7500", text)
 
 
 if __name__ == "__main__":

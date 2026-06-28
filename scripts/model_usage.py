@@ -342,6 +342,58 @@ def fmt_money(value: float | None) -> str:
     return f"${value:.4f}"
 
 
+def fmt_int(value: int) -> str:
+    return f"{value:,}"
+
+
+def plural(value: int, word: str) -> str:
+    if value == 1:
+        return word
+    return f"{word}s"
+
+
+def usage_summary(state: dict[str, Any], calls: int) -> str:
+    errors = intish(state.get("errors"))
+    input_tokens = intish(state.get("input_tokens"))
+    output_tokens = intish(state.get("output_tokens"))
+    total_tokens = intish(state.get("total_tokens"))
+
+    if not calls and not total_tokens:
+        return "no model calls recorded yet"
+
+    return (
+        f"{fmt_int(calls)} model {plural(calls, 'call')} recorded, "
+        f"{fmt_int(total_tokens)} tokens "
+        f"({fmt_int(input_tokens)} input, {fmt_int(output_tokens)} output), "
+        f"{fmt_int(errors)} {plural(errors, 'error')}"
+    )
+
+
+def budget_status(budget: dict[str, Any], remaining_pct: float | None) -> str:
+    source = budget.get("source")
+    limit = budget.get("limit")
+    spent = budget.get("spent")
+    remaining = budget.get("remaining")
+
+    if source == "gateway":
+        if remaining is not None and remaining_pct is not None:
+            return f"{fmt_money(remaining)} remaining ({remaining_pct:.1f}%) reported by the lab model route"
+        if remaining is not None:
+            return f"{fmt_money(remaining)} remaining reported by the lab model route"
+        if spent is not None or limit is not None:
+            return "budget details reported by the lab model route"
+        return "lab model route reported budget details, but not a remaining amount"
+
+    if source == "configured-estimate":
+        if remaining is not None and remaining_pct is not None:
+            return f"{fmt_money(remaining)} remaining ({remaining_pct:.1f}%) estimated from configured rates"
+        if remaining is not None:
+            return f"{fmt_money(remaining)} remaining estimated from configured rates"
+        return "budget estimated from configured rates"
+
+    return "remaining budget not reported by the lab route; use total_tokens as the local meter"
+
+
 def print_usage(state: dict[str, Any]) -> int:
     budget = budget_summary(state)
     calls = intish(state.get("calls"))
@@ -361,6 +413,8 @@ def print_usage(state: dict[str, Any]) -> int:
         status = "nearly-empty"
 
     print(f"MODEL_USAGE={status}")
+    print(f"usage_summary={usage_summary(state, calls)}")
+    print(f"budget_status={budget_status(budget, remaining_pct)}")
     print(f"calls={calls}")
     print(f"errors={intish(state.get('errors'))}")
     print(f"input_tokens={intish(state.get('input_tokens'))}")
@@ -376,8 +430,9 @@ def print_usage(state: dict[str, Any]) -> int:
         )
 
     print(f"budget_source={budget.get('source', 'unknown')}")
-    print(f"budget_limit={fmt_money(limit)}")
-    print(f"budget_spent={fmt_money(spent)}")
+    if budget.get("source") != "not-reported":
+        print(f"budget_limit={fmt_money(limit)}")
+        print(f"budget_spent={fmt_money(spent)}")
     print(f"budget_remaining={fmt_money(remaining)}")
     if remaining_pct is not None:
         print(f"budget_remaining_pct={remaining_pct:.1f}")
@@ -387,7 +442,7 @@ def print_usage(state: dict[str, Any]) -> int:
     elif budget.get("source") == "gateway":
         print("budget_note=reported by the lab model route")
     else:
-        print("budget_note=the lab model route returned token usage but did not expose remaining budget")
+        print("budget_note=the lab route reports per-call token usage but not the hard remaining budget")
 
     last_error = state.get("last_error")
     if isinstance(last_error, dict) and last_error.get("message"):
@@ -397,6 +452,8 @@ def print_usage(state: dict[str, Any]) -> int:
         print("next=run a Codex or OpenCode model call, then run usage again")
     elif status in {"low", "nearly-empty"}:
         print("next=avoid long interactive chats or large build prompts")
+    elif budget.get("source") == "not-reported":
+        print("next=continue with required lab checks; keep optional prompts short")
     else:
         print("next=continue with the lab checks")
     return 0

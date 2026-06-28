@@ -12,12 +12,6 @@ SHIM_BASE_URL = "http://127.0.0.1:8765/v1"
 INSTRUCTIONS = [
     "AGENTS.md",
     "docs/quality-bar.md",
-    ".second-brain/RESOLVER.md",
-    ".second-brain/schema.md",
-    ".second-brain/projects/vibe-coding-dojo.md",
-    ".second-brain/patterns/rps-cli.md",
-    ".second-brain/sessions/current-session.md",
-    ".opencode/skills/rps-cli/SKILL.md",
 ]
 
 
@@ -32,11 +26,7 @@ def install_usage_command() -> None:
         target.unlink()
     except FileNotFoundError:
         pass
-    try:
-        target.symlink_to(source)
-    except FileExistsError:
-        target.unlink()
-        target.symlink_to(source)
+    target.symlink_to(source)
 
 
 def main() -> int:
@@ -62,18 +52,13 @@ def main() -> int:
             "edit": "allow",
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
+                "python3 -m dojo_app.maze_game*": "allow",
+                "printf * | python3 -m dojo_app.maze_game*": "allow",
+                "python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py*": "allow",
+                "python3 skills/mazemaker/scripts/build_maze.py*": "allow",
+                "python3 .lab-state/codex/home/skills/mazemaker/scripts/build_maze.py*": "allow",
                 ".venv/bin/python -m dojo_app.barryflights_mcp_client*": "allow",
-                "python3 -m py_compile play.py*": "allow",
-                "python3 play.py*": "allow",
-                "printf * | python3 play.py*": "allow",
                 "python3 scripts/check_repo.py*": "allow",
-                "python3 scripts/setup_codex_devnet.py*": "allow",
-                "python3 scripts/start_codex_model_adapter.py*": "allow",
-                "python3 scripts/devnet_codex_shim.py*": "allow",
-                "python3 scripts/setup_opencode_devnet.py*": "allow",
-                "python3 scripts/start_opencode_model_adapter.py*": "allow",
-                "python3 scripts/defenseclaw_skill_demo.py*": "allow",
-                "python3 scripts/defenseclaw_mcp_demo.py*": "allow",
                 "*": "allow",
             },
             "webfetch": "deny",
@@ -104,11 +89,9 @@ def main() -> int:
     print("OPENCODE_DEVNET_CONFIG=ready")
     print(f"path={OUT.relative_to(ROOT)}")
     print(f"model=devnet/{model}")
-    print("kb=.second-brain")
-    print("skill=.opencode/skills/rps-cli")
-    print("contract=GAME_CONTRACT.md")
-    print("task_file=play.py")
+    print("kb_search=.second-brain")
     print("edit_permission=allow")
+    print("task_file=dojo_app/maze_play.py")
     print("adapter=python3 scripts/start_opencode_model_adapter.py")
     print("usage_command=usage")
     return 0

@@ -6,13 +6,13 @@ Good vibe coding still has a quality bar.
 
 - The task is small enough to review.
 - The agent has project context before it edits.
-- The agent reads `.second-brain/RESOLVER.md`, `.second-brain/schema.md`, and the current session note before continuing work.
+- The agent searches `.second-brain/` for notes that match the task before continuing work.
 - The agent updates `.second-brain/sessions/current-session.md` as normal task housekeeping when state changes.
 - Tests and checks are run after the edit.
 - Security-sensitive changes get an extra review.
 - Model routes and data sources are named before the app sends prompts.
 - Local MCP tools are called through an explicit client before they are treated as trusted context.
-- Repo-local skills are installed from known files and checked before their outputs are trusted.
+- Repo-local skills are installed from known files and checked before their artifacts are trusted.
 - Agent skills and extensions are scanned before they are trusted.
 - Durable decisions are written down once, then reused.
 
@@ -32,7 +32,7 @@ Memory: what decision should be saved if the result matters later.
 
 Use `.second-brain/` when work moves across tools or sessions.
 
-- `RESOLVER.md` tells the agent what to read first.
+- `RESOLVER.md` tells the agent how to resolve relevant notes.
 - `schema.md` keeps notes predictable.
 - `projects/` holds durable project context.
 - `sessions/current-session.md` holds current state, recent work, open questions, boundaries, and verification.

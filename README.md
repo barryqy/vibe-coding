@@ -6,13 +6,11 @@ The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
 2. connect Codex to the supplied DevNet model route
-3. use the local BarryFlights MCP demo and check a flight status
-4. create shared KB notes in `.second-brain/`
-5. use a documented Codex project skill to create `GAME_CONTRACT.md`
-6. attach OpenCode to the same KB and skill context, then build `play.py`
-7. inspect risky Skills, generated code, and MCP responses before trusting them
-
-The main game is not prebuilt. Codex writes the contract; OpenCode writes the app.
+3. use the local BarryFlights MCP demo included with the dojo and check a flight status
+4. create a small second brain that coding agents can share
+5. ask Codex to use the second brain to find the MazeMaker skill, then verify the generated 12x12 Maze data
+6. attach OpenCode to the same KB and make the Maze playable
+7. replay a risky MCP booking, then scan agent skills before trusting them
 
 ## Quick Start
 
@@ -30,109 +28,54 @@ else
   npm install -g @openai/codex
 fi
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
+codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
+if command -v bwrap >/dev/null 2>&1; then
+  echo "Using the system sandbox helper."
+elif [ -x "$codex_bwrap" ]; then
+  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+  echo "Using the sandbox helper bundled with Codex."
+else
+  echo "Sandbox helper not found."
+fi
 codex --version
 ```
 
-Then continue with the DevNet guide. The lab starts with Codex CLI, then brings in OpenCode as a second tool using the same rules and memory.
+Then continue with the DevNet guide. The lab starts with Codex CLI, then brings in OpenCode later as a second tool to compare against the same rules.
 
 ## What Is Here
 
-- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is safe and read-only; `book_flight` is intentionally risky and returns fake AWS-style sample output for the security module.
-- `dojo_app/barryflights_mcp_client.py` calls that MCP server over stdio.
-- `.agents/skills/rps-cli/SKILL.md` is the Codex project skill for the contract stage.
-- `.opencode/skills/rps-cli/SKILL.md` is the OpenCode project skill for the build stage.
-- `.second-brain/` is the repo-local KB for shared project memory.
-- `.second-brain/patterns/rps-cli.md` records the contract-to-build pattern.
-- `GAME_CONTRACT.md`, `play.py`, and `GAME_README.md` are created during the lab and are not committed.
+- `dojo_app/` is a tiny code dojo used for agent and security exercises.
+- `dojo_app/maze_game.py` is the stable tiny terminal Maze app used during the lab. It can check raw maze data, render an Amaze-style terminal board, keep `--render raw` for debugging the source maze data, and dispatch play mode into `dojo_app/maze_play.py`.
+- `dojo_app/maze_play.py` is the scoped OpenCode exercise file. It starts as a placeholder and becomes the playable movement loop.
+- `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill used to create checked Maze artifacts.
+- `skills/mazemaker/scripts/build_maze.py` writes solvable Recursive Backtracker maze data to a repo-local file.
+- `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
+- `dojo_app/barryflights_mcp_client.py` calls that local MCP server over stdio.
+- `dojo_app/barrybot.py` is a legacy starter agent kept for optional follow-up experiments.
+- `tests/` contains unit tests that prove the app still works.
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
-- `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route and BarryFlights MCP server.
-- `scripts/setup_opencode_devnet.py` creates a repo-local OpenCode provider config for the DevNet model route and shared KB files.
-- `scripts/model_usage.py` is exposed as `usage` during setup. It shows token counts recorded by the local Codex and OpenCode adapters, plus any hard budget details the lab model route reports.
-- `samples/guardrails/`, `samples/skills/`, `samples/mcp/`, and `samples/leaky_rps_patch.py` contain the DefenseClaw scenario and admission-gate examples.
+- `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
+- `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
+- `scripts/setup_dojo.sh` creates the tiny local state folders if you want a quick repo reset point.
+- `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
+- `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
+- `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
+- `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
+- `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
+- `scripts/setup_opencode_devnet.py` configures OpenCode to use that local route when the DevNet model variables are present.
+- `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
+- `scripts/agent_compare.py` builds one shared Maze planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
+- `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
+- `scripts/defenseclaw_scenario_review.py` reviews the prompt, privacy, generated-code, and MCP risk scenarios used in the DefenseClaw module.
+- `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
+- `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, `CLAUDE.md`, and `.claude/settings.json` show repo-level ways to keep coding tools inside the same boundaries.
-
-## Codex Contract
-
-```bash
-python3 scripts/setup_codex_devnet.py
-python3 scripts/start_codex_model_adapter.py
-usage
-mkdir -p .lab-state/codex-output
-rm -f GAME_CONTRACT.md play.py
-
-CODEX_HOME=.lab-state/codex/home \
-codex exec \
-  --disable plugin_sharing \
-  --ephemeral \
-  --cd "$PWD" \
-  --sandbox read-only \
-  --output-last-message .lab-state/codex-output/rps-contract.raw.txt \
-  'Use $rps-cli and the second brain for project context. Create the rock-paper-scissors CLI contract for this repo. Return only the contract body. Do not create play.py or GAME_README.md.'
-
-python3 scripts/normalize_game_contract.py \
-  .lab-state/codex-output/rps-contract.raw.txt \
-  GAME_CONTRACT.md
-
-grep -q '^APP: play.py$' GAME_CONTRACT.md
-grep -q '^DOCS: GAME_README.md$' GAME_CONTRACT.md
-grep -q '^MARKER: RPS_SELF_TEST=pass$' GAME_CONTRACT.md
-test ! -f play.py
-usage
-```
-
-## OpenCode Build
-
-```bash
-mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" .lab-state/opencode-download
-curl -fL --max-time 180 --progress-bar \
-  -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
-  https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
-tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
-install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
-ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
-export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
-opencode --version
-python3 scripts/setup_opencode_devnet.py
-python3 scripts/start_opencode_model_adapter.py
-usage
-
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
-OPENCODE_DISABLE_AUTOUPDATE=true \
-OPENCODE_DISABLE_LSP_DOWNLOAD=true \
-opencode run \
-  'Use the attached project memory, rps-cli skill, and GAME_CONTRACT.md. This folder has no app code yet. Create play.py and GAME_README.md. Implement the complete rock-paper-scissors CLI game and --self-test. Run every VERIFY command in GAME_CONTRACT.md and fix failures before stopping.' \
-  --title rps-cli-build \
-  --agent build \
-  --model "devnet/${LLM_MODEL:-gpt-4o}" \
-  --file AGENTS.md \
-  --file .second-brain/RESOLVER.md \
-  --file .second-brain/projects/vibe-coding-dojo.md \
-  --file .second-brain/sessions/current-session.md \
-  --file .opencode/skills/rps-cli/SKILL.md \
-  --file GAME_CONTRACT.md
-
-test -f play.py
-test -f GAME_README.md
-python3 -m py_compile play.py
-timeout 10s python3 play.py --self-test
-printf '1\nrock\nq\n' | timeout 10s python3 play.py
-printf '1\nlizard\nq\n' | timeout 10s python3 play.py
-printf '2\nrock\nscissors\nq\n' | timeout 10s python3 play.py
-usage
-```
-
-## Security Checks
-
-```bash
-python3 scripts/check_repo.py
-python3 scripts/defenseclaw_scenario_review.py all
-python3 scripts/defenseclaw_skill_demo.py
-python3 scripts/defenseclaw_mcp_demo.py
-```
+- `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
+- `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
 
 ## Optional Model Routes
 
-The deterministic checks work without a personal model account. If you want the optional AI coach to call a real model, use one of these routes:
+The deterministic checks work without a model account. If you want the optional AI coach to call a real model, use one of these routes:
 
 ```bash
 export VIBE_LLM_BASE_URL="http://127.0.0.1:11434/v1"
@@ -149,3 +92,205 @@ export VIBE_LLM_API_KEY="your-api-key"
 ```
 
 In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` variables.
+
+## Install and Use Codex CLI First
+
+Install Codex first with the official standalone installer:
+
+```bash
+if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
+  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
+else
+  npm config set prefix "$HOME/.local"
+  npm install -g @openai/codex
+fi
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
+codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
+if command -v bwrap >/dev/null 2>&1; then
+  echo "Using the system sandbox helper."
+elif [ -x "$codex_bwrap" ]; then
+  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
+  echo "Using the sandbox helper bundled with Codex."
+else
+  echo "Sandbox helper not found."
+fi
+codex --version
+```
+
+In a DevNet lab environment, Codex can use the built-in model route without a personal model key:
+
+```bash
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
+python3 scripts/setup_codex_devnet.py
+python3 scripts/start_codex_model_adapter.py
+CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
+```
+
+Check the local BarryFlights tool that is included with the dojo:
+
+```bash
+python3 scripts/setup_codex_devnet.py >/dev/null
+.venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
+```
+
+Ask Codex to check a flight through BarryFlights:
+
+In the DevNet lab, Codex reaches the supplied model through the repo-local adapter. For this one status-check prompt, the adapter calls the local BarryFlights MCP client so the exercise has a stable tool result. The flight data is a demo dataset.
+
+```bash
+export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
+if ! status_output="$(CODEX_HOME=.lab-state/codex/home codex exec \
+    --disable plugin_sharing \
+    --cd "$PWD" \
+    --sandbox read-only \
+    "Use the local BarryFlights MCP demo to check the status of flight SKY451." 2>&1)"; then
+  printf '%s\n' "$status_output"
+  exit 1
+fi
+
+printf '%s\n' "$status_output" | awk '
+  /^BARRYFLIGHTS_STATUS=pass$/ { capture=1 }
+  capture { print }
+  /^MCP_DEPARTURE=/ && capture { found=1; exit }
+  END { if (!found) exit 1 }
+'
+```
+
+Later in the security module, replay the intentionally risky booking tool and inspect the fake AWS-style sample credential output:
+
+```bash
+python3 scripts/setup_codex_devnet.py >/dev/null
+python3 scripts/start_codex_model_adapter.py >/dev/null
+CODEX_HOME=.lab-state/codex/home codex exec \
+  --disable plugin_sharing \
+  --ephemeral \
+  --skip-git-repo-check \
+  --cd "$PWD" \
+  --sandbox workspace-write \
+  "Use the local BarryFlights MCP demo to book a flight from SFO to LAS for Alex today. Return only the evidence lines for the booking result, the ledger path, and any credential-looking extra output."
+```
+
+Ask Codex to search the second brain, then check and render the Amaze-style terminal board:
+
+```bash
+mkdir -p .lab-state/codex-output
+python3 scripts/setup_codex_devnet.py >/dev/null
+python3 scripts/start_codex_model_adapter.py >/dev/null
+
+CODEX_HOME=.lab-state/codex/home \
+codex exec \
+  --disable plugin_sharing \
+  --ephemeral \
+  --cd "$PWD" \
+  --sandbox read-only \
+  --output-last-message .lab-state/codex-output/mazemaker-skill.txt \
+  "Search .second-brain/ for project context, then create the next Maze artifact for this repo.
+Save the maze to .lab-state/codex-output/maze.txt.
+Return only the skill result." \
+  > .lab-state/codex-output/maze-codex.log 2>&1
+
+if [ -s .lab-state/codex-output/mazemaker-skill.txt ]; then
+  cat .lab-state/codex-output/mazemaker-skill.txt
+  echo
+fi
+
+grep -q '^MAZEMAKER_SKILL=pass$' .lab-state/codex-output/mazemaker-skill.txt
+test -f .lab-state/codex-output/maze.txt
+
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --check-only
+
+python3 -m dojo_app.maze_game \
+  --maze-file .lab-state/codex-output/maze.txt \
+  --render amaze
+```
+
+Later in the lab, install OpenCode and point it at the same model route for comparison:
+
+```bash
+mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" .lab-state/opencode-download
+curl -fL --max-time 180 --progress-bar \
+  -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
+  https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
+tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
+install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
+ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
+opencode --version
+python3 scripts/setup_opencode_devnet.py
+python3 scripts/start_opencode_model_adapter.py
+```
+
+Then let OpenCode search the same second brain and make the Maze playable:
+
+```bash
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
+opencode run \
+  --title maze-interactive \
+  --agent build \
+  --model devnet/gpt-4o \
+  "Search .second-brain/ for Maze project context. Edit exactly one file: dojo_app/maze_play.py. Replace only the body of choose_next_position(maze, position, command). Do not edit run_play_maze; it already handles single-key input, redraw, rendering, quit, and return codes. Use the existing MOVE_DELTAS mapping. If command is not in MOVE_DELTAS, return the current position. Otherwise compute the target row and column. If the target is outside the maze or is #, return the current position. Otherwise return the target position. Use four spaces for indentation and no tabs. After editing, run only python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py. If compile fails, fix the code and run py_compile again. Do not run python3 -m dojo_app.maze_game and do not run the play smoke test; the lab runs that next. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  --file dojo_app/maze_play.py
+```
+
+Print the tiny Maze as a readable board:
+
+```bash
+python3 -m dojo_app.maze_game
+```
+
+Inspect the raw maze data:
+
+```bash
+python3 -m dojo_app.maze_game --render raw
+```
+
+After the interactive change, play it:
+
+```bash
+python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
+printf 'd\nq\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
+```
+
+After that, compare both agents with one shared prompt:
+
+```bash
+python3 scripts/agent_compare.py --tool both --show-rules
+```
+
+Claude Code remains optional when you already have sign-in on your own machine:
+
+```bash
+claude "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
+```
+
+## Explore DefenseClaw
+
+Install the pinned DefenseClaw CLI path, review the local scenario set, then scan one intentionally unsafe skill and one clean skill:
+
+```bash
+./scripts/install_defenseclaw_cli.sh
+python3 scripts/defenseclaw_scenario_review.py all
+python3 scripts/defenseclaw_skill_demo.py
+python3 scripts/defenseclaw_mcp_demo.py
+```
+
+The expected markers are:
+
+```text
+DEFENSECLAW_BAD_SKILL=blocked
+DEFENSECLAW_CLEAN_SKILL=clean
+DEFENSECLAW_MINI=pass
+DEFENSECLAW_MCP=pass
+```
+
+You can also scan an intentionally leaky sample file:
+
+```bash
+python3 scripts/security_review.py samples/leaky_maze_patch.py || true
+```
+
+## Safety Notes
+
+- Do not put real secrets in this repo.
+- The unsafe samples under `samples/` are intentionally bad and exist only so scanners have something obvious to catch.
+- The repo check is deliberately simple. It is a teaching harness, not a replacement for a full CI system.

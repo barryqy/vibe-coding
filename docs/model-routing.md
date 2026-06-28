@@ -27,7 +27,6 @@ For coding-agent exercises, the repo-local helpers adapt the same DevNet variabl
 - `scripts/start_codex_model_adapter.py` exposes the local adapter Codex uses for the DevNet `/chat/completions` route.
 - `scripts/setup_opencode_devnet.py` writes `.lab-state/opencode-devnet.json`.
 - `scripts/devnet_openai_shim.py --ensure` exposes the OpenAI-compatible chat-completions route OpenCode expects.
-- `usage` reads `.lab-state/model-usage.json` and shows token counts recorded by those adapters. The DevNet model route returns token usage on successful calls; it does not currently expose remaining lab budget on a separate quota endpoint.
 
 Keep these files under `.lab-state/` so the lab does not change your global tool configuration.
 

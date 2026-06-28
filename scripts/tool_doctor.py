@@ -71,8 +71,8 @@ def main() -> int:
     print("check_repo=python3 scripts/check_repo.py")
     print("first_codex_result=CODEX_HOME=.lab-state/codex/home codex exec --cd \"$PWD\" \"Reply only with a tiny three-line ASCII cat.\"")
     print("first_opencode_result=OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model devnet/gpt-4o \"Reply only with a tiny three-line ASCII cat.\"")
-    print("rps_contract=CODEX_HOME=.lab-state/codex/home codex exec --cd \"$PWD\" --sandbox read-only --output-last-message .lab-state/codex-output/rps-contract.raw.txt \"Use $rps-cli and the second brain to create the game contract.\" && python3 scripts/normalize_game_contract.py .lab-state/codex-output/rps-contract.raw.txt GAME_CONTRACT.md")
-    print("rps_build=OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run \"Use the attached project memory, rps-cli skill, and GAME_CONTRACT.md. Create play.py and GAME_README.md.\" --file GAME_CONTRACT.md")
+    print("maze_game=python3 -m dojo_app.maze_game")
+    print("agent_compare=python3 scripts/agent_compare.py --tool both --show-rules")
     print("defenseclaw_demo=python3 scripts/defenseclaw_skill_demo.py")
     print("recommendation=start with Codex, then run simple repo checks after code changes")
     return 0

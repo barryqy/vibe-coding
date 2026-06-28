@@ -27,7 +27,7 @@ def main(argv: list[str]) -> int:
     if ask is None:
         print("BARRYBOT_DEMO=starter")
         print("reason=BarryBot has not been built yet")
-        print("next_step=ask a coding agent with the prompt shape in docs/quality-bar.md")
+        print("next_step=python3 scripts/agent_code_task.py --tool codex")
         return 0
 
     print("BARRYBOT_DEMO=starting")
