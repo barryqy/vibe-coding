@@ -26,8 +26,9 @@ START = "<!-- PROGRESS:START -->"
 END = "<!-- PROGRESS:END -->"
 
 WIDTH = 1120
-HEIGHT = 300
+HEIGHT = 64
 TOTAL_MODULES = 9
+STOPS = list(range(1, TOTAL_MODULES + 1))
 
 PART1 = list(range(1, 6))
 PART2 = list(range(6, 10))
@@ -37,15 +38,17 @@ COLORS = {
     "border": "#dee2e6",
     "title": "#212529",
     "muted": "#6c757d",
-    "pill_bg": "#e9ecef",
-    "pill_fg": "#495057",
-    "pill_border": "#ced4da",
-    "active_bg": "#0d6efd",
-    "active_fg": "#ffffff",
-    "active_border": "#0a58ca",
-    "meter_bg": "#e9ecef",
-    "meter_fill": "#0d6efd",
-    "meter_text": "#495057",
+    "track1": "#0d6efd",
+    "track2": "#198754",
+    "track_bg": "#ced4da",
+    "stop_done_fg": "#ffffff",
+    "stop_done_bg": "#0d6efd",
+    "stop_done2_bg": "#198754",
+    "stop_future_bg": "#ffffff",
+    "stop_future_border": "#adb5bd",
+    "stop_future_fg": "#6c757d",
+    "stop_active_ring": "#0a58ca",
+    "stop_active2_ring": "#146c43",
 }
 
 
@@ -69,28 +72,27 @@ def short_label(index: int) -> str:
     }.get(index, f"M{index}")
 
 
-def load_fonts() -> tuple[ImageFont.FreeTypeFont, ImageFont.FreeTypeFont, ImageFont.FreeTypeFont]:
+def load_fonts() -> tuple[ImageFont.FreeTypeFont, ImageFont.FreeTypeFont]:
     candidates = [
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        ("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 13),
+        ("/System/Library/Fonts/Supplemental/Arial.ttf", 11),
+        ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 13),
+        ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11),
+        ("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 13),
+        ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 11),
     ]
-    bold_path = next((p for p in candidates if "Bold" in p and Path(p).exists()), None)
-    regular_path = next(
-        (p for p in candidates if "Bold" not in p and Path(p).exists()),
-        None,
-    )
-    if bold_path and regular_path:
-        return (
-            ImageFont.truetype(bold_path, 24),
-            ImageFont.truetype(regular_path, 16),
-            ImageFont.truetype(regular_path, 15),
-        )
+    bold = regular = None
+    for path, size in candidates:
+        if not Path(path).exists():
+            continue
+        if "Bold" in path and bold is None:
+            bold = ImageFont.truetype(path, size)
+        elif "Bold" not in path and regular is None:
+            regular = ImageFont.truetype(path, size)
+    if bold and regular:
+        return bold, regular
     default = ImageFont.load_default()
-    return default, default, default
+    return default, default
 
 
 def text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> int:
@@ -98,41 +100,24 @@ def text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) 
     return box[2] - box[0]
 
 
-def draw_pill(
-    draw: ImageDraw.ImageDraw,
-    x: int,
-    y: int,
-    label: str,
-    *,
-    active: bool,
-    font: ImageFont.ImageFont,
-) -> int:
-    padding_x = 16
-    padding_y = 8
-    text_w = text_width(draw, label, font)
-    w = text_w + padding_x * 2
-    h = 34
-    radius = h // 2
-    bg = COLORS["active_bg"] if active else COLORS["pill_bg"]
-    fg = COLORS["active_fg"] if active else COLORS["pill_fg"]
-    border = COLORS["active_border"] if active else COLORS["pill_border"]
-    draw.rounded_rectangle((x, y, x + w, y + h), radius=radius, fill=bg, outline=border, width=2)
-    draw.text((x + padding_x, y + padding_y - 2), label, fill=fg, font=font)
-    return w
+def track_color(stop: int) -> str:
+    return COLORS["track1"] if stop in PART1 else COLORS["track2"]
 
 
-def draw_meter(draw: ImageDraw.ImageDraw, x: int, y: int, pct: int, font: ImageFont.ImageFont) -> None:
-    bar_w = WIDTH - 80
-    bar_h = 12
-    fill_w = max(0, min(bar_w, int(bar_w * pct / 100)))
-    draw.rounded_rectangle((x, y, x + bar_w, y + bar_h), radius=6, fill=COLORS["meter_bg"])
-    if fill_w:
-        draw.rounded_rectangle((x, y, x + fill_w, y + bar_h), radius=6, fill=COLORS["meter_fill"])
-    draw.text((x, y + 20), f"{pct}% complete", fill=COLORS["meter_text"], font=font)
+def stop_fill(current: int, stop: int) -> tuple[str, str, str, int]:
+    """Return fill, text color, ring color, radius for a subway stop."""
+    if current and stop < current:
+        fill = COLORS["stop_done2_bg"] if stop in PART2 else COLORS["stop_done_bg"]
+        return fill, COLORS["stop_done_fg"], fill, 11
+    if stop == current:
+        ring = COLORS["stop_active2_ring"] if stop in PART2 else COLORS["stop_active_ring"]
+        fill = COLORS["stop_done2_bg"] if stop in PART2 else COLORS["stop_done_bg"]
+        return fill, COLORS["stop_done_fg"], ring, 14
+    return COLORS["stop_future_bg"], COLORS["stop_future_fg"], COLORS["stop_future_border"], 10
 
 
 def render_png(current: int, output_path: Path) -> None:
-    title_font, section_font, pill_font = load_fonts()
+    title_font, stop_font = load_fonts()
     pct = int(round((current / TOTAL_MODULES) * 100)) if current else 0
     part_name = (
         "Part 1 — Vibe Coding"
@@ -140,42 +125,56 @@ def render_png(current: int, output_path: Path) -> None:
         else "Part 2 — Securing AI Agents"
     )
     module_line = f"Module {current} of {TOTAL_MODULES}" if current else "Lab overview"
-    title = f"{part_name} · {module_line}"
+    caption = f"{part_name} · {module_line}"
 
     img = Image.new("RGB", (WIDTH, HEIGHT), "white")
     draw = ImageDraw.Draw(img)
-    margin = 24
+    margin = 12
     draw.rounded_rectangle(
-        (8, 8, WIDTH - 8, HEIGHT - 8),
-        radius=16,
+        (4, 4, WIDTH - 4, HEIGHT - 4),
+        radius=10,
         fill=COLORS["card"],
         outline=COLORS["border"],
-        width=2,
+        width=1,
     )
 
-    y = margin
-    draw.text((margin, y), title, fill=COLORS["title"], font=title_font)
-    y += 40
+    draw.text((margin, 10), caption, fill=COLORS["title"], font=title_font)
+    pct_text = f"{pct}%"
+    draw.text((WIDTH - margin - text_width(draw, pct_text, stop_font), 12), pct_text, fill=COLORS["muted"], font=stop_font)
 
-    draw.text((margin, y), "Part 1 — Vibe Coding (Modules 1–5)", fill=COLORS["muted"], font=section_font)
-    y += 28
-    x = margin
-    for num in PART1:
-        label = f"{num} {short_label(num)}"
-        w = draw_pill(draw, x, y, label, active=(num == current), font=pill_font)
-        x += w + 10
-    y += 52
+    track_y = 40
+    left = margin + 8
+    right = WIDTH - margin - 8
+    span = right - left
+    if len(STOPS) > 1:
+        step = span / (len(STOPS) - 1)
+    else:
+        step = 0
+    centers = [int(left + step * i) for i in range(len(STOPS))]
 
-    draw.text((margin, y), "Part 2 — Securing AI Agents (Modules 6–9)", fill=COLORS["muted"], font=section_font)
-    y += 28
-    x = margin
-    for num in PART2:
-        label = f"{num} {short_label(num)}"
-        w = draw_pill(draw, x, y, label, active=(num == current), font=pill_font)
-        x += w + 10
-    y += 52
+    for i in range(len(centers) - 1):
+        x1, x2 = centers[i], centers[i + 1]
+        stop_a, stop_b = STOPS[i], STOPS[i + 1]
+        if current and stop_b <= current:
+            color = COLORS["track2"] if stop_b in PART2 else COLORS["track1"]
+        elif current and stop_a < current:
+            color = COLORS["track2"] if stop_b in PART2 else COLORS["track1"]
+        else:
+            color = COLORS["track_bg"]
+        draw.line((x1, track_y, x2, track_y), fill=color, width=4)
 
-    draw_meter(draw, margin, y, pct, section_font)
+    for stop, cx in zip(STOPS, centers):
+        fill, fg, ring, radius = stop_fill(current, stop)
+        draw.ellipse((cx - radius, track_y - radius, cx + radius, track_y + radius), fill=fill, outline=ring, width=2)
+        num = str(stop)
+        num_w = text_width(draw, num, stop_font)
+        draw.text((cx - num_w // 2, track_y - 6), num, fill=fg, font=stop_font)
+
+    # Part boundary tick between stops 5 and 6
+    if len(centers) >= 6:
+        bx = (centers[4] + centers[5]) // 2
+        draw.line((bx, track_y - 14, bx, track_y + 14), fill=COLORS["muted"], width=1)
+        draw.text((bx - 14, track_y - 26), "P2", fill=COLORS["muted"], font=stop_font)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(output_path, format="PNG", optimize=True)
