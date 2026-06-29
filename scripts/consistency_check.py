@@ -47,7 +47,7 @@ REQUIRED_FILES = [
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
     Path("scripts/defenseclaw_skill_demo.py"),
-    Path("scripts/defenseclaw_mcp_demo.py"),
+    Path("scripts/run_defenseclaw_mcp_demo.sh"),
     Path("scripts/defenseclaw_scenario_review.py"),
     Path("samples/guardrails/rollout-note.md"),
     Path("samples/guardrails/privacy-request.txt"),
@@ -57,9 +57,6 @@ REQUIRED_FILES = [
     Path("samples/skills/release-brief-helper/SKILL.md"),
     Path("samples/mcp/workspace-admin-bridge.py"),
     Path("samples/mcp/safe-migration-reference-server.py"),
-    Path("samples/skills/maze-score-booster/SKILL.md"),
-    Path("samples/skills/maze-score-booster/score_booster.py"),
-    Path("samples/skills/maze-game-coach/SKILL.md"),
     Path("samples/leaky_maze_patch.py"),
     Path("tests/test_model_usage.py"),
 ]
@@ -102,7 +99,11 @@ def main() -> int:
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
     require("scripts/defenseclaw_skill_demo.py" in agents, "AGENTS.md must mention the DefenseClaw mini-demo", errors)
-    require("scripts/defenseclaw_mcp_demo.py" in agents, "AGENTS.md must mention the DefenseClaw MCP demo", errors)
+    require(
+        "scripts/run_defenseclaw_mcp_demo.sh" in agents,
+        "AGENTS.md must mention the DefenseClaw MCP demo script",
+        errors,
+    )
     require("dojo_app/maze_game.py" in agents, "AGENTS.md must mention the Maze game", errors)
     require("python3 -m dojo_app.maze_game" in agents, "AGENTS.md must mention the Maze game command", errors)
     require("--check-only" in agents, "AGENTS.md must mention the Maze solvability check command", errors)
@@ -187,7 +188,7 @@ def main() -> int:
         errors,
     )
     require(
-        "python3 scripts/defenseclaw_mcp_demo.py*" in bash_perms,
+        "bash scripts/run_defenseclaw_mcp_demo.sh*" in bash_perms,
         "opencode.json must allow the DefenseClaw MCP demo",
         errors,
     )

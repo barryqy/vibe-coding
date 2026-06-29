@@ -279,7 +279,7 @@ Then install the pinned DefenseClaw CLI path, review the local scenario set, and
 ./scripts/install_defenseclaw_cli.sh
 python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
-python3 scripts/defenseclaw_mcp_demo.py
+bash scripts/run_defenseclaw_mcp_demo.sh
 ```
 
 The expected markers are:

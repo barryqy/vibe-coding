@@ -177,7 +177,7 @@ python3 scripts/agent_compare.py --tool both --show-rules
 ./scripts/install_defenseclaw_cli.sh
 python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
-python3 scripts/defenseclaw_mcp_demo.py
+bash scripts/run_defenseclaw_mcp_demo.sh
 ```
 
 - Before handing work back, run:
@@ -209,7 +209,7 @@ If you touched the risk samples or DefenseClaw helper, also run:
 ```bash
 python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
-python3 scripts/defenseclaw_mcp_demo.py
+bash scripts/run_defenseclaw_mcp_demo.sh
 ```
 
 ## Definition of Done

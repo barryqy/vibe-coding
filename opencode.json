@@ -34,7 +34,7 @@
       "python3 scripts/setup_opencode_devnet.py*": "allow",
       "python3 scripts/start_opencode_model_adapter.py*": "allow",
       "python3 scripts/defenseclaw_skill_demo.py*": "allow",
-      "python3 scripts/defenseclaw_mcp_demo.py*": "allow",
+      "bash scripts/run_defenseclaw_mcp_demo.sh*": "allow",
       "python3 scripts/agent_compare.py*": "ask",
       "python3 scripts/agent_code_task.py*": "ask",
       "python3 scripts/first_agent_result.py*": "ask",
