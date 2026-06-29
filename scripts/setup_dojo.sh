@@ -10,8 +10,6 @@ lab_status() {
 
 mkdir -p data .lab-state .second-brain/decisions
 mkdir -p "$HOME/.local/bin"
-chmod +x "$repo_root/scripts/model_usage.py"
-ln -sf "$repo_root/scripts/model_usage.py" "$HOME/.local/bin/usage"
 ln -sf "$repo_root/scripts/cprint" "$HOME/.local/bin/cprint"
 
 if [ ! -d .venv ]; then
@@ -26,5 +24,4 @@ if [ ! -f data/tasks.json ]; then
 fi
 
 lab_status "SETUP_DOJO=ready"
-lab_status "USAGE_COMMAND=usage"
 lab_status "NEXT=codex --version"

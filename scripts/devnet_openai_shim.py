@@ -17,11 +17,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-try:
-    from model_usage import record_model_error, record_model_response
-except ModuleNotFoundError:
-    from scripts.model_usage import record_model_error, record_model_response
-
 from dojo_app.lab_output import print_status
 
 STATE = ROOT / ".lab-state"
@@ -29,7 +24,7 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-usage-20260627"
+SHIM_VERSION = "opencode-vibe-coding-20260629"
 
 
 def route() -> dict[str, str]:
@@ -127,7 +122,6 @@ def call_devnet(body: dict) -> dict:
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         payload = json.loads(response.read().decode("utf-8"))
-        record_model_response("opencode", clean_body.get("model") or config["model"], payload, response.headers)
         return payload
 
 
@@ -273,7 +267,6 @@ class ShimHandler(BaseHTTPRequestHandler):
                 payload = tool_result_fallback(request_body)
             else:
                 message = http_error_message(exc)
-                record_model_error("opencode", route()["model"], message)
                 json_response(self, 400, {"error": {"message": message}})
                 return
         except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:

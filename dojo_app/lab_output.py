@@ -118,7 +118,7 @@ def status_color(line: str) -> str | None:
     if any(word in value for word in WORKING_WORDS):
         return "cyan"
 
-    if lower.startswith(("budget_status=", "budget_note=", "next=")):
+    if lower.startswith("next="):
         return "yellow"
     return None
 

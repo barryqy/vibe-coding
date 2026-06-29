@@ -35,8 +35,8 @@ class LabOutputTests(unittest.TestCase):
     def test_no_color_env_wins_without_force(self):
         stream = FakeTty()
         with patch.dict(os.environ, {"NO_COLOR": "1", "DOJO_COLOR": "0"}, clear=False):
-            text = lab_output.format_status("MODEL_USAGE=ok", stream)
-        self.assertEqual(text, "MODEL_USAGE=ok")
+            text = lab_output.format_status("REPO_CHECK=pass", stream)
+        self.assertEqual(text, "REPO_CHECK=pass")
 
 
 if __name__ == "__main__":

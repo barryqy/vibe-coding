@@ -17,11 +17,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-try:
-    from model_usage import record_model_error, record_model_response
-except ModuleNotFoundError:
-    from scripts.model_usage import record_model_error, record_model_response
-
 from dojo_app.lab_output import print_status
 from dojo_app.barryflights_mcp_server import (
     FAKE_AWS_ACCESS_KEY,
@@ -150,7 +145,6 @@ def call_devnet(body: dict) -> dict:
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         payload = json.loads(response.read().decode("utf-8"))
-        record_model_response("codex", model, payload, response.headers)
         return payload
 
 
@@ -727,7 +721,6 @@ class ShimHandler(BaseHTTPRequestHandler):
             payload = call_devnet(request_body)
         except urllib.error.HTTPError as exc:
             message = http_error_message(exc)
-            record_model_error("codex", route()["model"], message)
             json_response(self, 400, {"error": {"message": message}})
             return
         except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:

@@ -18,22 +18,12 @@ INSTRUCTIONS = [
 ]
 
 
-def install_usage_command() -> None:
-    source = ROOT / "scripts" / "model_usage.py"
-    target = Path.home() / ".local" / "bin" / "usage"
+def install_lab_commands() -> None:
     cprint_source = ROOT / "scripts" / "cprint"
     cprint_target = Path.home() / ".local" / "bin" / "cprint"
-    if not source.exists():
-        return
-
-    target.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        target.unlink()
-    except FileNotFoundError:
-        pass
-    target.symlink_to(source)
 
     if cprint_source.exists():
+        cprint_target.parent.mkdir(parents=True, exist_ok=True)
         try:
             cprint_target.unlink()
         except FileNotFoundError:
@@ -45,12 +35,11 @@ def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
     model = os.getenv("LLM_MODEL", "gpt-4o")
-    install_usage_command()
+    install_lab_commands()
 
     if not base_url or not api_key:
         print_status("OPENCODE_DEVNET_CONFIG=skipped")
         print_status("reason=LLM_BASE_URL or LLM_API_KEY is missing")
-        print_status("usage_command=usage")
         return 0
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -105,7 +94,6 @@ def main() -> int:
     print_status("edit_permission=allow")
     print_status("task_file=dojo_app/maze_play.py")
     print_status("adapter=python3 scripts/start_opencode_model_adapter.py")
-    print_status("usage_command=usage")
     return 0
 
 

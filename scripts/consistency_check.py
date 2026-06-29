@@ -42,7 +42,6 @@ REQUIRED_FILES = [
     Path("scripts/devnet_openai_shim.py"),
     Path("scripts/start_opencode_model_adapter.py"),
     Path("scripts/setup_opencode_devnet.py"),
-    Path("scripts/model_usage.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
@@ -58,7 +57,6 @@ REQUIRED_FILES = [
     Path("samples/mcp/workspace-admin-bridge.py"),
     Path("samples/mcp/safe-migration-reference-server.py"),
     Path("samples/leaky_maze_patch.py"),
-    Path("tests/test_model_usage.py"),
 ]
 
 
@@ -292,11 +290,6 @@ def main() -> int:
         ".second-brain/sessions/current-session.md" not in opencode_setup
         and ".second-brain/patterns/mazemaker-skill.md" not in opencode_setup,
         "setup_opencode_devnet.py must not attach exact second-brain files",
-        errors,
-    )
-    require(
-        "usage_command=usage" in codex_setup and "usage_command=usage" in opencode_setup,
-        "setup helpers must install and report the usage command",
         errors,
     )
     require(
