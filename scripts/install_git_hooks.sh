@@ -4,6 +4,6 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-chmod +x .githooks/commit-msg
+chmod +x .githooks/*
 git config core.hooksPath .githooks
 echo "core.hooksPath=.githooks"
