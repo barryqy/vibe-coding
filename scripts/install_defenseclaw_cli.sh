@@ -15,7 +15,9 @@ state_dir="${repo_root}/.lab-state/defenseclaw"
 venv_dir="${state_dir}/.venv"
 cli_path="${venv_dir}/bin/defenseclaw"
 home_dir="${DEFENSECLAW_HOME:-${state_dir}/home}"
+configured_marker="${state_dir}/guardrail-configured"
 wheel_url="https://github.com/cisco-ai-defense/defenseclaw/releases/download/${DEFENSECLAW_VERSION}/defenseclaw-${DEFENSECLAW_VERSION}-py3-none-any.whl"
+release_base="https://github.com/cisco-ai-defense/defenseclaw/releases/download/${DEFENSECLAW_VERSION}"
 
 export DEFENSECLAW_HOME="$home_dir"
 
@@ -54,9 +56,12 @@ ensure_lab_home() {
     --non-interactive \
     --yes \
     --connector codex \
-    --profile observe \
+    --profile action \
+    --scanner-mode local \
     --no-start-gateway \
     --no-verify >/dev/null
+  "$cli" policy activate strict >/dev/null 2>&1 || true
+  rm -f "${configured_marker}"
 }
 
 python_version_ok() {
@@ -173,7 +178,71 @@ install_defenseclaw_wheel() {
   "$venv_python" -m pip install --quiet --upgrade --disable-pip-version-check "$wheel_url"
 }
 
+detect_release_platform() {
+  local os_name arch_name
+  os_name="$(uname -s)"
+  arch_name="$(uname -m)"
+  case "${os_name}" in
+    Linux) printf 'linux_%s\n' "$( [ "${arch_name}" = aarch64 ] || [ "${arch_name}" = arm64 ] && echo arm64 || echo amd64 )" ;;
+    Darwin) printf 'darwin_%s\n' "$( [ "${arch_name}" = aarch64 ] || [ "${arch_name}" = arm64 ] && echo arm64 || echo amd64 )" ;;
+    *) echo "unsupported-platform" >&2; return 1 ;;
+  esac
+}
+
+python_module_available() {
+  local module_name="$1"
+  "$venv_python" - "$module_name" <<'PY' >/dev/null 2>&1
+import importlib.util
+import sys
+raise SystemExit(0 if importlib.util.find_spec(sys.argv[1]) else 1)
+PY
+}
+
+ensure_lab_scanners() {
+  local missing=()
+  if ! python_module_available skill_scanner; then
+    missing+=("cisco-ai-skill-scanner")
+  fi
+  if ! python_module_available mcpscanner; then
+    missing+=("cisco-ai-mcp-scanner>=4.3")
+  fi
+  if [ "${#missing[@]}" -eq 0 ]; then
+    lab_status "DEFENSECLAW_SCANNERS=ready"
+    return 0
+  fi
+  lab_status "DEFENSECLAW_INSTALL=installing-scanners"
+  if command -v uv >/dev/null 2>&1; then
+    uv pip install --quiet --python "$venv_python" "${missing[@]}"
+  else
+    "$venv_python" -m pip install --quiet --disable-pip-version-check "${missing[@]}"
+  fi
+  lab_status "DEFENSECLAW_SCANNERS=ready"
+}
+
+install_gateway_binary() {
+  if command -v defenseclaw-gateway >/dev/null 2>&1; then
+    lab_status "DEFENSECLAW_GATEWAY=already-present"
+    return 0
+  fi
+  local platform gateway_name tmpdir
+  platform="$(detect_release_platform)"
+  gateway_name="defenseclaw_${DEFENSECLAW_VERSION}_${platform}.tar.gz"
+  tmpdir="$(mktemp -d)"
+  lab_status "DEFENSECLAW_INSTALL=installing-gateway"
+  download_file "${release_base}/${gateway_name}" "${tmpdir}/${gateway_name}"
+  mkdir -p "${tmpdir}/gateway" "${HOME}/.local/bin"
+  tar -xzf "${tmpdir}/${gateway_name}" -C "${tmpdir}/gateway"
+  install -m 0755 "${tmpdir}/gateway/defenseclaw" "${HOME}/.local/bin/defenseclaw-gateway"
+  rm -rf "${tmpdir}"
+  export PATH="${HOME}/.local/bin:${PATH}"
+  hash -r
+  lab_status "DEFENSECLAW_GATEWAY=installed"
+}
+
 if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
+  venv_python="${venv_dir}/bin/python"
+  ensure_lab_scanners
+  install_gateway_binary
   ensure_lab_home "$cli_path"
   lab_status "DEFENSECLAW_INSTALL=already-present"
   lab_status "DEFENSECLAW_CLI=${cli_path}"
@@ -183,6 +252,9 @@ if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
 fi
 
 if command -v defenseclaw >/dev/null 2>&1 && global_cli_version_ok; then
+  venv_python="$(command -v python3)"
+  ensure_lab_scanners 2>/dev/null || true
+  install_gateway_binary
   ensure_lab_home "$(command -v defenseclaw)"
   lab_status "DEFENSECLAW_INSTALL=using-existing"
   lab_status "DEFENSECLAW_CLI=$(command -v defenseclaw)"
@@ -213,6 +285,8 @@ venv_python="${venv_dir}/bin/python"
 lab_status "DEFENSECLAW_INSTALL=installing-cli"
 lab_status "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
 install_defenseclaw_wheel
+ensure_lab_scanners
+install_gateway_binary
 lab_status "DEFENSECLAW_INSTALL=initializing-home"
 ensure_lab_home "$cli_path"
 

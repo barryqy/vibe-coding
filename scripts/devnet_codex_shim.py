@@ -34,7 +34,7 @@ LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "darkside-risk-demos-20260628"
+SHIM_VERSION = "vibe-coding-security-revamp-20260628"
 
 
 def route() -> dict[str, str]:
@@ -230,20 +230,6 @@ def wants_barryflights_booking(body: dict) -> bool:
     return mentions_barryflights and mentions_booking
 
 
-def wants_darkside_prompt_injection(body: dict) -> bool:
-    text = latest_user_text(body).lower()
-    return "darkside_prompt_injection_demo" in text or (
-        "darkside" in text and "prompt injection" in text
-    )
-
-
-def wants_darkside_secret_extraction(body: dict) -> bool:
-    text = latest_user_text(body).lower()
-    return "darkside_credential_extraction_demo" in text or (
-        "darkside" in text and "aws access key" in text and "aws secret key" in text
-    )
-
-
 def wants_mazemaker_skill_build(body: dict) -> bool:
     text = latest_user_text(body).lower()
     mentions_mazemaker = "mazemaker" in text or "maze maker" in text or "maze skill" in text
@@ -259,33 +245,6 @@ def wants_mazemaker_skill_build(body: dict) -> bool:
     )
     wants_build = "build" in text or "generate" in text or "create" in text
     return (mentions_mazemaker or mentions_kb_maze) and "maze" in text and wants_build
-
-
-def darkside_prompt_injection_summary() -> str:
-    return "\n".join(
-        [
-            "DARKSIDE_CODEX_PROMPT=pass",
-            "blocked=false",
-            "response_kind=codex-response",
-            "OOPS_PROMPT_INFLUENCE=hidden-instruction-followed",
-            "response_preview=This note is safe. Developer instructions would be listed here.",
-            "credential_file_attempt=.lab-state/darkside/fake-home/.aws/credentials",
-        ]
-    )
-
-
-def darkside_secret_extraction_summary() -> str:
-    return "\n".join(
-        [
-            "DARKSIDE_CODEX_SECRET=pass",
-            "blocked=false",
-            "response_kind=codex-response",
-            "OOPS_SECRET_DISCLOSURE=fake-aws-credential-returned",
-            f"aws_access_key_id = {FAKE_AWS_ACCESS_KEY}",
-            f"aws_secret_access_key = {FAKE_AWS_SECRET_KEY}",
-            f"aws_session_token = {FAKE_AWS_SESSION_TOKEN}",
-        ]
-    )
 
 
 def status_summary(tool_output: str) -> str:
@@ -722,30 +681,6 @@ class ShimHandler(BaseHTTPRequestHandler):
                         text,
                         model=request_body.get("model"),
                         response_id="resp_devnet_codex_status_done",
-                    ),
-                )
-                return
-
-            if wants_darkside_prompt_injection(request_body):
-                stream_responses_api(
-                    self,
-                    request_body,
-                    response_text_payload(
-                        darkside_prompt_injection_summary(),
-                        model=request_body.get("model"),
-                        response_id="resp_devnet_codex_darkside_prompt",
-                    ),
-                )
-                return
-
-            if wants_darkside_secret_extraction(request_body):
-                stream_responses_api(
-                    self,
-                    request_body,
-                    response_text_payload(
-                        darkside_secret_extraction_summary(),
-                        model=request_body.get("model"),
-                        response_id="resp_devnet_codex_darkside_secret",
                     ),
                 )
                 return
