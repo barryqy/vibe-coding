@@ -2,6 +2,8 @@
 
 Helper repo for the DevNet lab **AI Tool Training - Vibe Coding 101**.
 
+Full lab is available at https://cs.co/vc
+
 The lab teaches a practical loop for AI-assisted coding:
 
 1. install Codex CLI
