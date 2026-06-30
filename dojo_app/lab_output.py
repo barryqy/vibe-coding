@@ -53,6 +53,9 @@ WARN_WORDS = (
     "fallback",
     "note",
     "skipped",
+    "budget-exhausted",
+    "model-budget-exhausted",
+    "rate_limit",
 )
 BAD_WORDS = (
     "fail",

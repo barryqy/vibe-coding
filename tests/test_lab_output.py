@@ -64,6 +64,14 @@ class LabOutputTests(unittest.TestCase):
         self.assertIn("\033[33m- AWS Access Key ID: AKIAOPENCLAWLAB12345\033[0m", output)
         self.assertIn("\033[31mOOPS_GENERATED_CODE_EXEC=local-files-written\033[0m", output)
 
+    def test_budget_exhausted_is_warning(self):
+        stream = FakeTty()
+        with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):
+            text = lab_output.format_status("DARKSIDE_RISKY_MCP=model-budget-exhausted", stream)
+
+        self.assertIn("\033[33m", text)
+        self.assertIn("DARKSIDE_RISKY_MCP=model-budget-exhausted", text)
+
 
 if __name__ == "__main__":
     unittest.main()
