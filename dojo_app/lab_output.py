@@ -25,6 +25,8 @@ GOOD_WORDS = (
     "complete",
     "clean",
     "blocked",
+    "observed",
+    "inspected",
     "system-present",
     "bundled-codex",
     "already-present",
@@ -60,6 +62,29 @@ BAD_WORDS = (
     "flagged",
     "invalid",
     "error",
+)
+RISK_WORDS = (
+    "akia",
+    "aws_",
+    "aws access key",
+    "secret access key",
+    "credential-shaped",
+    "aws_credentials",
+    "eval_marker",
+    "shell_marker",
+    "rce_marker",
+    "stolen_",
+    "local-files-written",
+    "oops_",
+    "shell=true",
+    "eval(",
+)
+INJECTION_WORDS = (
+    "launch is healthy",
+    "no rollback trigger",
+    "launch state:",
+    "rollback condition:",
+    "support channel:",
 )
 
 
@@ -107,6 +132,12 @@ def status_color(line: str) -> str | None:
     if lower.startswith("scenario_group="):
         return "bold"
     if lower.startswith("risk=") or lower.startswith("recommended_gate="):
+        return "yellow"
+    if any(word in lower for word in INJECTION_WORDS):
+        return "yellow"
+    if lower.startswith("oops_") or "local-files-written" in lower:
+        return "red"
+    if any(word in lower for word in RISK_WORDS):
         return "yellow"
 
     if any(word in value for word in BAD_WORDS):

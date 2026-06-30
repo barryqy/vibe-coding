@@ -49,6 +49,21 @@ class LabOutputTests(unittest.TestCase):
         self.assertIn("\033[31mSECURITY_REVIEW=fail\033[0m", output)
         self.assertIn("plain line\n", output)
 
+    def test_darkside_stream_highlights_risky_lines(self):
+        source = io.StringIO(
+            "- Launch State: Launch is healthy.\n"
+            "- AWS Access Key ID: AKIAOPENCLAWLAB12345\n"
+            "OOPS_GENERATED_CODE_EXEC=local-files-written\n"
+        )
+        stream = FakeTty()
+        with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):
+            lab_output.print_stream(source, stream)
+
+        output = stream.getvalue()
+        self.assertIn("\033[33m- Launch State: Launch is healthy.\033[0m", output)
+        self.assertIn("\033[33m- AWS Access Key ID: AKIAOPENCLAWLAB12345\033[0m", output)
+        self.assertIn("\033[31mOOPS_GENERATED_CODE_EXEC=local-files-written\033[0m", output)
+
 
 if __name__ == "__main__":
     unittest.main()
