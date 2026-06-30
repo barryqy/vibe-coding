@@ -34,7 +34,7 @@ host_python="${VIBE_MCP_PYTHON_BIN:-${python_bin}}"
 sidecar_health() {
   python3 - <<'PY' 2>/dev/null
 import urllib.request
-with urllib.request.urlopen("http://127.0.0.1:18970/health/liveliness", timeout=2) as resp:
+with urllib.request.urlopen("http://127.0.0.1:18970/health", timeout=2) as resp:
     raise SystemExit(0 if resp.status == 200 else 1)
 PY
 }

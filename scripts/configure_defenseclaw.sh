@@ -67,7 +67,7 @@ import sys
 import urllib.request
 
 port = sys.argv[1]
-url = f"http://127.0.0.1:{port}/health/liveliness"
+url = f"http://127.0.0.1:{port}/health"
 try:
     with urllib.request.urlopen(url, timeout=2) as resp:
         raise SystemExit(0 if resp.status == 200 else 1)
@@ -171,7 +171,7 @@ api_ready=0
 for _ in 1 2 3 4 5 6 7 8 9 10; do
   if python3 - <<'PY' 2>/dev/null
 import urllib.request
-with urllib.request.urlopen("http://127.0.0.1:18970/health/liveliness", timeout=2) as resp:
+with urllib.request.urlopen("http://127.0.0.1:18970/health", timeout=2) as resp:
     raise SystemExit(0 if resp.status == 200 else 1)
 PY
   then
@@ -188,7 +188,7 @@ if [ "${api_ready}" -ne 1 ]; then
   exit 1
 fi
 
-echo "DefenseClaw sidecar API is healthy at http://127.0.0.1:${api_port}/health/liveliness"
+echo "DefenseClaw sidecar API is healthy at http://127.0.0.1:${api_port}/health"
 
 echo "[4/5] Preparing guardrail demo fixtures..."
 bash "${repo_root}/scripts/prepare_guardrail_fixtures.sh" >/dev/null
@@ -198,5 +198,5 @@ mkdir -p "$(dirname "${configured_marker}")"
 date -u +"%Y-%m-%dT%H:%M:%SZ" > "${configured_marker}"
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw status || true
 echo "DEFENSECLAW_GUARDRAIL=configured"
-echo "DEFENSECLAW_SIDECAR=http://127.0.0.1:${api_port}/health/liveliness"
+echo "DEFENSECLAW_SIDECAR=http://127.0.0.1:${api_port}/health"
 echo "Plain language: requests can now be inspected at the DefenseClaw sidecar before they reach the model."
