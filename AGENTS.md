@@ -23,6 +23,7 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
 - `.second-brain/patterns/mazemaker-skill.md` tells agents how to create new Maze artifacts with the MazeMaker skill.
+- `.second-brain/patterns/maze-play-movement.md` tells agents how to add keyboard movement without changing the play harness.
 
 ## Working Rules
 
@@ -106,7 +107,7 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode search the second brain and make the Maze playable, run a direct prompt. Keep the task scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
+- To let OpenCode search the second brain and make the Maze playable, run a direct prompt. Keep the task scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop. The detailed movement rules live in the second brain, so the visible prompt can stay short.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
@@ -114,7 +115,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Search .second-brain/ for Maze project context. Edit exactly one file: dojo_app/maze_play.py. Replace only the body of choose_next_position(maze, position, command). Do not edit run_play_maze; it already handles single-key input, redraw, rendering, quit, and return codes. Use the existing MOVE_DELTAS mapping. If command is not in MOVE_DELTAS, return the current position. Otherwise compute the target row and column. If the target is outside the maze or is #, return the current position. Otherwise return the current position only when blocked; return the target position when movement is valid. Use four spaces for indentation and no tabs. After editing, run only python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py. If compile fails, fix the code and run py_compile again. Do not run python3 -m dojo_app.maze_game and do not run the play smoke test; the lab runs that next. Do not edit dojo_app/maze_game.py, tests, config, or second-brain files. Do not add feature flags, external packages, network calls, credential reads, curses, or shell clear commands. Then stop." \
+  "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, fix compile errors if needed, then stop." \
   --file dojo_app/maze_play.py
 ```
 
@@ -158,11 +159,11 @@ CODEX_HOME=.lab-state/codex/home codex exec \
 python3 -m dojo_app.maze_game --render raw
 ```
 
-- After OpenCode makes the Maze movement playable, the smoke command should show `MAZE_PLAY=quit`:
+- After OpenCode makes the Maze movement playable, compile the Maze files and then play the real interactive game:
 
 ```bash
 python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
-printf 'd\nq\n' | python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
+python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
 - To compare Codex and OpenCode on the Maze prompt, run:

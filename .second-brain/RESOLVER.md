@@ -12,6 +12,7 @@ This folder is shared memory for any coding agent working in this repo.
 ## Known Patterns
 
 - For Maze artifact requests, read `patterns/mazemaker-skill.md` before acting.
+- For Maze play, movement, or keyboard-control requests, read `patterns/maze-play-movement.md` before acting.
 
 ## Memory Lifecycle
 

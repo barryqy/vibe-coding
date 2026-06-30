@@ -16,6 +16,7 @@ REQUIRED_FILES = [
     Path(".second-brain/schema.md"),
     Path(".second-brain/projects/vibe-coding-dojo.md"),
     Path(".second-brain/patterns/mazemaker-skill.md"),
+    Path(".second-brain/patterns/maze-play-movement.md"),
     Path(".second-brain/sessions/current-session.md"),
     Path("dojo_app/barrybot.py"),
     Path("tests/test_barrybot.py"),
@@ -89,6 +90,9 @@ def main() -> int:
     maze_pattern = (
         root / ".second-brain/patterns/mazemaker-skill.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/mazemaker-skill.md").exists() else ""
+    maze_play_pattern = (
+        root / ".second-brain/patterns/maze-play-movement.md"
+    ).read_text(encoding="utf-8") if (root / ".second-brain/patterns/maze-play-movement.md").exists() else ""
     maze_game = (root / "dojo_app/maze_game.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_game.py").exists() else ""
     maze_play = (root / "dojo_app/maze_play.py").read_text(encoding="utf-8") if (root / "dojo_app/maze_play.py").exists() else ""
     mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
@@ -128,7 +132,15 @@ def main() -> int:
     require("Pattern Note" in schema_note, "schema.md must define pattern notes", errors)
     require("shared memory for any coding agent" in resolver_note, "RESOLVER.md must describe an agent-neutral shared KB", errors)
     require("patterns/mazemaker-skill.md" in resolver_note, "RESOLVER.md must point Maze tasks to the MazeMaker skill pattern", errors)
+    require("patterns/maze-play-movement.md" in resolver_note, "RESOLVER.md must point Maze play tasks to the movement pattern", errors)
     require("build_maze.py" in maze_pattern and "MAZEMAKER_SKILL=pass" in maze_pattern, "mazemaker-skill.md must describe the MazeMaker script and pass marker", errors)
+    require(
+        "choose_next_position" in maze_play_pattern
+        and "MOVE_DELTAS" in maze_play_pattern
+        and "py_compile" in maze_play_pattern,
+        "maze-play-movement.md must describe the movement entrypoint and compile check",
+        errors,
+    )
     require("MAZEMAKER_SKILL=pass" in mazemaker_skill, "MazeMaker skill must document the pass marker", errors)
     require("MAZEMAKER_SKILL=pass" in mazemaker_script, "MazeMaker skill script must print the pass marker", errors)
     old_mazemaker_label = "MazeMaker " + "MCP"
