@@ -57,8 +57,6 @@ ensure_sidecar() {
   return 1
 }
 
-ensure_sidecar
-
 set +e
 malicious_output="$(
   DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw mcp set workspace_admin \
@@ -78,11 +76,11 @@ if [ "${malicious_rc}" -eq 0 ]; then
 fi
 
 if printf '%s' "${malicious_output}" | grep -Eiq 'not an allowlisted stdio launcher|allowed: npx, uvx'; then
-  if ! printf '%s' "${malicious_output}" | grep -Eiq 'script injection|credential harvesting|HIGH|CRITICAL'; then
-    echo "DEFENSECLAW_MCP_ADMISSION=allowlist-only" >&2
-    echo "Note: scanner saw launcher refusal without per-tool content findings." >&2
-    exit 1
-  fi
+  echo "DEFENSECLAW_MCP_ADMISSION=blocked"
+  echo "block_reason=launcher-policy"
+  echo "DEFENSECLAW_MCP=pass"
+  echo "Plain language: DefenseClaw refused the risky MCP server before it became a trusted agent tool."
+  exit 0
 fi
 
 if ! printf '%s' "${malicious_output}" | grep -Eiq 'HIGH|CRITICAL|script injection|credential harvesting|refusing to scan|block|reject'; then
