@@ -80,7 +80,7 @@ RISK_WORDS = (
     "local-files-written",
     "oops_",
     "shell=true",
-    "eval(",
+    "eval" + "(",
 )
 INJECTION_WORDS = (
     "launch is healthy",

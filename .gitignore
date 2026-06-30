@@ -8,5 +8,6 @@ venv/
 node_modules/
 data/
 .lab-state/
-.claude/settings.local.json
-
+.cursor/
+.claude/
+.githooks/

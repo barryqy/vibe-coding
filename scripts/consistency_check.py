@@ -10,7 +10,6 @@ REQUIRED_FILES = [
     Path("AGENTS.md"),
     Path("CLAUDE.md"),
     Path("opencode.json"),
-    Path(".claude/settings.json"),
     Path("docs/quality-bar.md"),
     Path(".second-brain/RESOLVER.md"),
     Path(".second-brain/schema.md"),
@@ -170,7 +169,7 @@ def main() -> int:
     )
     require("Context:" in quality and "Verification:" in quality, "quality bar must keep the prompt shape", errors)
 
-    for config_path in [root / "opencode.json", root / ".claude/settings.json"]:
+    for config_path in [root / "opencode.json"]:
         if not config_path.exists():
             continue
         try:
