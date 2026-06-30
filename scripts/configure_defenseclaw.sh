@@ -157,7 +157,7 @@ env_path.chmod(0o600)
 print(f"Configured guardrail for openai/{model_name} -> {lab_base}")
 PY
 
-echo "[2/5] Activating strict policy and setting up the guardrail proxy..."
+echo "[2/5] Activating strict policy and setting up the guardrail sidecar..."
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw policy activate strict
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail --non-interactive --mode action --restart
 
@@ -167,6 +167,7 @@ if command -v defenseclaw-gateway >/dev/null 2>&1; then
 fi
 
 api_port=18970
+api_ready=0
 for _ in 1 2 3 4 5 6 7 8 9 10; do
   if python3 - <<'PY' 2>/dev/null
 import urllib.request
@@ -175,19 +176,19 @@ with urllib.request.urlopen("http://127.0.0.1:18970/health/liveliness", timeout=
 PY
   then
     api_port=18970
+    api_ready=1
     break
   fi
   sleep 1
 done
 
-guardrail_port="$(read_guardrail_port)"
-guardrail_url="http://127.0.0.1:${guardrail_port}/health/liveliness"
-echo "Waiting for guardrail proxy at ${guardrail_url}..."
-if ! wait_for_guardrail "${guardrail_port}" 45; then
-  echo "DefenseClaw guardrail proxy did not become healthy." >&2
+if [ "${api_ready}" -ne 1 ]; then
+  echo "DefenseClaw sidecar API did not become healthy." >&2
   DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw status || true
   exit 1
 fi
+
+echo "DefenseClaw sidecar API is healthy at http://127.0.0.1:${api_port}/health/liveliness"
 
 echo "[4/5] Preparing guardrail demo fixtures..."
 bash "${repo_root}/scripts/prepare_guardrail_fixtures.sh" >/dev/null
