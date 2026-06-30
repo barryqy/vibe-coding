@@ -54,7 +54,7 @@ def ensure_lab_home(cli: str) -> None:
             "--connector",
             "codex",
             "--profile",
-            "action",
+            "observe",
             "--scanner-mode",
             "local",
             "--no-start-gateway",

@@ -56,7 +56,7 @@ ensure_lab_home() {
     --non-interactive \
     --yes \
     --connector codex \
-    --profile action \
+    --profile observe \
     --scanner-mode local \
     --no-start-gateway \
     --no-verify >/dev/null
