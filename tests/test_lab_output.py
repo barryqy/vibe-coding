@@ -38,6 +38,17 @@ class LabOutputTests(unittest.TestCase):
             text = lab_output.format_status("REPO_CHECK=pass", stream)
         self.assertEqual(text, "REPO_CHECK=pass")
 
+    def test_stream_formats_each_status_line(self):
+        source = io.StringIO("MAZE_CHECK=pass\nSECURITY_REVIEW=fail\nplain line\n")
+        stream = FakeTty()
+        with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):
+            lab_output.print_stream(source, stream)
+
+        output = stream.getvalue()
+        self.assertIn("\033[32mMAZE_CHECK=pass\033[0m", output)
+        self.assertIn("\033[31mSECURITY_REVIEW=fail\033[0m", output)
+        self.assertIn("plain line\n", output)
+
 
 if __name__ == "__main__":
     unittest.main()

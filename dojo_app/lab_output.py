@@ -143,15 +143,29 @@ def print_section(text: str, stream: TextIO | None = None) -> None:
     print(paint(text, "cyan", target), file=target)
 
 
+def print_stream(source: TextIO | None = None, stream: TextIO | None = None) -> None:
+    source = source or sys.stdin
+    target = stream or sys.stdout
+    for raw_line in source:
+        print(format_status(raw_line.rstrip("\n"), target), file=target)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Print short colored lab messages.")
     parser.add_argument(
         "mode",
-        choices=["status", "section", *COLORS.keys()],
+        choices=["status", "section", "stream", *COLORS.keys()],
         help="Use status for marker lines, section for headings, or an explicit color.",
     )
-    parser.add_argument("text", nargs="+")
+    parser.add_argument("text", nargs="*")
     args = parser.parse_args(argv)
+
+    if args.mode == "stream":
+        print_stream()
+        return 0
+
+    if not args.text:
+        parser.error(f"{args.mode} requires text")
 
     text = " ".join(args.text)
     if args.mode == "status":
