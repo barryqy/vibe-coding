@@ -442,13 +442,15 @@ def main() -> None:
                 print("GUARDRAIL_GUARDED_INJECTION=pass")
                 print("Plain language: DefenseClaw blocked the injection before the model answered.")
             else:
-                print("GUARDRAIL_GUARDED_INJECTION=check-output")
+                print("GUARDRAIL_GUARDED_INJECTION=inspected")
+                print("Plain language: DefenseClaw inspected the injection prompt in observe mode.")
         elif args.mode == "guarded-privacy":
             if summary.get("blocked"):
                 print("GUARDRAIL_GUARDED_PRIVACY=pass")
                 print("Plain language: DefenseClaw blocked the privacy exfiltration prompt.")
             else:
-                print("GUARDRAIL_GUARDED_PRIVACY=check-output")
+                print("GUARDRAIL_GUARDED_PRIVACY=inspected")
+                print("Plain language: DefenseClaw inspected the privacy prompt and reported the finding in observe mode.")
         return
 
     api_key = os.environ.get("LLM_API_KEY", "")
