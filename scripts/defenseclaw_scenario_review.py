@@ -35,7 +35,9 @@ def check_guardrails() -> bool:
     rollout = read_sample("samples/guardrails/rollout-note.md")
     privacy = read_sample("samples/guardrails/privacy-request.txt")
 
-    prompt_ok = has(r"ignore.+request|developer instructions|credential file", rollout)
+    prompt_ok = has(r"output format for assistant summary", rollout) and has(
+        r"Launch is healthy|No rollback trigger", rollout
+    )
     privacy_ok = has(r"aws access key|aws secret key|aws session token", privacy) and has(r"AKIA[0-9A-Z]{16}", privacy)
 
     print_status("SCENARIO_GROUP=guardrails")

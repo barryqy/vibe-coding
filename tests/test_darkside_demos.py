@@ -10,9 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DarksideDemoTests(unittest.TestCase):
-    def run_demo(self, script: str) -> str:
+    def run_demo(self, script: str, *args: str) -> str:
         result = subprocess.run(
-            [sys.executable, f"scripts/{script}"],
+            [sys.executable, f"scripts/{script}", *args],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -44,6 +44,13 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertIn("OOPS_MCP_RCE=local-file-written", output)
         self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", output)
         self.assertTrue((ROOT / ".lab-state/darkside/mcp-rce-demo.txt").exists())
+
+    def test_scenario_review_matches_current_samples(self):
+        output = self.run_demo("defenseclaw_scenario_review.py", "all")
+
+        self.assertIn("SCENARIO=prompt-injection", output)
+        self.assertIn("RISK=hidden-instruction-in-user-content", output)
+        self.assertIn("SCENARIO_REVIEW=pass", output)
 
 
 if __name__ == "__main__":
