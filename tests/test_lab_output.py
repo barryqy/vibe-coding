@@ -72,6 +72,25 @@ class LabOutputTests(unittest.TestCase):
         self.assertIn("\033[33m- AWS Access Key ID: AKIAOPENCLAWLAB12345\033[0m", output)
         self.assertIn("\033[31mOOPS_GENERATED_CODE_EXEC=local-files-written\033[0m", output)
 
+    def test_barryflights_stream_highlights_result_fields(self):
+        source = io.StringIO(
+            "BARRYFLIGHTS_STATUS=pass\n"
+            "MCP_TOOL=flight_status\n"
+            "MCP_RESULT=Flight SKY451 status: On time\n"
+            "MCP_GATE=C12\n"
+            "MCP_DEPARTURE=08:15\n"
+        )
+        stream = FakeTty()
+        with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):
+            lab_output.print_stream(source, stream)
+
+        output = stream.getvalue()
+        self.assertIn("\033[32mBARRYFLIGHTS_STATUS=pass\033[0m", output)
+        self.assertIn("\033[36mMCP_TOOL=flight_status\033[0m", output)
+        self.assertIn("\033[32mMCP_RESULT=Flight SKY451 status: On time\033[0m", output)
+        self.assertIn("\033[36mMCP_GATE=C12\033[0m", output)
+        self.assertIn("\033[36mMCP_DEPARTURE=08:15\033[0m", output)
+
     def test_budget_exhausted_is_warning(self):
         stream = FakeTty()
         with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):

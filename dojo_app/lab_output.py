@@ -134,6 +134,10 @@ def status_color(line: str) -> str | None:
         return "cyan"
     if lower.startswith("scenario_group="):
         return "bold"
+    if lower.startswith("mcp_result="):
+        return "green"
+    if lower.startswith(("mcp_tool=", "mcp_gate=", "mcp_departure=")):
+        return "cyan"
     if lower.startswith("risk=") or lower.startswith("recommended_gate="):
         return "yellow"
     if any(word in lower for word in INJECTION_WORDS):
