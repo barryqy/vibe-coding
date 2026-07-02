@@ -120,7 +120,7 @@ def load_defenseclaw_settings() -> tuple[str, list[str], str]:
                 break
 
     if not model_name:
-        model_name = model_alias(os.environ.get("LLM_MODEL", "gpt-4o"))
+        model_name = model_alias(os.environ.get("LLM_MODEL", "gpt-5-nano"))
 
     if not model_name:
         raise SystemExit(
@@ -345,6 +345,60 @@ def summarize_guardrail_verdict(
     return summary
 
 
+def inspect_guardrail_content(content: str) -> tuple[str, str, int, dict]:
+    endpoint, auth_candidates, model = load_defenseclaw_settings()
+    last_response = None
+    last_error = ""
+
+    for auth_token in auth_candidates:
+        headers = {
+            "Content-Type": "application/json",
+            "X-DefenseClaw-Client": "vibe-coding-lab",
+        }
+        if auth_token:
+            headers["Authorization"] = f"Bearer {auth_token}"
+
+        try:
+            response = requests.post(
+                endpoint,
+                headers=headers,
+                json={"content": content},
+                timeout=20,
+            )
+        except requests.RequestException as exc:
+            raise RuntimeError(
+                "DefenseClaw sidecar API is not reachable at "
+                f"{endpoint}. Run ./scripts/configure_defenseclaw.sh first. error={exc}"
+            ) from exc
+
+        if response.status_code != 401:
+            break
+        last_response = response
+        last_error = response.text.strip()
+    else:
+        if last_response is not None:
+            raise RuntimeError(
+                "DefenseClaw sidecar API rejected prompt inspection auth. "
+                "Run ./scripts/configure_defenseclaw.sh to refresh local wiring. "
+                f"url={endpoint} status={last_response.status_code} body={last_error}"
+            )
+        raise RuntimeError(
+            "DefenseClaw sidecar API did not return a usable inspection result. "
+            f"url={endpoint}"
+        )
+
+    try:
+        verdict = response.json()
+    except ValueError as exc:
+        raise RuntimeError(
+            f"DefenseClaw sidecar API returned non-JSON: "
+            f"status={response.status_code} body={response.text[:300]}"
+        ) from exc
+
+    response.raise_for_status()
+    return endpoint, model, response.status_code, verdict
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -361,11 +415,11 @@ def main() -> None:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.mode.startswith("guarded-"):
-        endpoint, auth_candidates, model = load_defenseclaw_settings()
+        endpoint, _, model = load_defenseclaw_settings()
     else:
         base_url = os.environ.get("LLM_BASE_URL", "").rstrip("/")
         api_key = os.environ.get("LLM_API_KEY", "")
-        model = str(os.environ.get("LLM_MODEL") or "gpt-4o").strip()
+        model = str(os.environ.get("LLM_MODEL") or "gpt-5-nano").strip()
         if not base_url or not api_key:
             raise SystemExit("LLM_BASE_URL and LLM_API_KEY must be set.")
         if base_url.endswith("/chat/completions"):
@@ -378,63 +432,16 @@ def main() -> None:
     payload.pop("endpoint", None)
 
     if args.mode.startswith("guarded-"):
-        last_response = None
-        last_error = ""
         content = prompt_content(payload)
-
-        for auth_token in auth_candidates:
-            headers = {
-                "Content-Type": "application/json",
-                "X-DefenseClaw-Client": "vibe-coding-lab",
-            }
-            if auth_token:
-                headers["Authorization"] = f"Bearer {auth_token}"
-
-            try:
-                response = requests.post(
-                    endpoint,
-                    headers=headers,
-                    json={"content": content},
-                    timeout=20,
-                )
-            except requests.RequestException as exc:
-                raise SystemExit(
-                    "DefenseClaw sidecar API is not reachable at "
-                    f"{endpoint}. Run ./scripts/configure_defenseclaw.sh "
-                    "or restart defenseclaw-gateway, then retry. "
-                    f"error={exc}"
-                ) from exc
-
-            if response.status_code != 401:
-                break
-            last_response = response
-            last_error = response.text.strip()
-        else:
-            if last_response is not None:
-                raise SystemExit(
-                    "DefenseClaw sidecar API rejected prompt inspection auth. "
-                    "Run ./scripts/configure_defenseclaw.sh to refresh local DefenseClaw wiring. "
-                    f"url={endpoint} status={last_response.status_code} body={last_error}"
-                )
-            raise SystemExit(
-                "DefenseClaw sidecar API did not return a usable inspection result. "
-                f"url={endpoint}"
-            )
-
         try:
-            verdict = response.json()
-        except ValueError as exc:
-            raise SystemExit(
-                f"DefenseClaw sidecar API returned a non-JSON response at {endpoint}: "
-                f"status={response.status_code} body={response.text[:300]}"
-            ) from exc
-
-        response.raise_for_status()
+            endpoint, model, http_status, verdict = inspect_guardrail_content(content)
+        except (RuntimeError, requests.RequestException) as exc:
+            raise SystemExit(str(exc)) from exc
         summary = summarize_guardrail_verdict(
             mode=args.mode,
             endpoint=endpoint,
             model=model,
-            http_status=response.status_code,
+            http_status=http_status,
             verdict=verdict,
         )
         report_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")

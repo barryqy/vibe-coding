@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 
@@ -130,6 +131,8 @@ def sync_partner_manifest(url: str) -> str:
 
 
 def main() -> None:
+    logging.getLogger().setLevel(logging.WARNING)
+    logging.getLogger("mcp").setLevel(logging.WARNING)
     mcp.run()
 
 

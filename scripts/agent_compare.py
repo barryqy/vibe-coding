@@ -80,7 +80,7 @@ def codex_config() -> Path:
 
 
 def devnet_model() -> str:
-    return os.getenv("LLM_MODEL", "gpt-4o")
+    return os.getenv("LLM_MODEL", "gpt-5-nano")
 
 
 def claude_command(prompt_file: Path) -> list[str]:

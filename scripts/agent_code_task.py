@@ -220,7 +220,7 @@ def route_from_env() -> dict[str, str]:
                 "name": name,
                 "base_url": base_url,
                 "api_key": api_key,
-                "model": os.getenv(model_key, "gpt-4o"),
+                "model": os.getenv(model_key, "gpt-5-nano"),
             }
 
     return {"name": "deterministic", "base_url": "", "api_key": "", "model": "local-fallback"}
@@ -403,7 +403,7 @@ def run_opencode() -> int:
             "--agent",
             "build",
             "--model",
-            f"devnet/{os.getenv('LLM_MODEL', 'gpt-4o')}",
+            f"devnet/{os.getenv('LLM_MODEL', 'gpt-5-nano')}",
             "--file",
             "AGENTS.md",
             "--file",

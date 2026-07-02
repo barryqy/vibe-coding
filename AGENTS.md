@@ -115,8 +115,8 @@ OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 opencode run \
   --title maze-interactive \
   --agent build \
-  --model devnet/gpt-4o \
-  "Search only this repo's .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then report the memory topic you used and the compile result." \
+  --model "devnet/${LLM_MODEL:-gpt-5-nano}" \
+  "Search only this repo's .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then report only the memory topic and compile result." \
   --file dojo_app/maze_play.py
 ```
 
@@ -177,7 +177,6 @@ python3 scripts/agent_compare.py --tool both --show-rules
 
 ```bash
 ./scripts/install_defenseclaw_cli.sh
-python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
 bash scripts/run_defenseclaw_mcp_demo.sh
 ```
@@ -209,7 +208,6 @@ python3 scripts/security_review.py samples/leaky_maze_patch.py || true
 If you touched the risk samples or DefenseClaw helper, also run:
 
 ```bash
-python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
 bash scripts/run_defenseclaw_mcp_demo.sh
 ```

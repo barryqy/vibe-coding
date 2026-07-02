@@ -23,7 +23,7 @@ source "${venv_dir}/bin/activate"
 
 base_url="${LLM_BASE_URL:-}"
 api_key="${LLM_API_KEY:-}"
-model_name="${LLM_MODEL:-gpt-4o}"
+model_name="${LLM_MODEL:-gpt-5-nano}"
 
 if [ -z "${base_url}" ] || [ -z "${api_key}" ]; then
   echo "LLM_BASE_URL and LLM_API_KEY must be set for guardrail configuration." >&2
@@ -104,7 +104,7 @@ cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() 
 if not isinstance(cfg, dict):
     cfg = {}
 
-model_name = os.environ.get("LLM_MODEL", "gpt-4o").strip()
+model_name = os.environ.get("LLM_MODEL", "gpt-5-nano").strip()
 lab_base = os.environ.get("VIBE_LLM_API_BASE", "").rstrip("/")
 guardrail = cfg.setdefault("guardrail", {})
 top_llm = cfg.setdefault("llm", {})

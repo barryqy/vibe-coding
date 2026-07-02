@@ -68,7 +68,6 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/first_agent_result.py` is a legacy optional helper for comparing first prompts.
 - `scripts/agent_compare.py` builds one shared Maze planning task and shows how to hand it to Codex and OpenCode with the same repo rules.
 - `scripts/install_defenseclaw_cli.sh` installs the pinned DefenseClaw CLI path used by the mini-module.
-- `scripts/defenseclaw_scenario_review.py` reviews the prompt, privacy, generated-code, and MCP risk scenarios used in the DefenseClaw module.
 - `scripts/defenseclaw_skill_demo.py` scans a malicious skill and a clean skill, then prints stable pass/fail markers.
 - `scripts/ai_coach.py` uses the DevNet LLM proxy, Ollama, or another OpenAI-compatible endpoint when available, with a deterministic fallback when no model is configured.
 - `AGENTS.md`, `opencode.json`, and `CLAUDE.md` show repo-level ways to keep coding tools inside the same boundaries.
@@ -229,7 +228,7 @@ OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 opencode run \
   --title maze-interactive \
   --agent build \
-  --model devnet/gpt-4o \
+  --model "devnet/${LLM_MODEL:-gpt-5-nano}" \
   "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, fix compile errors if needed, then stop." \
   --file dojo_app/maze_play.py
 ```
@@ -275,11 +274,10 @@ python3 scripts/run_risky_skill_demo.py
 python3 scripts/run_risky_mcp_demo.py
 ```
 
-Then install the pinned DefenseClaw CLI path, review the local scenario set, and scan one intentionally unsafe skill plus one clean skill:
+Then install the pinned DefenseClaw CLI path and scan one intentionally unsafe skill, one clean skill, and the malicious MCP server:
 
 ```bash
 ./scripts/install_defenseclaw_cli.sh
-python3 scripts/defenseclaw_scenario_review.py all
 python3 scripts/defenseclaw_skill_demo.py
 bash scripts/run_defenseclaw_mcp_demo.sh
 ```

@@ -34,7 +34,12 @@ def install_lab_commands() -> None:
 def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
-    model = os.getenv("LLM_MODEL", "gpt-4o")
+    model = os.getenv("LLM_MODEL", "gpt-5-nano")
+    try:
+        output_limit = int(os.getenv("LAB_LLM_MAX_OUTPUT_TOKENS", "512"))
+    except ValueError:
+        output_limit = 512
+    output_limit = min(max(output_limit, 128), 1024)
     install_lab_commands()
 
     if not base_url or not api_key:
@@ -85,7 +90,7 @@ def main() -> int:
                         "name": f"DevNet {model}",
                         "limit": {
                             "context": 128000,
-                            "output": 4096,
+                            "output": output_limit,
                         },
                     }
                 },
@@ -97,6 +102,7 @@ def main() -> int:
     print_status("OPENCODE_DEVNET_CONFIG=ready")
     print_status(f"path={OUT.relative_to(ROOT)}")
     print_status(f"model=devnet/{model}")
+    print_status(f"model_output_limit={output_limit}")
     print_status("kb_search=.second-brain")
     print_status("kb_scope=repo-only")
     print_status("edit_permission=allow")

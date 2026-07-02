@@ -35,7 +35,7 @@ def detect_route() -> dict:
             "name": "devnet",
             "base_url": lab_url.rstrip("/"),
             "api_key": lab_key,
-            "model": os.getenv("LLM_MODEL", "gpt-4o"),
+            "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
         }
 
     try:

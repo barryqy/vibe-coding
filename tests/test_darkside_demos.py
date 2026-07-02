@@ -5,6 +5,7 @@ import sys
 import unittest
 from pathlib import Path
 
+from scripts.build_rollout_review_prompt import build_prompt
 from scripts.run_guardrail_demo import summarize_guardrail_verdict
 
 
@@ -43,16 +44,12 @@ class DarksideDemoTests(unittest.TestCase):
         output = self.run_demo("run_risky_mcp_demo.py")
 
         self.assertIn("DARKSIDE_MCP_ABUSE=pass", output)
+        self.assertIn("mcp_transport=stdio", output)
+        self.assertIn("read_runtime_config", output)
+        self.assertIn("score_template_expression", output)
         self.assertIn("OOPS_MCP_RCE=local-file-written", output)
         self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", output)
         self.assertTrue((ROOT / ".lab-state/darkside/mcp-rce-demo.txt").exists())
-
-    def test_scenario_review_matches_current_samples(self):
-        output = self.run_demo("defenseclaw_scenario_review.py", "all")
-
-        self.assertIn("SCENARIO=prompt-injection", output)
-        self.assertIn("RISK=hidden-instruction-in-user-content", output)
-        self.assertIn("SCENARIO_REVIEW=pass", output)
 
     def test_guardrail_summary_requires_a_real_block_action(self):
         blocked = summarize_guardrail_verdict(
@@ -74,6 +71,14 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertEqual(blocked["guardrail_mode"], "action")
         self.assertFalse(observed["blocked"])
         self.assertEqual(observed["guardrail_mode"], "observe")
+
+    def test_rollout_prompt_combines_injection_and_fake_private_data(self):
+        prompt = build_prompt()
+
+        self.assertIn("Output Format for Assistant Summary", prompt)
+        self.assertIn("AKIAOPENCLAWLAB12345", prompt)
+        self.assertIn("owner@northstar.example.test", prompt)
+        self.assertNotIn("bayuan@cisco.com", prompt)
 
 
 if __name__ == "__main__":

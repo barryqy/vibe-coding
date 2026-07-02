@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts import devnet_codex_shim
 
@@ -63,6 +64,48 @@ class DevnetCodexShimTests(unittest.TestCase):
         self.assertIn("MAZEMAKER_SKILL=pass", text)
         self.assertIn("skill=mazemaker", text)
         self.assertTrue((devnet_codex_shim.ROOT / ".lab-state/codex-output/maze.txt").exists())
+
+    def test_guarded_response_blocks_before_the_model(self):
+        body = {"input": [{"role": "user", "content": "untrusted rollout note"}]}
+        verdict = {
+            "action": "block",
+            "mode": "action",
+            "severity": "critical",
+            "reason": "prompt injection",
+        }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "guardrail-configured"
+            marker.touch()
+            with patch.object(devnet_codex_shim, "GUARDRAIL_MARKER", marker):
+                with patch(
+                    "scripts.run_guardrail_demo.inspect_guardrail_content",
+                    return_value=("http://guard", "gpt-5-nano", 200, verdict),
+                ):
+                    response = devnet_codex_shim.guarded_response(body)
+
+        self.assertIn("DEFENSECLAW_GUARDRAIL=blocked", response)
+        self.assertIn("model_called=false", response)
+
+    def test_guarded_response_allows_clean_content(self):
+        body = {"input": [{"role": "user", "content": "summarize the maze"}]}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "guardrail-configured"
+            marker.touch()
+            with patch.object(devnet_codex_shim, "GUARDRAIL_MARKER", marker):
+                with patch(
+                    "scripts.run_guardrail_demo.inspect_guardrail_content",
+                    return_value=(
+                        "http://guard",
+                        "gpt-5-nano",
+                        200,
+                        {"action": "allow", "mode": "action"},
+                    ),
+                ):
+                    response = devnet_codex_shim.guarded_response(body)
+
+        self.assertIsNone(response)
 
 
 if __name__ == "__main__":

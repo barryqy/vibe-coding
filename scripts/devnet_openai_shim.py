@@ -24,14 +24,22 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-vibe-coding-20260629"
+SHIM_VERSION = "opencode-vibe-coding-20260702-budget"
+
+
+def output_limit() -> int:
+    try:
+        value = int(os.getenv("LAB_LLM_MAX_OUTPUT_TOKENS", "512"))
+    except ValueError:
+        value = 512
+    return min(max(value, 128), 1024)
 
 
 def route() -> dict[str, str]:
     return {
         "base_url": os.getenv("LLM_BASE_URL", "").rstrip("/"),
         "api_key": os.getenv("LLM_API_KEY", ""),
-        "model": os.getenv("LLM_MODEL", "gpt-4o"),
+        "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
     }
 
 
@@ -105,9 +113,10 @@ def call_devnet(body: dict) -> dict:
     clean_body.pop("stream_options", None)
 
     try:
-        clean_body["max_tokens"] = min(int(clean_body.get("max_tokens", 1024)), 2048)
+        requested_tokens = int(clean_body.get("max_tokens", output_limit()))
+        clean_body["max_tokens"] = min(max(requested_tokens, 1), output_limit())
     except (TypeError, ValueError):
-        clean_body["max_tokens"] = 1024
+        clean_body["max_tokens"] = output_limit()
 
     data = json.dumps(clean_body).encode("utf-8")
     headers = {

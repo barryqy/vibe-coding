@@ -19,7 +19,7 @@ BarryBot uses the same idea:
 3. DevNet lab variables: `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`
 4. deterministic local fallback
 
-The DevNet lab route currently defaults to `gpt-4o` when `LLM_MODEL` is not set. Treat the displayed model name as part of the risk decision: model quality, origin, safety ranking, and data handling all matter when an agent can call tools.
+The DevNet lab route uses `LLM_MODEL` when supplied and otherwise defaults to `gpt-5-nano`. The local adapters cap generated output at 512 tokens by default. Treat the displayed model name as part of the risk decision: model quality, origin, safety ranking, data handling, and cost all matter when an agent can call tools.
 
 For coding-agent exercises, the repo-local helpers adapt the same DevNet variables to each tool:
 

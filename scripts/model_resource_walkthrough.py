@@ -13,7 +13,7 @@ def route_name() -> str:
 
 
 def route_model() -> str:
-    return os.getenv("VIBE_LLM_MODEL") or os.getenv("LLM_MODEL") or "gpt-4o"
+    return os.getenv("VIBE_LLM_MODEL") or os.getenv("LLM_MODEL") or "gpt-5-nano"
 
 
 def main() -> int:

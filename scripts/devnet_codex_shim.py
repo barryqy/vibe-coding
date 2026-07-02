@@ -27,16 +27,25 @@ from dojo_app.barryflights_mcp_server import (
 STATE = ROOT / ".lab-state"
 LOG = STATE / "devnet-codex-shim.log"
 PID = STATE / "devnet-codex-shim.pid"
+GUARDRAIL_MARKER = STATE / "defenseclaw" / "guardrail-configured"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "vibe-coding-security-revamp-20260628"
+SHIM_VERSION = "vibe-coding-budget-guardrails-20260702"
+
+
+def output_limit() -> int:
+    try:
+        value = int(os.getenv("LAB_LLM_MAX_OUTPUT_TOKENS", "512"))
+    except ValueError:
+        value = 512
+    return min(max(value, 128), 1024)
 
 
 def route() -> dict[str, str]:
     return {
         "base_url": os.getenv("LLM_BASE_URL", "").rstrip("/"),
         "api_key": os.getenv("LLM_API_KEY", ""),
-        "model": os.getenv("LLM_MODEL", "gpt-4o"),
+        "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
     }
 
 
@@ -114,6 +123,37 @@ def response_input_to_messages(body: dict) -> list[dict[str, str]]:
     return messages or [{"role": "user", "content": "Continue."}]
 
 
+def guarded_response(body: dict) -> str | None:
+    if not GUARDRAIL_MARKER.exists():
+        return None
+
+    content = "\n\n".join(
+        message["content"]
+        for message in response_input_to_messages(body)
+        if message.get("role") == "user" and message.get("content")
+    )
+    if not content:
+        return None
+
+    from scripts.run_guardrail_demo import inspect_guardrail_content
+
+    _, _, _, verdict = inspect_guardrail_content(content)
+    if str(verdict.get("action", "")).lower() != "block":
+        return None
+
+    severity = str(verdict.get("severity", "UNKNOWN")).upper()
+    reason = " ".join(str(verdict.get("reason", "policy match")).split())[:240]
+    return "\n".join(
+        [
+            "DEFENSECLAW_GUARDRAIL=blocked",
+            "action=block",
+            f"severity={severity}",
+            f"reason={reason}",
+            "model_called=false",
+        ]
+    )
+
+
 def call_devnet(body: dict) -> dict:
     config = route()
     if not config["base_url"] or not config["api_key"]:
@@ -122,9 +162,10 @@ def call_devnet(body: dict) -> dict:
     messages = response_input_to_messages(body)
     model = config["model"]
     try:
-        max_tokens = min(int(body.get("max_output_tokens", 1024)), 2048)
+        requested_tokens = int(body.get("max_output_tokens", output_limit()))
+        max_tokens = min(max(requested_tokens, 1), output_limit())
     except (TypeError, ValueError):
-        max_tokens = 1024
+        max_tokens = output_limit()
 
     payload = {
         "model": model,
@@ -665,6 +706,19 @@ class ShimHandler(BaseHTTPRequestHandler):
 
         try:
             request_body = read_json(self)
+            guarded = guarded_response(request_body)
+            if guarded is not None:
+                stream_responses_api(
+                    self,
+                    request_body,
+                    response_text_payload(
+                        guarded,
+                        model=request_body.get("model"),
+                        response_id="resp_devnet_codex_guardrail_block",
+                    ),
+                )
+                return
+
             output = function_output(request_body, "call_barryflights_status")
             if output is not None:
                 text = status_summary(output)

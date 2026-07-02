@@ -74,7 +74,7 @@ def run_opencode() -> int:
     env.setdefault("OPENCODE_DISABLE_AUTOUPDATE", "true")
     env.setdefault("OPENCODE_DISABLE_LSP_DOWNLOAD", "true")
 
-    model = os.getenv("LLM_MODEL", "gpt-4o")
+    model = os.getenv("LLM_MODEL", "gpt-5-nano")
     print("OPENCODE_FIRST_RESULT=starting")
     print(f"model=devnet/{model}")
     return run(
@@ -124,7 +124,7 @@ def run_codex() -> int:
     env.setdefault("NO_COLOR", "1")
     env.setdefault("TERM", "dumb")
 
-    model = os.getenv("LLM_MODEL", "gpt-4o")
+    model = os.getenv("LLM_MODEL", "gpt-5-nano")
     print("CODEX_FIRST_RESULT=starting")
     print(f"model=devnet/{model}")
     result = subprocess.run(
