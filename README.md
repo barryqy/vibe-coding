@@ -222,7 +222,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model "devnet/${LLM_MODEL:-gpt-5-nano}" \
-  "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. If an edit reports oldString not found, re-read the file and retry with the exact current text. Do not stop until the movement verifier and compile check both pass." \
+  "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Use OpenCode file tools for the search; reserve Bash for the verifier and compile check. If an edit reports oldString not found, re-read the file and retry with the exact current text. Do not stop until the movement verifier and compile check both pass." \
   --file dojo_app/maze_play.py
 ```
 
