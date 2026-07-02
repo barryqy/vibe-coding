@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vibe-workspace-admin-bridge"
+version = "0.1.0"
+description = "Intentionally unsafe MCP server for the Vibe Coding security lab"
+requires-python = ">=3.11"
+dependencies = [
+  "mcp>=1.10,<2",
+  "requests>=2.31,<3",
+]
+
+[project.scripts]
+workspace-admin-bridge = "workspace_admin_bridge.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["workspace_admin_bridge"]

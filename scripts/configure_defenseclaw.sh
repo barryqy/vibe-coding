@@ -159,11 +159,59 @@ PY
 
 echo "[2/5] Activating strict policy and setting up the guardrail sidecar..."
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw policy activate strict
-DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail --non-interactive --mode action --restart
+DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail \
+  --non-interactive \
+  --connector codex \
+  --mode action \
+  --scanner-mode local \
+  --rule-pack strict \
+  --no-verify \
+  --no-restart
+
+# Connector detection can conservatively downgrade setup to observe mode.
+# This lab calls the local inspect API directly, so pin its global mode after setup.
+DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" python3 - <<'PY'
+import os
+from pathlib import Path
+
+import yaml
+
+home = Path(os.environ["DEFENSECLAW_HOME"])
+cfg_path = home / "config.yaml"
+cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+guardrail = cfg.setdefault("guardrail", {})
+guardrail["enabled"] = True
+guardrail["mode"] = "action"
+guardrail["rule_pack_dir"] = str(home / "policies" / "guardrail" / "strict")
+guardrail.setdefault("hilt", {})["enabled"] = False
+
+connectors = guardrail.get("connectors", {})
+if isinstance(connectors, dict) and isinstance(connectors.get("codex"), dict):
+    connectors["codex"]["mode"] = "action"
+
+cfg_path.write_text(yaml.dump(cfg, default_flow_style=False, sort_keys=False), encoding="utf-8")
+cfg_path.chmod(0o600)
+print("Guardrail enforcement pinned to action mode with the strict rule pack.")
+PY
 
 echo "[3/5] Waiting for the DefenseClaw sidecar API..."
 if command -v defenseclaw-gateway >/dev/null 2>&1; then
   defenseclaw-gateway restart >/dev/null 2>&1 || defenseclaw-gateway start >/dev/null 2>&1 || true
+fi
+
+guardrail_mode="$(DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" python3 - <<'PY'
+import os
+from pathlib import Path
+
+import yaml
+
+cfg = yaml.safe_load((Path(os.environ["DEFENSECLAW_HOME"]) / "config.yaml").read_text(encoding="utf-8")) or {}
+print((cfg.get("guardrail", {}) or {}).get("mode", ""))
+PY
+)"
+if [ "$guardrail_mode" != "action" ]; then
+  echo "DefenseClaw did not stay in action mode." >&2
+  exit 1
 fi
 
 api_port=18970

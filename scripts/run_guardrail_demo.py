@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 import requests
-import yaml
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -89,6 +88,8 @@ def model_alias(raw_model: str) -> str:
 
 
 def load_defenseclaw_settings() -> tuple[str, list[str], str]:
+    import yaml
+
     dc_home = defenseclaw_home()
     cfg_path = dc_home / "config.yaml"
     env_path = dc_home / ".env"
@@ -310,6 +311,7 @@ def summarize_guardrail_verdict(
 
     summary = {
         "mode": mode,
+        "guardrail_mode": str(verdict.get("mode", "") or "").strip().lower(),
         "endpoint": endpoint,
         "model": model,
         "http_status": http_status,
@@ -442,15 +444,15 @@ def main() -> None:
                 print("GUARDRAIL_GUARDED_INJECTION=pass")
                 print("Plain language: DefenseClaw blocked the injection before the model answered.")
             else:
-                print("GUARDRAIL_GUARDED_INJECTION=inspected")
-                print("Plain language: DefenseClaw inspected the injection prompt in observe mode.")
+                print("GUARDRAIL_GUARDED_INJECTION=failed")
+                raise SystemExit("DefenseClaw did not block the injection replay in action mode.")
         elif args.mode == "guarded-privacy":
             if summary.get("blocked"):
                 print("GUARDRAIL_GUARDED_PRIVACY=pass")
                 print("Plain language: DefenseClaw blocked the privacy exfiltration prompt.")
             else:
-                print("GUARDRAIL_GUARDED_PRIVACY=inspected")
-                print("Plain language: DefenseClaw inspected the privacy prompt and reported the finding in observe mode.")
+                print("GUARDRAIL_GUARDED_PRIVACY=failed")
+                raise SystemExit("DefenseClaw did not block the privacy replay in action mode.")
         return
 
     api_key = os.environ.get("LLM_API_KEY", "")

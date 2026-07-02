@@ -5,6 +5,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from scripts.run_guardrail_demo import summarize_guardrail_verdict
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +53,27 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertIn("SCENARIO=prompt-injection", output)
         self.assertIn("RISK=hidden-instruction-in-user-content", output)
         self.assertIn("SCENARIO_REVIEW=pass", output)
+
+    def test_guardrail_summary_requires_a_real_block_action(self):
+        blocked = summarize_guardrail_verdict(
+            mode="guarded-privacy",
+            endpoint="http://127.0.0.1/inspect",
+            model="gpt-5-nano",
+            http_status=200,
+            verdict={"action": "block", "mode": "action", "severity": "CRITICAL"},
+        )
+        observed = summarize_guardrail_verdict(
+            mode="guarded-privacy",
+            endpoint="http://127.0.0.1/inspect",
+            model="gpt-5-nano",
+            http_status=200,
+            verdict={"action": "allow", "mode": "observe", "severity": "CRITICAL"},
+        )
+
+        self.assertTrue(blocked["blocked"])
+        self.assertEqual(blocked["guardrail_mode"], "action")
+        self.assertFalse(observed["blocked"])
+        self.assertEqual(observed["guardrail_mode"], "observe")
 
 
 if __name__ == "__main__":

@@ -20,14 +20,15 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - `samples/guardrails/` and `samples/skills/` contain clean and intentionally unsafe examples for the DefenseClaw module.
 - `samples/unsafe_report_patch.py` is an intentionally unsafe generated-code sample used by the local scenario review.
 - `samples/mcp/` contains clean and intentionally unsafe MCP servers adapted from the OpenClaw lab pattern.
-- `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
+- The repo-local `.second-brain/` stores shared project memory: resolver, schema, session notes, project notes, decisions, and reusable patterns.
 - `.second-brain/sessions/current-session.md` is the current task state shared by any agent that works in this repo.
 - `.second-brain/patterns/mazemaker-skill.md` tells agents how to create new Maze artifacts with the MazeMaker skill.
 - `.second-brain/patterns/maze-play-movement.md` tells agents how to add keyboard movement without changing the play harness.
 
 ## Working Rules
 
-- Start by reading `README.md`, this file, and `docs/quality-bar.md`, then search `.second-brain/` for notes that match the task, repo area, artifact, or tool path.
+- Start by reading `README.md`, this file, and `docs/quality-bar.md`, then search only this repo's `.second-brain/` for notes that match the task, repo area, artifact, or tool path.
+- Resolve `.second-brain/` from the current repo root. Do not search for or read a home-directory or external `.second-brain/`.
 - Prefer small patches over sweeping rewrites.
 - Keep public examples free of secrets, real customer data, and private endpoints.
 - Do not read `.env`, `.env.*`, or anything under `secrets/`.
@@ -115,7 +116,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model devnet/gpt-4o \
-  "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, fix compile errors if needed, then stop." \
+  "Search only this repo's .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then report the memory topic you used and the compile result." \
   --file dojo_app/maze_play.py
 ```
 

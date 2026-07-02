@@ -14,12 +14,15 @@ DEFENSECLAW_VERSION="${DEFENSECLAW_VERSION:-0.8.0}"
 state_dir="${repo_root}/.lab-state/defenseclaw"
 venv_dir="${state_dir}/.venv"
 cli_path="${venv_dir}/bin/defenseclaw"
+gateway_dir="${state_dir}/bin"
+gateway_path="${gateway_dir}/defenseclaw-gateway"
 home_dir="${DEFENSECLAW_HOME:-${state_dir}/home}"
 configured_marker="${state_dir}/guardrail-configured"
 wheel_url="https://github.com/cisco-ai-defense/defenseclaw/releases/download/${DEFENSECLAW_VERSION}/defenseclaw-${DEFENSECLAW_VERSION}-py3-none-any.whl"
 release_base="https://github.com/cisco-ai-defense/defenseclaw/releases/download/${DEFENSECLAW_VERSION}"
 
 export DEFENSECLAW_HOME="$home_dir"
+export PATH="${gateway_dir}:${HOME}/.local/bin:${PATH}"
 
 download_file() {
   local url="$1"
@@ -81,11 +84,11 @@ PY
 ensure_uv_runtime() {
   local tmpdir
 
-  if command -v uv >/dev/null 2>&1; then
+  if command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1; then
     return 0
   fi
 
-  echo "Installing uv so DefenseClaw can use Python 3.12..." >&2
+  echo "Installing uv for the DefenseClaw runtime and safe MCP scans..." >&2
   tmpdir="$(mktemp -d)"
   download_file "https://astral.sh/uv/install.sh" "${tmpdir}/install-uv.sh"
   mkdir -p "${HOME}/.local/bin"
@@ -154,6 +157,12 @@ global_cli_version_ok() {
   defenseclaw --version 2>/dev/null | grep -q "version ${DEFENSECLAW_VERSION}"
 }
 
+gateway_version_ok() {
+  local candidate="$1"
+  [ -x "$candidate" ] \
+    && "$candidate" --version 2>/dev/null | grep -q "version ${DEFENSECLAW_VERSION}"
+}
+
 choose_python() {
   resolve_defenseclaw_python
 }
@@ -220,7 +229,7 @@ ensure_lab_scanners() {
 }
 
 install_gateway_binary() {
-  if command -v defenseclaw-gateway >/dev/null 2>&1; then
+  if gateway_version_ok "$gateway_path"; then
     lab_status "DEFENSECLAW_GATEWAY=already-present"
     return 0
   fi
@@ -230,17 +239,17 @@ install_gateway_binary() {
   tmpdir="$(mktemp -d)"
   lab_status "DEFENSECLAW_INSTALL=installing-gateway"
   download_file "${release_base}/${gateway_name}" "${tmpdir}/${gateway_name}"
-  mkdir -p "${tmpdir}/gateway" "${HOME}/.local/bin"
+  mkdir -p "${tmpdir}/gateway" "${gateway_dir}"
   tar -xzf "${tmpdir}/${gateway_name}" -C "${tmpdir}/gateway"
-  install -m 0755 "${tmpdir}/gateway/defenseclaw" "${HOME}/.local/bin/defenseclaw-gateway"
+  install -m 0755 "${tmpdir}/gateway/defenseclaw" "$gateway_path"
   rm -rf "${tmpdir}"
-  export PATH="${HOME}/.local/bin:${PATH}"
   hash -r
   lab_status "DEFENSECLAW_GATEWAY=installed"
 }
 
 if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
   venv_python="${venv_dir}/bin/python"
+  ensure_uv_runtime
   ensure_lab_scanners
   install_gateway_binary
   ensure_lab_home "$cli_path"
@@ -253,6 +262,7 @@ fi
 
 if command -v defenseclaw >/dev/null 2>&1 && global_cli_version_ok; then
   venv_python="$(command -v python3)"
+  ensure_uv_runtime
   ensure_lab_scanners 2>/dev/null || true
   install_gateway_binary
   ensure_lab_home "$(command -v defenseclaw)"
@@ -282,6 +292,7 @@ if [ ! -d "$venv_dir" ]; then
 fi
 
 venv_python="${venv_dir}/bin/python"
+ensure_uv_runtime
 lab_status "DEFENSECLAW_INSTALL=installing-cli"
 lab_status "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
 install_defenseclaw_wheel

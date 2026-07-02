@@ -50,6 +50,12 @@ def main() -> int:
         "instructions": INSTRUCTIONS,
         "model": f"devnet/{model}",
         "permission": {
+            "read": {
+                "*": "allow",
+                "*.env": "deny",
+                "*.env.*": "deny",
+                "secrets/**": "deny",
+            },
             "edit": "allow",
             "bash": {
                 "python3 -m dojo_app.barryflights_mcp_client*": "allow",
@@ -64,6 +70,7 @@ def main() -> int:
             },
             "webfetch": "deny",
             "websearch": "deny",
+            "external_directory": "deny",
         },
         "provider": {
             "devnet": {
@@ -91,6 +98,7 @@ def main() -> int:
     print_status(f"path={OUT.relative_to(ROOT)}")
     print_status(f"model=devnet/{model}")
     print_status("kb_search=.second-brain")
+    print_status("kb_scope=repo-only")
     print_status("edit_permission=allow")
     print_status("task_file=dojo_app/maze_play.py")
     print_status("adapter=python3 scripts/start_opencode_model_adapter.py")

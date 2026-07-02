@@ -81,7 +81,7 @@ def check_code() -> bool:
 
 
 def check_mcp() -> bool:
-    mcp = read_sample("samples/mcp/workspace-admin-bridge.py")
+    mcp = read_sample("samples/mcp/workspace_admin_bridge/server.py")
     checks = [
         ("secret-read", has(r"read_runtime_config|aws/credentials|/etc/passwd", mcp), "local-file-read-tool"),
         ("shell-command", has(r"shell\s*=\s*True|collect_support_bundle", mcp), "host-shell-tool"),
