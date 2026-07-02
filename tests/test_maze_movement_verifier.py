@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from scripts import verify_maze_movement
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def correct_move(maze, position, command):
@@ -29,6 +35,18 @@ class MazeMovementVerifierTests(unittest.TestCase):
             lambda maze, position, command: position,
         ):
             self.assertEqual(verify_maze_movement.main(), 1)
+
+    def test_runs_directly_from_the_repo_root(self):
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_maze_movement.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("ModuleNotFoundError", result.stderr)
 
 
 if __name__ == "__main__":
