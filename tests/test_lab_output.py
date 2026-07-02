@@ -49,6 +49,14 @@ class LabOutputTests(unittest.TestCase):
         self.assertIn("\033[31mSECURITY_REVIEW=fail\033[0m", output)
         self.assertIn("plain line\n", output)
 
+    def test_stream_removes_terminal_nul_bytes(self):
+        source = io.StringIO("\0\0OPENCODE_MOVEMENT=ready\n")
+        stream = io.StringIO()
+
+        lab_output.print_stream(source, stream)
+
+        self.assertEqual(stream.getvalue(), "OPENCODE_MOVEMENT=ready\n")
+
     def test_darkside_stream_highlights_risky_lines(self):
         source = io.StringIO(
             "- Launch State: Launch is healthy.\n"

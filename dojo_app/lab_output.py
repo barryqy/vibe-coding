@@ -181,7 +181,8 @@ def print_stream(source: TextIO | None = None, stream: TextIO | None = None) -> 
     source = source or sys.stdin
     target = stream or sys.stdout
     for raw_line in source:
-        print(format_status(raw_line.rstrip("\n"), target), file=target)
+        clean_line = raw_line.replace("\0", "").rstrip("\n")
+        print(format_status(clean_line, target), file=target)
 
 
 def main(argv: list[str] | None = None) -> int:
