@@ -57,17 +57,11 @@ fi
 codex --version
 ```
 
-- To configure the DevNet model route for Codex, run:
-
-```bash
-python3 scripts/setup_codex_devnet.py
-python3 scripts/start_codex_model_adapter.py
-```
+- The initial `scripts/setup_dojo.sh` run configures and starts the DevNet model route for Codex.
 
 `scripts/setup_codex_devnet.py` creates the repo-local Codex model route and installs the MazeMaker skill into `.lab-state/codex/home/skills/`. It also includes BarryFlights as the local MCP server for the flight exercises. To verify the BarryFlights path, run:
 
 ```bash
-python3 scripts/setup_codex_devnet.py >/dev/null
 .venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
 ```
 
@@ -143,8 +137,6 @@ python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --che
 - To replay the intentionally risky MCP booking path, run:
 
 ```bash
-python3 scripts/setup_codex_devnet.py >/dev/null
-python3 scripts/start_codex_model_adapter.py >/dev/null
 CODEX_HOME=.lab-state/codex/home codex exec \
   --disable plugin_sharing \
   --ephemeral \

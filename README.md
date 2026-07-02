@@ -58,7 +58,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/check_repo.py` runs compile checks, unit tests, security review, and consistency checks.
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
-- `scripts/setup_dojo.sh` creates the tiny local state folders if you want a quick repo reset point.
+- `scripts/setup_dojo.sh` initializes dependencies, local state, and the repo-local Codex model route.
 - `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
 - `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
@@ -118,19 +118,16 @@ fi
 codex --version
 ```
 
-In a DevNet lab environment, Codex can use the built-in model route without a personal model key:
+In a DevNet lab environment, the initial dojo setup connects Codex to the built-in model route without a personal model key:
 
 ```bash
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
-python3 scripts/setup_codex_devnet.py
-python3 scripts/start_codex_model_adapter.py
 CODEX_HOME=.lab-state/codex/home codex exec --cd "$PWD" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."
 ```
 
 Check the local BarryFlights tool that is included with the dojo:
 
 ```bash
-python3 scripts/setup_codex_devnet.py >/dev/null
 .venv/bin/python -m dojo_app.barryflights_mcp_client --list-tools
 ```
 
@@ -160,8 +157,6 @@ printf '%s\n' "$status_output" | awk '
 Later in the security module, replay the intentionally risky booking tool and inspect the fake AWS-style sample credential output:
 
 ```bash
-python3 scripts/setup_codex_devnet.py >/dev/null
-python3 scripts/start_codex_model_adapter.py >/dev/null
 CODEX_HOME=.lab-state/codex/home codex exec \
   --disable plugin_sharing \
   --ephemeral \
@@ -175,8 +170,6 @@ Ask Codex to search the second brain, then check and render the Amaze-style term
 
 ```bash
 mkdir -p .lab-state/codex-output
-python3 scripts/setup_codex_devnet.py >/dev/null
-python3 scripts/start_codex_model_adapter.py >/dev/null
 
 CODEX_HOME=.lab-state/codex/home \
 codex exec \

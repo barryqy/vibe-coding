@@ -23,5 +23,15 @@ if [ ! -f data/tasks.json ]; then
   printf '[]\n' > data/tasks.json
 fi
 
-lab_status "SETUP_DOJO=ready"
-lab_status "NEXT=codex --version"
+export LAB_REPO_ROOT="${repo_root}"
+source "${repo_root}/scripts/lab_session_env.sh"
+
+codex_init_log="${repo_root}/.lab-state/codex-init.log"
+if ! {
+  python3 scripts/setup_codex_devnet.py
+  python3 scripts/start_codex_model_adapter.py
+} >"${codex_init_log}" 2>&1; then
+  scripts/cprint stream <"${codex_init_log}"
+  lab_status "DOJO_INIT=failed"
+  exit 1
+fi
