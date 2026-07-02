@@ -23,5 +23,6 @@ Use this when the task asks to make the saved Maze playable, add keyboard moveme
 
 ## Verification
 
+- Run `python3 scripts/verify_maze_movement.py` and fix the movement function until it exits successfully.
 - Run `python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py`.
 - The lab guide launches the real interactive Maze after OpenCode finishes.

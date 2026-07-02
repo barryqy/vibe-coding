@@ -116,7 +116,7 @@ opencode run \
   --title maze-interactive \
   --agent build \
   --model "devnet/${LLM_MODEL:-gpt-5-nano}" \
-  "Search only this repo's .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, then report only the memory topic and compile result." \
+  "Search only this repo's .second-brain/ for the Maze play movement pattern, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 scripts/verify_maze_movement.py and fix the function until it passes. Then run the compile check and report only the memory topic and both check results in at most four lines." \
   --file dojo_app/maze_play.py
 ```
 

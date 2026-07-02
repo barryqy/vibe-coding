@@ -37,6 +37,7 @@ status: active
 
 ## Verification
 
+- python3 scripts/verify_maze_movement.py
 - python3 -m unittest tests.test_maze_game
 - python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 - python3 scripts/check_repo.py
