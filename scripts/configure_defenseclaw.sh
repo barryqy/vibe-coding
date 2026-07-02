@@ -171,6 +171,7 @@ DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail \
 # Connector detection can conservatively downgrade setup to observe mode.
 # This lab calls the local inspect API directly, so pin its global mode after setup.
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" python3 - <<'PY'
+import json
 import os
 from pathlib import Path
 
@@ -184,6 +185,7 @@ guardrail["enabled"] = True
 guardrail["mode"] = "action"
 guardrail["rule_pack_dir"] = str(home / "policies" / "guardrail" / "strict")
 guardrail.setdefault("hilt", {})["enabled"] = False
+cfg.setdefault("gateway", {}).setdefault("watcher", {})["enabled"] = False
 
 connectors = guardrail.get("connectors", {})
 if isinstance(connectors, dict) and isinstance(connectors.get("codex"), dict):
@@ -191,7 +193,16 @@ if isinstance(connectors, dict) and isinstance(connectors.get("codex"), dict):
 
 cfg_path.write_text(yaml.dump(cfg, default_flow_style=False, sort_keys=False), encoding="utf-8")
 cfg_path.chmod(0o600)
+
+runtime_path = home / "guardrail_runtime.json"
+if runtime_path.exists():
+    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+    runtime["mode"] = "action"
+    runtime["scanner_mode"] = "local"
+    runtime_path.write_text(json.dumps(runtime), encoding="utf-8")
+
 print("Guardrail enforcement pinned to action mode with the strict rule pack.")
+print("Background watcher disabled for this focused lab session.")
 PY
 
 echo "[3/5] Waiting for the DefenseClaw sidecar API..."
@@ -237,6 +248,21 @@ if [ "${api_ready}" -ne 1 ]; then
 fi
 
 echo "DefenseClaw sidecar API is healthy at http://127.0.0.1:${api_port}/health"
+
+if ! DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" python3 - <<'PY'
+from scripts.build_rollout_review_prompt import build_prompt
+from scripts.run_guardrail_demo import inspect_guardrail_content
+
+_, _, status, verdict = inspect_guardrail_content(build_prompt())
+if status != 200 or str(verdict.get("action", "")).lower() != "block":
+    raise SystemExit("DefenseClaw did not block the lab prompt during its readiness check.")
+
+print("DefenseClaw prompt inspection is ready in action mode.")
+PY
+then
+  echo "DefenseClaw prompt inspection did not become ready." >&2
+  exit 1
+fi
 
 echo "[4/5] Preparing guardrail demo fixtures..."
 bash "${repo_root}/scripts/prepare_guardrail_fixtures.sh" >/dev/null
