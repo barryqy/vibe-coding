@@ -49,6 +49,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
 - `dojo_app/maze_game.py` is the stable tiny terminal Maze app used during the lab. It can check raw maze data, render an Amaze-style terminal board, keep `--render raw` for debugging the source maze data, and dispatch play mode into `dojo_app/maze_play.py`.
 - `dojo_app/maze_play.py` is the scoped OpenCode exercise file. It starts as a placeholder and becomes the playable movement loop.
+- `dojo_app/cli_confetti.py` provides the dependency-free terminal celebration shown after a solved Maze, inspired by [cli-confetti](https://github.com/IonicaBizau/cli-confetti).
 - `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill used to create checked Maze artifacts.
 - `skills/mazemaker/scripts/build_maze.py` writes solvable Recursive Backtracker maze data to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
@@ -244,6 +245,8 @@ After the interactive change, play it:
 python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
+
+Reach `E` to trigger the terminal confetti celebration.
 
 After that, compare both agents with one shared prompt:
 

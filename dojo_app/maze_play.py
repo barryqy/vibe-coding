@@ -5,6 +5,7 @@ import termios
 import tty
 from collections.abc import Callable
 
+from dojo_app.cli_confetti import celebrate
 from dojo_app.lab_output import print_status
 
 MazeRenderer = Callable[[list[str], str], str]
@@ -148,6 +149,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
             row, col = player
             if maze[row][col] == "E":
                 draw_frame(maze, player, render_maze, render, redraw, redraw)
+                celebrate()
                 print_status("MAZE_PLAY=win")
                 return 0
     finally:

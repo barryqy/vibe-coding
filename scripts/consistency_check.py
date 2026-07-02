@@ -21,10 +21,12 @@ REQUIRED_FILES = [
     Path("tests/test_barrybot.py"),
     Path("dojo_app/maze_game.py"),
     Path("dojo_app/maze_play.py"),
+    Path("dojo_app/cli_confetti.py"),
     Path("skills/mazemaker/SKILL.md"),
     Path("skills/mazemaker/scripts/build_maze.py"),
     Path("skills/mazemaker/agents/openai.yaml"),
     Path("tests/test_maze_game.py"),
+    Path("tests/test_cli_confetti.py"),
     Path("tests/test_mazemaker_skill.py"),
     Path("dojo_app/barryflights_mcp_server.py"),
     Path("dojo_app/barryflights_mcp_client.py"),
@@ -167,6 +169,8 @@ def main() -> int:
     require("run_play_maze(maze, render_maze, args.render)" in maze_game, "maze_game.py must pass the renderer into the scoped play module", errors)
     require("def run_play_maze(" in maze_play, "maze_play.py must expose the OpenCode play entrypoint", errors)
     require("def choose_next_position(" in maze_play, "maze_play.py must expose the OpenCode movement entrypoint", errors)
+    require("from dojo_app.cli_confetti import celebrate" in maze_play, "maze_play.py must load the win celebration", errors)
+    require("celebrate()" in maze_play, "maze_play.py must celebrate a solved Maze", errors)
     require("render_maze" in maze_play, "maze_play.py must keep the renderer callback boundary", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
