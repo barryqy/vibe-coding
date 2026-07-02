@@ -18,8 +18,8 @@ MOVE_DELTAS: dict[str, Position] = {
 
 
 def choose_next_position(maze: list[str], position: Position, command: str) -> Position:
-    # OpenCode exercise: replace only this body with MOVE_DELTAS boundary rules.
-    raise NotImplementedError("OpenCode will replace this movement function")
+    # OpenCode exercise: replace this placeholder body with MOVE_DELTAS boundary rules.
+    return position
 
 
 def find_start(maze: list[str]) -> Position:
