@@ -11,6 +11,7 @@ lab_status() {
 }
 
 DEFENSECLAW_VERSION="${DEFENSECLAW_VERSION:-0.8.0}"
+DEFENSECLAW_TUI_TEXTUAL_VERSION="${DEFENSECLAW_TUI_TEXTUAL_VERSION:-8.2.7}"
 state_dir="${repo_root}/.lab-state/defenseclaw"
 venv_dir="${state_dir}/.venv"
 cli_path="${venv_dir}/bin/defenseclaw"
@@ -153,6 +154,21 @@ raise SystemExit(0 if have == want else 1)
 PY
 }
 
+tui_runtime_ok() {
+  local candidate="$1"
+
+  "$candidate" - "$DEFENSECLAW_TUI_TEXTUAL_VERSION" <<'PY' >/dev/null 2>&1
+import importlib.metadata
+import sys
+
+from textual.widget import Widget
+
+want = sys.argv[1]
+have = importlib.metadata.version("textual")
+raise SystemExit(0 if have == want and hasattr(Widget, "update_classes") else 1)
+PY
+}
+
 global_cli_version_ok() {
   defenseclaw --version 2>/dev/null | grep -q "version ${DEFENSECLAW_VERSION}"
 }
@@ -228,6 +244,22 @@ ensure_lab_scanners() {
   lab_status "DEFENSECLAW_SCANNERS=ready"
 }
 
+ensure_tui_runtime() {
+  if tui_runtime_ok "$venv_python"; then
+    lab_status "DEFENSECLAW_TUI=ready"
+    return 0
+  fi
+
+  lab_status "DEFENSECLAW_INSTALL=installing-tui"
+  if command -v uv >/dev/null 2>&1; then
+    uv pip install --quiet --python "$venv_python" "textual==${DEFENSECLAW_TUI_TEXTUAL_VERSION}"
+  else
+    "$venv_python" -m pip install --quiet --disable-pip-version-check \
+      "textual==${DEFENSECLAW_TUI_TEXTUAL_VERSION}"
+  fi
+  lab_status "DEFENSECLAW_TUI=ready"
+}
+
 install_gateway_binary() {
   if gateway_version_ok "$gateway_path"; then
     lab_status "DEFENSECLAW_GATEWAY=already-present"
@@ -251,6 +283,7 @@ if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
   venv_python="${venv_dir}/bin/python"
   ensure_uv_runtime
   ensure_lab_scanners
+  ensure_tui_runtime
   install_gateway_binary
   ensure_lab_home "$cli_path"
   lab_status "DEFENSECLAW_INSTALL=already-present"
@@ -297,6 +330,7 @@ lab_status "DEFENSECLAW_INSTALL=installing-cli"
 lab_status "DEFENSECLAW_INSTALL_NOTE=dependency install can take a minute on the first run"
 install_defenseclaw_wheel
 ensure_lab_scanners
+ensure_tui_runtime
 install_gateway_binary
 lab_status "DEFENSECLAW_INSTALL=initializing-home"
 ensure_lab_home "$cli_path"

@@ -356,6 +356,12 @@ def main() -> int:
         "DefenseClaw installer must pin the state-local gateway version",
         errors,
     )
+    require(
+        "DEFENSECLAW_TUI_TEXTUAL_VERSION" in defenseclaw_install
+        and "ensure_tui_runtime" in defenseclaw_install,
+        "DefenseClaw installer must include the compatible TUI runtime",
+        errors,
+    )
     setup_call = defenseclaw_setup.find("defenseclaw setup guardrail")
     action_pin = defenseclaw_setup.find('guardrail["mode"] = "action"', setup_call + 1)
     require(
