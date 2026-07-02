@@ -114,6 +114,8 @@ def response_input_to_messages(body: dict) -> list[dict[str, str]]:
             continue
 
         role = item.get("role", "user")
+        if role == "developer":
+            role = "system"
         if role not in {"system", "user", "assistant"}:
             role = "user"
         text = content_text(item.get("content"))

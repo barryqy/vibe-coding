@@ -9,6 +9,19 @@ from scripts import devnet_codex_shim
 
 
 class DevnetCodexShimTests(unittest.TestCase):
+    def test_developer_context_stays_out_of_user_content(self):
+        body = {
+            "input": [
+                {"role": "developer", "content": "internal agent instructions"},
+                {"role": "user", "content": "summarize the rollout note"},
+            ]
+        }
+
+        messages = devnet_codex_shim.response_input_to_messages(body)
+
+        self.assertEqual(messages[0], {"role": "system", "content": "internal agent instructions"})
+        self.assertEqual(messages[1], {"role": "user", "content": "summarize the rollout note"})
+
     def test_booking_summary_shows_booking_and_credential_leak(self):
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Path(tmp) / "bookings.jsonl"
