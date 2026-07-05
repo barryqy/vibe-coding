@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 import termios
 import tty
 from collections.abc import Callable
+from pathlib import Path
 
 from dojo_app.cli_confetti import celebrate
 from dojo_app.lab_output import print_status
@@ -16,6 +19,8 @@ MOVE_DELTAS: dict[str, Position] = {
     "a": (0, -1),
     "d": (0, 1),
 }
+ROOT = Path(__file__).resolve().parents[1]
+MAZE_SOLVED_MARKER = ROOT / ".lab-state" / "dojo" / "maze-solved"
 
 
 def choose_next_position(maze: list[str], position: Position, command: str) -> Position:
@@ -101,6 +106,22 @@ def draw_frame(
     print(render_maze(maze_with_player(maze, player), render))
 
 
+def celebrate_maze_win() -> None:
+    MAZE_SOLVED_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    MAZE_SOLVED_MARKER.write_text("MAZE_PLAY=win\n", encoding="utf-8")
+
+    dojo = shutil.which("dojo")
+    if dojo:
+        result = subprocess.run(
+            [dojo, "capture", "maze-escape"],
+            cwd=ROOT,
+            check=False,
+        )
+        if result.returncode == 0:
+            return
+    celebrate()
+
+
 def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "amaze") -> int:
     player = find_start(maze)
     redraw = live_terminal()
@@ -149,7 +170,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
             row, col = player
             if maze[row][col] == "E":
                 draw_frame(maze, player, render_maze, render, redraw, redraw)
-                celebrate()
+                celebrate_maze_win()
                 print_status("MAZE_PLAY=win")
                 return 0
     finally:

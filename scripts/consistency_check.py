@@ -38,6 +38,10 @@ REQUIRED_FILES = [
     Path("scripts/install_ai_tools.sh"),
     Path("scripts/check_repo.py"),
     Path("scripts/setup_dojo.sh"),
+    Path("scripts/install_dojo_cli.sh"),
+    Path("bin/dojo-linux-x86_64"),
+    Path("bin/dojo-linux-x86_64.sha256"),
+    Path("config/dojo-event.toml"),
     Path("scripts/devnet_codex_shim.py"),
     Path("tests/test_devnet_codex_shim.py"),
     Path("scripts/start_codex_model_adapter.py"),
@@ -130,6 +134,7 @@ def main() -> int:
         "setup_dojo.sh must prepare the Codex model route",
         errors,
     )
+    require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
     require("search only this repo's `.second-brain/`" in agents.lower(), "AGENTS.md must tell agents to search the KB for relevant notes", errors)

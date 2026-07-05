@@ -60,6 +60,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/setup_dojo.sh` initializes dependencies, local state, and the repo-local Codex model route.
+- `bin/dojo-linux-x86_64` is the stripped challenge CLI binary. Its private Rust source is maintained outside this public helper repo.
+- `config/dojo-event.toml` selects the leaderboard event; without that file, the CLI uses `self-paced`.
 - `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
 - `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
@@ -74,6 +76,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `AGENTS.md`, `opencode.json`, and `CLAUDE.md` show repo-level ways to keep coding tools inside the same boundaries.
 - `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
 - `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
+
+The setup script installs `dojo` into `~/.local/bin`, assigns a unique player name, and joins the configured event. Use `dojo challenges`, `dojo status`, or `dojo leaderboard` at any point. A custom public name can be selected with `dojo join --name NAME`.
 
 ## Optional Model Routes
 

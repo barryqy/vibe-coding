@@ -12,6 +12,10 @@ mkdir -p data .lab-state .second-brain/decisions
 mkdir -p "$HOME/.local/bin"
 ln -sf "$repo_root/scripts/cprint" "$HOME/.local/bin/cprint"
 
+if ! bash "${repo_root}/scripts/install_dojo_cli.sh"; then
+  lab_status "DOJO_CHALLENGES=unavailable"
+fi
+
 if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi

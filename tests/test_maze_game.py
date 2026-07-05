@@ -294,6 +294,7 @@ class MazeGameTests(unittest.TestCase):
         with (
             mock.patch("sys.stdin", io.StringIO("d\n")),
             mock.patch.object(maze_play, "choose_next_position", return_value=(1, 2)),
+            mock.patch.object(maze_play.shutil, "which", return_value=None),
             mock.patch.object(maze_play, "celebrate") as celebrate,
             redirect_stdout(output),
         ):
@@ -302,6 +303,32 @@ class MazeGameTests(unittest.TestCase):
         self.assertEqual(result, 0)
         celebrate.assert_called_once_with()
         self.assertIn("MAZE_PLAY=win", output.getvalue())
+
+    def test_play_mode_uses_dojo_capture_for_celebration(self):
+        maze = ["#####", "#SE##", "#####"]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "maze-solved"
+            with (
+                mock.patch("sys.stdin", io.StringIO("d\n")),
+                mock.patch.object(maze_play, "choose_next_position", return_value=(1, 2)),
+                mock.patch.object(maze_play, "MAZE_SOLVED_MARKER", marker),
+                mock.patch.object(maze_play.shutil, "which", return_value="/tmp/dojo"),
+                mock.patch.object(maze_play.subprocess, "run") as run,
+                mock.patch.object(maze_play, "celebrate") as fallback,
+                redirect_stdout(io.StringIO()),
+            ):
+                run.return_value.returncode = 0
+                result = maze_play.run_play_maze(maze, lambda _maze, _render: "board")
+
+            self.assertEqual(result, 0)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "MAZE_PLAY=win\n")
+            run.assert_called_once_with(
+                ["/tmp/dojo", "capture", "maze-escape"],
+                cwd=maze_play.ROOT,
+                check=False,
+            )
+            fallback.assert_not_called()
 
 
 if __name__ == "__main__":
