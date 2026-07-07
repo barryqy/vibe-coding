@@ -6,6 +6,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_binary="${repo_root}/bin/dojo-linux-x86_64"
 checksum_file="${source_binary}.sha256"
 install_path="${HOME}/.local/bin/dojo"
+name_tool="${HOME}/.local/bin/change-name.py"
 
 case "$(uname -m)" in
   x86_64|amd64) ;;
@@ -29,4 +30,4 @@ fi
 
 mkdir -p "$(dirname "${install_path}")"
 install -m 755 "${source_binary}" "${install_path}"
-"${install_path}" join
+install -m 755 "${repo_root}/scripts/change-name.py" "${name_tool}"

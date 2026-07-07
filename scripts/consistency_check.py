@@ -39,6 +39,7 @@ REQUIRED_FILES = [
     Path("scripts/check_repo.py"),
     Path("scripts/setup_dojo.sh"),
     Path("scripts/install_dojo_cli.sh"),
+    Path("scripts/change-name.py"),
     Path("bin/dojo-linux-x86_64"),
     Path("bin/dojo-linux-x86_64.sha256"),
     Path("config/dojo-event.toml"),
@@ -59,6 +60,7 @@ REQUIRED_FILES = [
     Path("scripts/run_darkside_agent_suite.sh"),
     Path("scripts/verify_maze_movement.py"),
     Path("tests/test_maze_movement_verifier.py"),
+    Path("tests/test_change_name.py"),
     Path("samples/guardrails/rollout-note.md"),
     Path("samples/guardrails/privacy-request.txt"),
     Path("samples/unsafe_report_patch.py"),
@@ -110,6 +112,8 @@ def main() -> int:
     mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
     mazemaker_script = (root / "skills/mazemaker/scripts/build_maze.py").read_text(encoding="utf-8") if (root / "skills/mazemaker/scripts/build_maze.py").exists() else ""
     dojo_setup = (root / "scripts/setup_dojo.sh").read_text(encoding="utf-8") if (root / "scripts/setup_dojo.sh").exists() else ""
+    dojo_install = (root / "scripts/install_dojo_cli.sh").read_text(encoding="utf-8") if (root / "scripts/install_dojo_cli.sh").exists() else ""
+    dojo_event = (root / "config/dojo-event.toml").read_text(encoding="utf-8") if (root / "config/dojo-event.toml").exists() else ""
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
@@ -135,6 +139,9 @@ def main() -> int:
         errors,
     )
     require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
+    require('event = "self-paced"' in dojo_event, "the normal lab must use the self-paced event", errors)
+    require('"${HOME}/.local/bin/dojo" join' in dojo_setup, "setup_dojo.sh must join after setup output", errors)
+    require("change-name.py" in dojo_install, "the challenge installer must install change-name.py", errors)
     require("OpenCode" in agents or "opencode.json" in agents, "AGENTS.md must mention OpenCode or opencode.json", errors)
     require("current-session.md" in agents, "AGENTS.md must mention the current second-brain session note", errors)
     require("search only this repo's `.second-brain/`" in agents.lower(), "AGENTS.md must tell agents to search the KB for relevant notes", errors)

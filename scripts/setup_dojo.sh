@@ -39,3 +39,7 @@ if ! {
   lab_status "DOJO_INIT=failed"
   exit 1
 fi
+
+if [ -x "${HOME}/.local/bin/dojo" ]; then
+  "${HOME}/.local/bin/dojo" join
+fi
