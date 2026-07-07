@@ -301,16 +301,21 @@ class MazeGameTests(unittest.TestCase):
     def test_play_mode_does_not_clear_when_piped(self):
         output = io.StringIO()
 
-        with mock.patch("sys.stdin", io.StringIO("q\n")), redirect_stdout(output):
+        with (
+            mock.patch("sys.stdin", io.StringIO("q\n")),
+            mock.patch.object(maze_play, "capture_maze_escape") as capture,
+            redirect_stdout(output),
+        ):
             result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
 
         text = output.getvalue()
         self.assertEqual(result, 0)
+        capture.assert_not_called()
         self.assertIn("MAZE_PLAY=ready", text)
         self.assertIn("MAZE_PLAY=quit", text)
         self.assertNotIn("\033[H\033[2J", text)
 
-    def test_play_mode_records_win_for_separate_capture(self):
+    def test_play_mode_captures_flag_after_win(self):
         maze = ["#####", "#SE##", "#####"]
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -319,11 +324,13 @@ class MazeGameTests(unittest.TestCase):
                 mock.patch("sys.stdin", io.StringIO("d\n")),
                 mock.patch.object(maze_play, "choose_next_position", return_value=(1, 2)),
                 mock.patch.object(maze_play, "MAZE_SOLVED_MARKER", marker),
+                mock.patch.object(maze_play, "capture_maze_escape", return_value=0) as capture,
                 redirect_stdout(io.StringIO()),
             ):
                 result = maze_play.run_play_maze(maze, lambda _maze, _render: "board")
 
             self.assertEqual(result, 0)
+            capture.assert_called_once_with()
             self.assertEqual(marker.read_text(encoding="utf-8"), "MAZE_PLAY=win\n")
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 import termios
 import tty
@@ -125,6 +126,19 @@ def record_maze_win() -> None:
     MAZE_SOLVED_MARKER.write_text("MAZE_PLAY=win\n", encoding="utf-8")
 
 
+def capture_maze_escape() -> int:
+    try:
+        result = subprocess.run(
+            ["dojo", "capture", "maze-escape"],
+            cwd=ROOT,
+            check=False,
+        )
+    except FileNotFoundError:
+        print_status("MAZE_FLAG=unavailable")
+        return 1
+    return result.returncode
+
+
 def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "amaze") -> int:
     player = find_start(maze)
     redraw = live_terminal()
@@ -132,6 +146,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
     single_key = old_settings is not None
     first_frame = True
     status = ""
+    won = False
 
     try:
         while True:
@@ -176,6 +191,11 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
                 draw_frame(maze, player, render_maze, render, redraw, redraw)
                 record_maze_win()
                 print_status("MAZE_PLAY=win")
-                return 0
+                won = True
+                break
     finally:
         restore_input_mode(old_settings)
+
+    if won:
+        return capture_maze_escape()
+    return 0

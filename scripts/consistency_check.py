@@ -187,7 +187,7 @@ def main() -> int:
     require("def choose_next_position(" in maze_play, "maze_play.py must expose the OpenCode movement entrypoint", errors)
     require("MAZE_SOLVED_MARKER" in maze_play, "maze_play.py must record a solved Maze", errors)
     require("record_maze_win()" in maze_play, "maze_play.py must save win evidence for dojo capture", errors)
-    require("dojo capture" not in maze_play, "maze_play.py must leave capture and confetti to the next lab step", errors)
+    require("capture_maze_escape()" in maze_play, "maze_play.py must capture Maze Escape after a win", errors)
     require("render_maze" in maze_play, "maze_play.py must keep the renderer callback boundary", errors)
     require("shortest_path_length" in maze_game, "maze_game.py must check whether generated mazes are solvable", errors)
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
