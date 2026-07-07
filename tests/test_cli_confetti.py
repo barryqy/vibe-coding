@@ -21,9 +21,9 @@ class CliConfettiTests(unittest.TestCase):
 
         self.assertEqual(output.getvalue(), "* + *  MAZE SOLVED!  * + *\n")
 
-    def test_tty_renders_colored_confetti_frame(self):
+    def test_narrow_tty_renders_colored_confetti_on_one_line(self):
         output = FakeTty()
-        terminal_size = os.terminal_size((40, 12))
+        terminal_size = os.terminal_size((20, 8))
 
         with (
             patch.dict(os.environ, {"DOJO_COLOR": "1", "TERM": "xterm-256color"}, clear=False),
@@ -34,8 +34,10 @@ class CliConfettiTests(unittest.TestCase):
         text = output.getvalue()
         self.assertNotIn("\033[2J", text)
         self.assertNotIn("\033[H", text)
-        self.assertIn(cli_confetti.SAVE_CURSOR, text)
-        self.assertIn(cli_confetti.RESTORE_CURSOR, text)
+        self.assertNotIn("\033[s", text)
+        self.assertNotIn("\033[u", text)
+        self.assertEqual(text.count("\r\n"), 1)
+        self.assertIn(cli_confetti.ERASE_LINE, text)
         self.assertIn(cli_confetti.SOLVED_TEXT, text)
         self.assertIn("\033[", text)
 

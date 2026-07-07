@@ -12,8 +12,7 @@ from dojo_app.lab_output import COLORS, RESET, color_enabled
 
 CONFETTI_CHARS = (".", "*", "+", "#", "@", "%")
 CONFETTI_COLORS = ("red", "green", "yellow", "blue", "magenta", "cyan")
-SAVE_CURSOR = "\033[s"
-RESTORE_CURSOR = "\033[u"
+ERASE_LINE = "\033[2K"
 SOLVED_TEXT = "MAZE SOLVED!"
 DEFAULT_DURATION = 5.6
 
@@ -36,10 +35,15 @@ def _draw_frame(width: int, height: int, particles, use_color: bool) -> str:
         rows[y][x] = f"{COLORS[color]}{char}{RESET}" if use_color else char
 
     title_row = height // 2
-    title_col = max(0, (width - len(SOLVED_TEXT)) // 2)
-    title = f"{COLORS['bold']}{COLORS['green']}{SOLVED_TEXT}{RESET}" if use_color else SOLVED_TEXT
+    display_text = SOLVED_TEXT[:width]
+    title_col = max(0, (width - len(display_text)) // 2)
+    title = (
+        f"{COLORS['bold']}{COLORS['green']}{display_text}{RESET}"
+        if use_color
+        else display_text
+    )
     rows[title_row][title_col] = title
-    for offset in range(1, len(SOLVED_TEXT)):
+    for offset in range(1, len(display_text)):
         if title_col + offset < width:
             rows[title_row][title_col + offset] = ""
 
@@ -59,21 +63,17 @@ def celebrate(
         return
 
     terminal = shutil.get_terminal_size(fallback=(60, 20))
-    width = max(32, min(terminal.columns, 80))
-    height = max(8, min(terminal.lines - 2, 16))
+    width = max(1, min(terminal.columns - 1, 60))
+    height = 1
     rng = random.Random(seed)
     particles = [_new_particle(rng, width, height) for _ in range(max(18, width // 2))]
     deadline = time.monotonic() + max(0.0, duration)
     frame_delay = 1 / max(1, fps)
     first_frame = True
 
-    target.write("\r\n" * height)
-    target.write(f"\033[{height}A{SAVE_CURSOR}")
-
     while first_frame or time.monotonic() < deadline:
-        if not first_frame:
-            target.write(RESTORE_CURSOR)
         first_frame = False
+        target.write(f"\r{ERASE_LINE}")
         target.write(_draw_frame(width, height, particles, color_enabled(target)))
         target.flush()
 
@@ -88,5 +88,5 @@ def celebrate(
         if time.monotonic() < deadline:
             time.sleep(frame_delay)
 
-    target.write(f"{RESTORE_CURSOR}\033[{height}B\r\n")
+    target.write(f"\r{ERASE_LINE}* + *  {SOLVED_TEXT}  * + *\r\n")
     target.flush()
