@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+exec "${HOME}/.local/bin/dojo" player

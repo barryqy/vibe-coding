@@ -62,7 +62,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/setup_dojo.sh` initializes dependencies, local state, and the repo-local Codex model route.
 - `bin/dojo-linux-x86_64` is the stripped challenge CLI binary. Its private Rust source is maintained outside this public helper repo.
 - `config/dojo-event.toml` selects the leaderboard event. The normal lab uses `self-paced`; event builds may replace it with a short event code.
-- `scripts/change-name.py` is installed as `change-name.py` and lets a learner choose a different public leaderboard name.
+- `scripts/player` is installed as `player` and prints the assigned leaderboard name.
 - `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
 - `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
@@ -78,7 +78,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
 - `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
 
-The setup script installs `dojo` into `~/.local/bin`, assigns a unique player name, and joins the self-paced leaderboard. Use `dojo challenges`, `dojo status`, or `dojo leaderboard` at any point. Run `change-name.py` to choose a different public name.
+The setup script installs `dojo` into `~/.local/bin`, assigns a unique player name, and joins the self-paced leaderboard. Player names cannot be changed. Use `player` to recall the assigned name, or run `dojo challenges`, `dojo status`, or `dojo leaderboard` at any point.
 
 ## Optional Model Routes
 
