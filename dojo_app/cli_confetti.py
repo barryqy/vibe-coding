@@ -12,8 +12,10 @@ from dojo_app.lab_output import COLORS, RESET, color_enabled
 
 CONFETTI_CHARS = (".", "*", "+", "#", "@", "%")
 CONFETTI_COLORS = ("red", "green", "yellow", "blue", "magenta", "cyan")
-CLEAR_SCREEN = "\033[H\033[2J"
+SAVE_CURSOR = "\033[s"
+RESTORE_CURSOR = "\033[u"
 SOLVED_TEXT = "MAZE SOLVED!"
+DEFAULT_DURATION = 2.8
 
 
 def _new_particle(rng: random.Random, width: int, height: int, above: bool = False):
@@ -41,12 +43,12 @@ def _draw_frame(width: int, height: int, particles, use_color: bool) -> str:
         if title_col + offset < width:
             rows[title_row][title_col + offset] = ""
 
-    return "\n".join("".join(row) for row in rows)
+    return "\r\n".join("".join(row) for row in rows)
 
 
 def celebrate(
     stream: TextIO | None = None,
-    duration: float = 1.4,
+    duration: float = DEFAULT_DURATION,
     fps: int = 12,
     seed: int | None = None,
 ) -> None:
@@ -65,9 +67,13 @@ def celebrate(
     frame_delay = 1 / max(1, fps)
     first_frame = True
 
+    target.write("\r\n" * height)
+    target.write(f"\033[{height}A{SAVE_CURSOR}")
+
     while first_frame or time.monotonic() < deadline:
+        if not first_frame:
+            target.write(RESTORE_CURSOR)
         first_frame = False
-        target.write(CLEAR_SCREEN)
         target.write(_draw_frame(width, height, particles, color_enabled(target)))
         target.flush()
 
@@ -82,5 +88,5 @@ def celebrate(
         if time.monotonic() < deadline:
             time.sleep(frame_delay)
 
-    target.write("\n")
+    target.write(f"{RESTORE_CURSOR}\033[{height}B\r\n")
     target.flush()
