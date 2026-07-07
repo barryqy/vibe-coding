@@ -12,7 +12,11 @@ from dojo_app.lab_output import COLORS, RESET, color_enabled
 
 CONFETTI_CHARS = (".", "*", "+", "#", "@", "%")
 CONFETTI_COLORS = ("red", "green", "yellow", "blue", "magenta", "cyan")
-ERASE_LINE = "\033[2K"
+ALT_SCREEN_ON = "\033[?1049h"
+ALT_SCREEN_OFF = "\033[?1049l"
+CURSOR_HOME = "\033[1;1H"
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
 SOLVED_TEXT = "MAZE SOLVED!"
 DEFAULT_DURATION = 5.6
 
@@ -64,29 +68,33 @@ def celebrate(
 
     terminal = shutil.get_terminal_size(fallback=(60, 20))
     width = max(1, min(terminal.columns - 1, 60))
-    height = 1
+    height = max(1, min(terminal.lines - 2, 16))
     rng = random.Random(seed)
     particles = [_new_particle(rng, width, height) for _ in range(max(18, width // 2))]
     deadline = time.monotonic() + max(0.0, duration)
     frame_delay = 1 / max(1, fps)
     first_frame = True
 
-    while first_frame or time.monotonic() < deadline:
-        first_frame = False
-        target.write(f"\r{ERASE_LINE}")
-        target.write(_draw_frame(width, height, particles, color_enabled(target)))
-        target.flush()
+    target.write(f"{ALT_SCREEN_ON}{HIDE_CURSOR}")
+    try:
+        while first_frame or time.monotonic() < deadline:
+            first_frame = False
+            target.write(CURSOR_HOME)
+            target.write(_draw_frame(width, height, particles, color_enabled(target)))
+            target.flush()
 
-        next_particles = []
-        for x, y, char, color in particles:
-            if y + 1 >= height:
-                next_particles.append(_new_particle(rng, width, height, above=True))
-            else:
-                next_particles.append((x, y + 1, char, color))
-        particles = next_particles
+            next_particles = []
+            for x, y, char, color in particles:
+                if y + 1 >= height:
+                    next_particles.append(_new_particle(rng, width, height, above=True))
+                else:
+                    next_particles.append((x, y + 1, char, color))
+            particles = next_particles
 
-        if time.monotonic() < deadline:
-            time.sleep(frame_delay)
+            if time.monotonic() < deadline:
+                time.sleep(frame_delay)
+    finally:
+        target.write(f"{SHOW_CURSOR}{ALT_SCREEN_OFF}")
 
-    target.write(f"\r{ERASE_LINE}* + *  {SOLVED_TEXT}  * + *\r\n")
+    target.write(f"* + *  {SOLVED_TEXT}  * + *\r\n")
     target.flush()

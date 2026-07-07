@@ -21,7 +21,7 @@ class CliConfettiTests(unittest.TestCase):
 
         self.assertEqual(output.getvalue(), "* + *  MAZE SOLVED!  * + *\n")
 
-    def test_narrow_tty_renders_colored_confetti_on_one_line(self):
+    def test_narrow_tty_uses_full_height_and_restores_output(self):
         output = FakeTty()
         terminal_size = os.terminal_size((20, 8))
 
@@ -34,15 +34,21 @@ class CliConfettiTests(unittest.TestCase):
         text = output.getvalue()
         self.assertNotIn("\033[2J", text)
         self.assertNotIn("\033[H", text)
-        self.assertNotIn("\033[s", text)
-        self.assertNotIn("\033[u", text)
-        self.assertEqual(text.count("\r\n"), 1)
-        self.assertIn(cli_confetti.ERASE_LINE, text)
+        self.assertIn(cli_confetti.ALT_SCREEN_ON, text)
+        self.assertIn(cli_confetti.CURSOR_HOME, text)
+        self.assertIn(cli_confetti.ALT_SCREEN_OFF, text)
         self.assertIn(cli_confetti.SOLVED_TEXT, text)
         self.assertIn("\033[", text)
 
     def test_default_animation_duration_is_four_times_the_original(self):
         self.assertEqual(cli_confetti.DEFAULT_DURATION, 5.6)
+
+    def test_frame_fits_available_rows_in_a_narrow_terminal(self):
+        frame = cli_confetti._draw_frame(19, 6, [], use_color=False)
+        lines = frame.split("\r\n")
+
+        self.assertEqual(len(lines), 6)
+        self.assertTrue(all(len(line) == 19 for line in lines))
 
 
 if __name__ == "__main__":
