@@ -49,7 +49,6 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `dojo_app/` is a tiny code dojo used for agent and security exercises.
 - `dojo_app/maze_game.py` is the stable tiny terminal Maze app used during the lab. It can check raw maze data, render an Amaze-style terminal board, keep `--render raw` for debugging the source maze data, and dispatch play mode into `dojo_app/maze_play.py`.
 - `dojo_app/maze_play.py` is the scoped OpenCode exercise file. It starts as a placeholder and becomes the playable movement loop.
-- `dojo_app/cli_confetti.py` provides the dependency-free terminal celebration shown after a solved Maze, inspired by [cli-confetti](https://github.com/IonicaBizau/cli-confetti).
 - `skills/mazemaker/SKILL.md` is the repo-local MazeMaker skill used to create checked Maze artifacts.
 - `skills/mazemaker/scripts/build_maze.py` writes solvable Recursive Backtracker maze data to a repo-local file.
 - `dojo_app/barryflights_mcp_server.py` is the local BarryFlights MCP server. `flight_status` is the safe read-only lesson; `book_flight` is the intentionally risky security-module lesson.
@@ -60,7 +59,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/setup_dojo.sh` initializes dependencies, local state, and the repo-local Codex model route.
-- `bin/dojo-linux-x86_64` is the stripped challenge CLI binary. Its private Rust source is maintained outside this public helper repo.
+- `bin/dojo-linux-x86_64` is the stripped challenge CLI binary. It verifies fresh ordered evidence before clearing the terminal for a flag celebration; its private Rust source is maintained outside this public helper repo.
 - `config/dojo-event.toml` selects the leaderboard event. The normal lab uses `self-paced`; event builds may replace it with a short event code.
 - `scripts/player` is installed as `player` and prints the assigned leaderboard name.
 - `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
@@ -251,7 +250,7 @@ python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 python3 -m dojo_app.maze_game --maze-file .lab-state/codex-output/maze.txt --play
 ```
 
-Reach `E` to trigger the terminal confetti celebration.
+Reach `E` to record the win, inspect the solved Maze, then run the separate flag-capture step for the terminal celebration.
 
 After that, compare both agents with one shared prompt:
 

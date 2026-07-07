@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import shutil
-import subprocess
 import sys
 import termios
 import tty
 from collections.abc import Callable
 from pathlib import Path
 
-from dojo_app.cli_confetti import celebrate
 from dojo_app.lab_output import format_status, print_status
 
 MazeRenderer = Callable[[list[str], str], str]
@@ -123,20 +120,9 @@ def draw_frame(
     target.flush()
 
 
-def celebrate_maze_win() -> None:
+def record_maze_win() -> None:
     MAZE_SOLVED_MARKER.parent.mkdir(parents=True, exist_ok=True)
     MAZE_SOLVED_MARKER.write_text("MAZE_PLAY=win\n", encoding="utf-8")
-
-    dojo = shutil.which("dojo")
-    if dojo:
-        result = subprocess.run(
-            [dojo, "capture", "maze-escape"],
-            cwd=ROOT,
-            check=False,
-        )
-        if result.returncode == 0:
-            return
-    celebrate()
 
 
 def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "amaze") -> int:
@@ -188,7 +174,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
             row, col = player
             if maze[row][col] == "E":
                 draw_frame(maze, player, render_maze, render, redraw, redraw)
-                celebrate_maze_win()
+                record_maze_win()
                 print_status("MAZE_PLAY=win")
                 return 0
     finally:
