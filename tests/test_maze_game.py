@@ -268,12 +268,35 @@ class MazeGameTests(unittest.TestCase):
             },
         )
 
-    def test_play_clear_screen_writes_terminal_redraw_sequence(self):
+    def test_play_redraw_preserves_existing_terminal_output(self):
         output = io.StringIO()
+        output.write("LAST_COMMAND_OUTPUT\n")
 
-        maze_play.clear_screen(output)
+        with redirect_stdout(output):
+            maze_play.draw_frame(
+                ["#####", "#S.E#", "#####"],
+                (1, 1),
+                lambda _maze, _render: "board",
+                "amaze",
+                redraw=True,
+                show_header=True,
+                first_frame=True,
+            )
+            maze_play.draw_frame(
+                ["#####", "#S.E#", "#####"],
+                (1, 2),
+                lambda _maze, _render: "board",
+                "amaze",
+                redraw=True,
+                show_header=True,
+            )
 
-        self.assertEqual(output.getvalue(), "\033[H\033[2J")
+        text = output.getvalue()
+        self.assertTrue(text.startswith("LAST_COMMAND_OUTPUT\n"))
+        self.assertNotIn("\033[H", text)
+        self.assertNotIn("\033[2J", text)
+        self.assertIn(maze_play.SAVE_CURSOR, text)
+        self.assertIn(maze_play.RESTORE_CURSOR, text)
 
     def test_play_mode_does_not_clear_when_piped(self):
         output = io.StringIO()

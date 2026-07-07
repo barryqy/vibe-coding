@@ -9,7 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from dojo_app.cli_confetti import celebrate
-from dojo_app.lab_output import print_status
+from dojo_app.lab_output import format_status, print_status
 
 MazeRenderer = Callable[[list[str], str], str]
 Position = tuple[int, int]
@@ -21,6 +21,9 @@ MOVE_DELTAS: dict[str, Position] = {
 }
 ROOT = Path(__file__).resolve().parents[1]
 MAZE_SOLVED_MARKER = ROOT / ".lab-state" / "dojo" / "maze-solved"
+SAVE_CURSOR = "\033[s"
+RESTORE_CURSOR = "\033[u"
+ERASE_LINE = "\033[2K"
 
 
 def choose_next_position(maze: list[str], position: Position, command: str) -> Position:
@@ -49,12 +52,6 @@ def maze_with_player(maze: list[str], position: Position) -> list[str]:
 
 def live_terminal() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty()
-
-
-def clear_screen(stream=None) -> None:
-    target = sys.stdout if stream is None else stream
-    target.write("\033[H\033[2J")
-    target.flush()
 
 
 def enable_single_key_input():
@@ -95,15 +92,35 @@ def draw_frame(
     redraw: bool,
     show_header: bool,
     status: str = "",
+    first_frame: bool = False,
 ) -> None:
-    if redraw:
-        clear_screen()
-    if show_header:
-        print_status("MAZE_PLAY=ready")
-        print("controls=w/a/s/d, q to quit")
-    if status:
-        print_status(status)
-    print(render_maze(maze_with_player(maze, player), render))
+    if not redraw:
+        if show_header:
+            print_status("MAZE_PLAY=ready")
+            print("controls=w/a/s/d, q to quit")
+        if status:
+            print_status(status)
+        print(render_maze(maze_with_player(maze, player), render))
+        return
+
+    target = sys.stdout
+    lines = [
+        format_status("MAZE_PLAY=ready", target),
+        "controls=w/a/s/d, q to quit",
+        format_status(status, target) if status else "",
+        *render_maze(maze_with_player(maze, player), render).splitlines(),
+    ]
+
+    if first_frame:
+        target.write("\r\n" * (len(lines) + 1))
+        target.write(f"\033[{len(lines) + 1}A{SAVE_CURSOR}")
+    else:
+        target.write(RESTORE_CURSOR)
+
+    for line in lines:
+        target.write(f"{ERASE_LINE}\r{line}\r\n")
+    target.write(f"{ERASE_LINE}\r")
+    target.flush()
 
 
 def celebrate_maze_win() -> None:
@@ -140,6 +157,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
                 redraw,
                 first_frame or redraw,
                 status,
+                first_frame,
             )
             first_frame = False
             status = ""
