@@ -40,6 +40,7 @@ REQUIRED_FILES = [
     Path("scripts/setup_dojo.sh"),
     Path("scripts/install_dojo_cli.sh"),
     Path("scripts/player"),
+    Path("scripts/promote_project_note.py"),
     Path("bin/dojo-linux-x86_64"),
     Path("bin/dojo-linux-x86_64.sha256"),
     Path("config/dojo-event.toml"),
