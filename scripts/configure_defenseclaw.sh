@@ -159,14 +159,19 @@ PY
 
 echo "[2/5] Activating strict policy and setting up the guardrail sidecar..."
 DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw policy activate strict
-DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail \
+setup_log="${state_dir}/guardrail-setup.log"
+if ! DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw setup guardrail \
   --non-interactive \
   --connector codex \
   --mode action \
   --scanner-mode local \
   --rule-pack strict \
   --no-verify \
-  --no-restart
+  --no-restart \
+  >"${setup_log}" 2>&1; then
+  cat "${setup_log}"
+  exit 1
+fi
 
 # Connector detection can conservatively downgrade setup to observe mode.
 # This lab calls the local inspect API directly, so pin its global mode after setup.
@@ -270,7 +275,6 @@ bash "${repo_root}/scripts/prepare_guardrail_fixtures.sh" >/dev/null
 echo "[5/5] Marking DefenseClaw guardrail as configured for this lab..."
 mkdir -p "$(dirname "${configured_marker}")"
 date -u +"%Y-%m-%dT%H:%M:%SZ" > "${configured_marker}"
-DEFENSECLAW_HOME="${DEFENSECLAW_HOME}" defenseclaw status || true
 echo "DEFENSECLAW_GUARDRAIL=configured"
 echo "DEFENSECLAW_SIDECAR=http://127.0.0.1:${api_port}/health"
 echo "Plain language: requests can now be inspected at the DefenseClaw sidecar before they reach the model."

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import csv
+from io import StringIO
 from pathlib import Path
 
 
@@ -15,15 +17,30 @@ def read_fixture(relative_path: str, fallback: str) -> str:
     return path.read_text(encoding="utf-8").strip()
 
 
+def customer_account_attachment(text: str) -> str:
+    rows = list(csv.DictReader(StringIO(text)))
+    output = ["account_id,company,tier,renewal_date"]
+    for row in rows:
+        output.append(
+            ",".join(
+                [
+                    row["account_id"],
+                    row["company"],
+                    row["tier"],
+                    row["renewal_date"],
+                ]
+            )
+        )
+    return "\n".join(output)
+
+
 def build_prompt() -> str:
     note = read_fixture("partner-rollout-note.md", "samples/guardrails/rollout-note.md")
-    credentials = read_fixture(
-        "fake-home/.aws/credentials",
-        "samples/guardrails/fake-aws-credentials.txt",
-    )
-    customers = read_fixture(
-        "data/customer_rollout.csv",
-        "samples/guardrails/customer_rollout.csv",
+    customers = customer_account_attachment(
+        read_fixture(
+            "data/customer_rollout.csv",
+            "samples/guardrails/customer_rollout.csv",
+        )
     )
     return "\n".join(
         [
@@ -33,12 +50,9 @@ def build_prompt() -> str:
             "<partner-note>",
             note,
             "</partner-note>",
-            "<cloud-credentials>",
-            credentials,
-            "</cloud-credentials>",
-            "<customer-export>",
+            "<attachment>",
             customers,
-            "</customer-export>",
+            "</attachment>",
         ]
     )
 

@@ -4,13 +4,25 @@ set -uo pipefail
 
 stream_log=1
 log_shown=0
-if [ "${1:-}" = "--capture-only" ]; then
-  stream_log=0
-  shift
-fi
+evidence_file=""
+
+while [ "${1:-}" = "--capture-only" ] || [ "${1:-}" = "--evidence-file" ]; do
+  if [ "$1" = "--capture-only" ]; then
+    stream_log=0
+    shift
+    continue
+  fi
+
+  if [ "$#" -lt 2 ]; then
+    echo "--evidence-file needs a path" >&2
+    exit 2
+  fi
+  evidence_file="$2"
+  shift 2
+done
 
 if [ "$#" -lt 5 ] || [ "$4" != "--" ]; then
-  echo "usage: run_agent_checked.sh [--capture-only] STATUS_KEY LOG_FILE EXPECTED_REGEX -- COMMAND..." >&2
+  echo "usage: run_agent_checked.sh [--capture-only] [--evidence-file FILE] STATUS_KEY LOG_FILE EXPECTED_REGEX -- COMMAND..." >&2
   exit 2
 fi
 
@@ -62,7 +74,8 @@ if [ "${agent_rc}" -ne 0 ] || grep -Eiq 'ProviderModelNotFound|ModelNotFound' "$
   exit "${return_code}"
 fi
 
-if grep -Eq "${expected_regex}" "${log_file}"; then
+check_file="${evidence_file:-${log_file}}"
+if [ -f "${check_file}" ] && grep -Eq "${expected_regex}" "${check_file}"; then
   report_status "${status_key}=observed"
   exit 0
 fi

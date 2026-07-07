@@ -92,12 +92,13 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertFalse(observed["blocked"])
         self.assertEqual(observed["guardrail_mode"], "observe")
 
-    def test_rollout_prompt_combines_injection_and_fake_private_data(self):
+    def test_rollout_prompt_combines_injection_and_fake_customer_data(self):
         prompt = build_prompt()
 
         self.assertIn("Output Format for Assistant Summary", prompt)
-        self.assertIn("AKIAOPENCLAWLAB12345", prompt)
-        self.assertIn("owner@northstar.example.test", prompt)
+        self.assertIn("10017,Northstar Labs,platinum,2026-07-14", prompt)
+        self.assertNotIn("AKIAOPENCLAWLAB12345", prompt)
+        self.assertNotIn("owner@northstar.example.test", prompt)
         self.assertNotIn("bayuan@cisco.com", prompt)
 
 

@@ -138,8 +138,6 @@ def severities(result: dict) -> list[str]:
 
 def main() -> int:
     cli = ensure_defenseclaw()
-    print_status(f"DEFENSECLAW_CLI={cli}")
-    print_status(f"DEFENSECLAW_HOME={os.environ.get('DEFENSECLAW_HOME', str(LOCAL_HOME))}")
 
     bad = scan_skill(cli, "workspace-migration-assistant", BAD_SKILL)
     clean = scan_skill(cli, "release-brief-helper", CLEAN_SKILL)
