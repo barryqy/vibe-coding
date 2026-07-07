@@ -2,8 +2,15 @@
 
 set -uo pipefail
 
+stream_log=1
+log_shown=0
+if [ "${1:-}" = "--capture-only" ]; then
+  stream_log=0
+  shift
+fi
+
 if [ "$#" -lt 5 ] || [ "$4" != "--" ]; then
-  echo "usage: run_agent_checked.sh STATUS_KEY LOG_FILE EXPECTED_REGEX -- COMMAND..." >&2
+  echo "usage: run_agent_checked.sh [--capture-only] STATUS_KEY LOG_FILE EXPECTED_REGEX -- COMMAND..." >&2
   exit 2
 fi
 
@@ -19,12 +26,22 @@ report_status() {
   scripts/cprint status "$1"
 }
 
+show_log() {
+  if [ "${log_shown}" -eq 1 ]; then
+    return
+  fi
+  scripts/cprint stream <"${log_file}"
+  log_shown=1
+}
+
 set +e
 "$@" >"${log_file}" 2>&1
 agent_rc=$?
 set -e
 
-scripts/cprint stream <"${log_file}"
+if [ "${stream_log}" -eq 1 ]; then
+  show_log
+fi
 
 if grep -Eiq 'budget exceeded|HTTP 429|rate_limit' "${log_file}"; then
   report_status "${status_key}=model-budget-exhausted"
@@ -38,6 +55,7 @@ if [ "${agent_rc}" -eq 124 ]; then
 fi
 
 if [ "${agent_rc}" -ne 0 ] || grep -Eiq 'ProviderModelNotFound|ModelNotFound' "${log_file}"; then
+  show_log
   report_status "${status_key}=failed"
   return_code="${agent_rc}"
   [ "${return_code}" -ne 0 ] || return_code=1
@@ -49,4 +67,5 @@ if grep -Eq "${expected_regex}" "${log_file}"; then
   exit 0
 fi
 
+show_log
 report_status "${status_key}=check-output"

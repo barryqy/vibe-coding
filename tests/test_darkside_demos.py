@@ -51,6 +51,26 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", output)
         self.assertTrue((ROOT / ".lab-state/darkside/mcp-rce-demo.txt").exists())
 
+    def test_agent_suite_writes_one_report_per_risk(self):
+        result = subprocess.run(
+            ["bash", "scripts/run_darkside_agent_suite.sh"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        reports = {
+            "generated-code-risk.txt": "OOPS_GENERATED_CODE_EXEC=local-files-written",
+            "risky-skill-risk.txt": "OOPS_SKILL_EXFILTRATED=fake-aws-credentials",
+            "risky-mcp-risk.txt": "OOPS_MCP_RCE=local-file-written",
+        }
+        for filename, marker in reports.items():
+            report = ROOT / ".lab-state/darkside" / filename
+            self.assertTrue(report.is_file(), filename)
+            self.assertIn(marker, report.read_text(encoding="utf-8"))
+
     def test_guardrail_summary_requires_a_real_block_action(self):
         blocked = summarize_guardrail_verdict(
             mode="guarded-privacy",
