@@ -39,8 +39,8 @@ class CliConfettiTests(unittest.TestCase):
         self.assertIn(cli_confetti.SOLVED_TEXT, text)
         self.assertIn("\033[", text)
 
-    def test_default_animation_duration_is_doubled(self):
-        self.assertEqual(cli_confetti.DEFAULT_DURATION, 2.8)
+    def test_default_animation_duration_is_four_times_the_original(self):
+        self.assertEqual(cli_confetti.DEFAULT_DURATION, 5.6)
 
 
 if __name__ == "__main__":

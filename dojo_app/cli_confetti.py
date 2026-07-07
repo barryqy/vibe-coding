@@ -15,7 +15,7 @@ CONFETTI_COLORS = ("red", "green", "yellow", "blue", "magenta", "cyan")
 SAVE_CURSOR = "\033[s"
 RESTORE_CURSOR = "\033[u"
 SOLVED_TEXT = "MAZE SOLVED!"
-DEFAULT_DURATION = 2.8
+DEFAULT_DURATION = 5.6
 
 
 def _new_particle(rng: random.Random, width: int, height: int, above: bool = False):
