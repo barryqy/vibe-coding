@@ -8,8 +8,7 @@ Codex CLI is the required account-free replacement for the old Claude Code lab p
 
 In this dojo, the Codex path uses:
 
-- `curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh` and `CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh` to install the CLI with the official standalone installer
-- `npm config set prefix "$HOME/.local"` and `npm install -g @openai/codex` as the visible fallback if the standalone installer is blocked
+- `./scripts/install_codex_cli.sh` to verify and unpack the official standalone package already staged in the DevNet image
 - `codex --version` to confirm Codex is installed
 - `python3 scripts/setup_codex_devnet.py` to generate `.lab-state/codex/home/config.toml`
 - `python3 scripts/start_codex_model_adapter.py` to start the local model adapter
@@ -30,8 +29,7 @@ OpenCode is an open source coding agent with terminal, desktop, and IDE options.
 
 In this dojo, the OpenCode path uses:
 
-- `curl -fL --max-time 180 --progress-bar -o .lab-state/opencode-download/opencode-linux-x64.tar.gz https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz` to download the pinned DevNet Linux CLI archive
-- `tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download && install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode" && ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"` to install the CLI and keep it visible across lab command blocks
+- `./scripts/install_opencode_cli.sh` to verify and unpack the pinned Linux archive already staged in the DevNet image
 - `opencode --version` to confirm OpenCode is installed
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment

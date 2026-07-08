@@ -34,6 +34,8 @@ REQUIRED_FILES = [
     Path("scripts/agent_code_task.py"),
     Path("scripts/barrybot_demo.py"),
     Path("scripts/install_ai_tools.sh"),
+    Path("scripts/install_codex_cli.sh"),
+    Path("scripts/install_opencode_cli.sh"),
     Path("scripts/check_repo.py"),
     Path("scripts/setup_dojo.sh"),
     Path("scripts/install_dojo_cli.sh"),
@@ -60,6 +62,7 @@ REQUIRED_FILES = [
     Path("scripts/verify_maze_movement.py"),
     Path("tests/test_maze_movement_verifier.py"),
     Path("tests/test_player_command.py"),
+    Path("tests/test_offline_cli_installers.py"),
     Path("samples/guardrails/rollout-note.md"),
     Path("samples/guardrails/privacy-request.txt"),
     Path("samples/unsafe_report_patch.py"),
@@ -91,6 +94,8 @@ def main() -> int:
     readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").exists() else ""
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
     install_script = (root / "scripts/install_ai_tools.sh").read_text(encoding="utf-8")
+    codex_installer = (root / "scripts/install_codex_cli.sh").read_text(encoding="utf-8")
+    opencode_installer = (root / "scripts/install_opencode_cli.sh").read_text(encoding="utf-8")
     session_note = (
         root / ".second-brain/sessions/current-session.md"
     ).read_text(encoding="utf-8") if (root / ".second-brain/sessions/current-session.md").exists() else ""
@@ -135,6 +140,11 @@ def main() -> int:
         "python3 scripts/setup_codex_devnet.py" in dojo_setup
         and "python3 scripts/start_codex_model_adapter.py" in dojo_setup,
         "setup_dojo.sh must prepare the Codex model route",
+        errors,
+    )
+    require(
+        "python_env_ready" in dojo_setup and "pip install -q -r requirements.txt" in dojo_setup,
+        "setup_dojo.sh must reuse the image-prebuilt Python environment",
         errors,
     )
     require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
@@ -193,10 +203,20 @@ def main() -> int:
     require("block_maze_row" in maze_game, "maze_game.py must accept block maze diagrams from Codex", errors)
     require("--check-only" in maze_game, "maze_game.py must expose a check-only path for Codex diagrams", errors)
     require("python3 -m unittest tests.test_maze_game" in session_note, "current-session.md must include the focused Maze test", errors)
-    require("chatgpt.com/codex/install.sh" in agents, "AGENTS.md must show the direct Codex installer", errors)
+    require("scripts/install_codex_cli.sh" in agents, "AGENTS.md must show the offline Codex installer", errors)
     require("codex --version" in agents, "AGENTS.md must verify Codex with codex --version", errors)
-    require("github.com/anomalyco/opencode/releases/download/v1.0.190" in agents, "AGENTS.md must show the pinned OpenCode download", errors)
+    require("scripts/install_opencode_cli.sh" in agents, "AGENTS.md must show the offline OpenCode installer", errors)
     require("opencode --version" in agents, "AGENTS.md must verify OpenCode with opencode --version", errors)
+    require(
+        "VIBE_INSTALLER_DIR" in codex_installer and "curl " not in codex_installer,
+        "Codex learner installer must use only the image-preloaded archive",
+        errors,
+    )
+    require(
+        "VIBE_INSTALLER_DIR" in opencode_installer and "curl " not in opencode_installer,
+        "OpenCode learner installer must use only the image-preloaded archive",
+        errors,
+    )
     require("--codex-only" in install_script and "--opencode-only" in install_script, "install_ai_tools.sh must support split install modes", errors)
     agents_lower = agents.lower()
     require(

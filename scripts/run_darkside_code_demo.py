@@ -49,7 +49,7 @@ def main() -> int:
     print_status("DARKSIDE_CODE_EXEC=ready")
     print(f"eval_marker={relative(eval_marker)}")
     print(f"shell_marker={relative(shell_marker)}")
-    print_status("OOPS_GENERATED_CODE_EXEC=local-files-written")
+    print_status("GENERATED_CODE_SIDE_EFFECT=local-files-written")
 
     if eval_marker.exists() and shell_marker.exists():
         print_status("DARKSIDE_CODE_EXEC=pass")

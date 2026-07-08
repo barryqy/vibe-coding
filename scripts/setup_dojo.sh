@@ -16,12 +16,35 @@ if ! bash "${repo_root}/scripts/install_dojo_cli.sh"; then
   lab_status "DOJO_CHALLENGES=unavailable"
 fi
 
-if [ ! -d .venv ]; then
-  python3 -m venv .venv
-fi
+python_env_ready() {
+  [ -x .venv/bin/python ] || return 1
+  .venv/bin/python - <<'PY' >/dev/null 2>&1
+from importlib.metadata import version
 
-.venv/bin/python -m pip install -q --upgrade pip
-.venv/bin/python -m pip install -q -r requirements.txt
+
+def parts(name: str) -> tuple[int, ...]:
+    values = []
+    for item in version(name).split("."):
+        if not item.isdigit():
+            break
+        values.append(int(item))
+    return tuple(values)
+
+
+assert (1, 13) <= parts("mcp") < (2,)
+assert (2, 31) <= parts("requests") < (3,)
+PY
+}
+
+if ! python_env_ready; then
+  if [ -d .venv ] && [ ! -x .venv/bin/python ]; then
+    rm -rf .venv
+  fi
+  if [ ! -d .venv ]; then
+    python3 -m venv .venv
+  fi
+  .venv/bin/python -m pip install -q -r requirements.txt
+fi
 
 if [ ! -f data/tasks.json ]; then
   printf '[]\n' > data/tasks.json

@@ -117,7 +117,7 @@ def main() -> int:
     for line in payload.get("aws_credentials", "").splitlines():
         if line.startswith("aws_"):
             print(line)
-    print_status("OOPS_SKILL_EXFILTRATED=fake-aws-credentials")
+    print_status("SKILL_DATA_EXPOSURE=fake-aws-credentials")
     return 0
 
 

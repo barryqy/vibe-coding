@@ -6,7 +6,7 @@ Full lab is available at https://cs.co/vc
 
 The lab teaches a practical loop for AI-assisted coding:
 
-1. install Codex CLI
+1. install Codex CLI from the package preloaded in the DevNet image
 2. connect Codex to the supplied DevNet model route
 3. use the local BarryFlights MCP demo included with the dojo and check a flight status
 4. create a small second brain that coding agents can share
@@ -20,25 +20,9 @@ The lab teaches a practical loop for AI-assisted coding:
 cd /home/developer/src
 git clone https://github.com/barryqy/vibe-coding.git
 cd vibe-coding
-python3 -m venv .venv
-.venv/bin/python -m pip install -q --upgrade pip
-.venv/bin/python -m pip install -q -r requirements.txt
-if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
-  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
-else
-  npm config set prefix "$HOME/.local"
-  npm install -g @openai/codex
-fi
+./scripts/setup_dojo.sh
+./scripts/install_codex_cli.sh
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
-codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
-if command -v bwrap >/dev/null 2>&1; then
-  echo "Using the system sandbox helper."
-elif [ -x "$codex_bwrap" ]; then
-  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
-  echo "Using the sandbox helper bundled with Codex."
-else
-  echo "Sandbox helper not found."
-fi
 codex --version
 ```
 
@@ -63,7 +47,8 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `config/dojo-event.toml` selects the leaderboard event. The normal lab uses `self-paced`; event builds may replace it with a short event code.
 - `scripts/player` is installed as `player` and prints the assigned leaderboard name.
 - `scripts/tool_doctor.py` is an optional diagnostic for Codex CLI, OpenCode, Ollama, DefenseClaw, and model routes.
-- `scripts/install_ai_tools.sh` is an optional fallback installer. The DevNet guide shows the direct Codex and OpenCode install commands first.
+- `scripts/install_codex_cli.sh` and `scripts/install_opencode_cli.sh` install verified packages already staged in the DevNet image, without live downloads.
+- `scripts/install_ai_tools.sh` is an optional network fallback for development outside the DevNet image.
 - `scripts/setup_codex_devnet.py` creates a repo-local Codex config for the DevNet model route.
 - `scripts/start_codex_model_adapter.py` connects Codex to the lab model route.
 - `scripts/start_opencode_model_adapter.py` connects OpenCode to the lab model route.
@@ -101,25 +86,11 @@ In the DevNet lab image, the helper also checks the built-in `LLM_BASE_URL`, `LL
 
 ## Install and Use Codex CLI First
 
-Install Codex first with the official standalone installer:
+The DevNet image includes the official standalone package. Install it into your lab home without downloading it again:
 
 ```bash
-if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
-  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
-else
-  npm config set prefix "$HOME/.local"
-  npm install -g @openai/codex
-fi
+./scripts/install_codex_cli.sh
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
-codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
-if command -v bwrap >/dev/null 2>&1; then
-  echo "Using the system sandbox helper."
-elif [ -x "$codex_bwrap" ]; then
-  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
-  echo "Using the sandbox helper bundled with Codex."
-else
-  echo "Sandbox helper not found."
-fi
 codex --version
 ```
 
@@ -206,13 +177,7 @@ python3 -m dojo_app.maze_game \
 Later in the lab, install OpenCode and point it at the same model route for comparison:
 
 ```bash
-mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" .lab-state/opencode-download
-curl -fL --max-time 180 --progress-bar \
-  -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
-  https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
-tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
-install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
-ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
+./scripts/install_opencode_cli.sh
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py

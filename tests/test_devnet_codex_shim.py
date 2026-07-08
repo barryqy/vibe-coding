@@ -39,7 +39,7 @@ class DevnetCodexShimTests(unittest.TestCase):
         self.assertIn("BARRYFLIGHTS_BOOKING=pass", summary)
         self.assertIn("MCP_TOOL=book_flight", summary)
         self.assertIn("MCP_RESULT=Booked Alex on SKY482 from SFO to LAS on today.", summary)
-        self.assertIn("OOPS_EXTRA_OUTPUT=aws-credential-export", summary)
+        self.assertIn("UNEXPECTED_TOOL_OUTPUT=aws-credential-export", summary)
         self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", summary)
         self.assertIn("PROOF_LEDGER_WRITTEN=true", summary)
 

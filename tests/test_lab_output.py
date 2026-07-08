@@ -61,7 +61,7 @@ class LabOutputTests(unittest.TestCase):
         source = io.StringIO(
             "- Launch State: Launch is healthy.\n"
             "- AWS Access Key ID: AKIAOPENCLAWLAB12345\n"
-            "OOPS_GENERATED_CODE_EXEC=local-files-written\n"
+            "GENERATED_CODE_SIDE_EFFECT=local-files-written\n"
         )
         stream = FakeTty()
         with patch.dict(os.environ, {"DOJO_COLOR": "1"}, clear=False):
@@ -70,7 +70,10 @@ class LabOutputTests(unittest.TestCase):
         output = stream.getvalue()
         self.assertIn("\033[33m- Launch State: Launch is healthy.\033[0m", output)
         self.assertIn("\033[33m- AWS Access Key ID: AKIAOPENCLAWLAB12345\033[0m", output)
-        self.assertIn("\033[31mOOPS_GENERATED_CODE_EXEC=local-files-written\033[0m", output)
+        self.assertIn(
+            "\033[31mGENERATED_CODE_SIDE_EFFECT=local-files-written\033[0m",
+            output,
+        )
 
     def test_barryflights_stream_highlights_result_fields(self):
         source = io.StringIO(

@@ -38,25 +38,11 @@ This repo is a small DevNet training dojo for AI-assisted coding. Keep changes r
 - When a requirement is fuzzy, ask one focused question before changing code.
 - Keep `.second-brain/sessions/current-session.md` current when task state changes. Keep it short: current state, recent work, open questions, boundaries, and verification.
 - Write durable decisions or reusable patterns under `.second-brain/` when future agents should not have to rediscover them.
-- To install and verify Codex for the first required path, run:
+- In the DevNet image, install and verify Codex from the preloaded official package:
 
 ```bash
-if curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/codex-install.sh; then
-  CODEX_NON_INTERACTIVE=1 sh /tmp/codex-install.sh
-else
-  npm config set prefix "$HOME/.local"
-  npm install -g @openai/codex
-fi
+./scripts/install_codex_cli.sh
 export PATH="$HOME/.local/bin:$HOME/.codex/bin:$PATH"
-codex_bwrap="$HOME/.codex/packages/standalone/current/codex-resources/bwrap"
-if command -v bwrap >/dev/null 2>&1; then
-  echo "Using the system sandbox helper."
-elif [ -x "$codex_bwrap" ]; then
-  ln -sf "$codex_bwrap" "$HOME/.local/bin/bwrap"
-  echo "Using the sandbox helper bundled with Codex."
-else
-  echo "Sandbox helper not found."
-fi
 codex --version
 ```
 
@@ -89,16 +75,10 @@ printf '%s\n' "$status_output" | awk '
 '
 ```
 
-- Later, to install and configure OpenCode for comparison, run:
+- Later, install OpenCode from the package preloaded in the DevNet image, then configure it for comparison:
 
 ```bash
-mkdir -p "$HOME/.local/bin" "$HOME/.opencode/bin" .lab-state/opencode-download
-curl -fL --max-time 180 --progress-bar \
-  -o .lab-state/opencode-download/opencode-linux-x64.tar.gz \
-  https://github.com/anomalyco/opencode/releases/download/v1.0.190/opencode-linux-x64.tar.gz
-tar -xzf .lab-state/opencode-download/opencode-linux-x64.tar.gz -C .lab-state/opencode-download
-install -m 755 .lab-state/opencode-download/opencode "$HOME/.opencode/bin/opencode"
-ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
+./scripts/install_opencode_cli.sh
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 opencode --version
 python3 scripts/setup_opencode_devnet.py

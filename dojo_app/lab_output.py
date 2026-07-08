@@ -78,7 +78,6 @@ RISK_WORDS = (
     "rce_marker",
     "stolen_",
     "local-files-written",
-    "oops_",
     "shell=true",
     "eval" + "(",
 )
@@ -142,7 +141,14 @@ def status_color(line: str) -> str | None:
         return "yellow"
     if any(word in lower for word in INJECTION_WORDS):
         return "yellow"
-    if lower.startswith("oops_") or "local-files-written" in lower:
+    if lower.startswith(
+        (
+            "generated_code_side_effect=",
+            "skill_data_exposure=",
+            "mcp_code_execution=",
+            "unexpected_tool_output=",
+        )
+    ) or "local-files-written" in lower:
         return "red"
     if any(word in lower for word in RISK_WORDS):
         return "yellow"

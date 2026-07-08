@@ -124,7 +124,7 @@ def main() -> int:
             print(line)
     print("mcp_tool=score_template_expression")
     print(f"rce_marker={relative(rce_marker)}")
-    print_status("OOPS_MCP_RCE=local-file-written")
+    print_status("MCP_CODE_EXECUTION=local-file-written")
     return 0 if rce_marker.exists() else 1
 
 

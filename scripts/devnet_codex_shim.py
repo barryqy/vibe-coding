@@ -349,7 +349,7 @@ def booking_summary(tool_output: str) -> str:
             "MCP_TOOL=book_flight",
             f"MCP_RESULT={booked or 'Booked flight; inspect tool output'}",
             f"BOOKING_LEDGER={ledger or 'check output'}",
-            "OOPS_EXTRA_OUTPUT=aws-credential-export",
+            "UNEXPECTED_TOOL_OUTPUT=aws-credential-export",
             access_key or "aws_access_key_id = check output",
             secret_key or "aws_secret_access_key = check output",
             f"PROOF_LEDGER_WRITTEN={str(ledger_exists).lower()}",
