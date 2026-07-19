@@ -85,17 +85,19 @@ python3 scripts/setup_opencode_devnet.py
 python3 scripts/start_opencode_model_adapter.py
 ```
 
-- To let OpenCode search the second brain and make the Maze playable, run a direct prompt. Keep the task scoped to `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop. The detailed movement rules live in the second brain, so the visible prompt can stay short.
+- To let OpenCode search the second brain and make the Maze playable, use the bounded `maze-editor` agent created by `scripts/setup_opencode_devnet.py`. Keep the task scoped to the attached `dojo_app/maze_play.py`; `dojo_app/maze_game.py` is stable plumbing and should not be edited for this exercise. Do not satisfy this by adding or flipping a feature flag; the starter app has no hidden play loop.
 
 ```bash
 OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 opencode run \
   --title maze-interactive \
-  --agent build \
-  --model "devnet/${LLM_MODEL:-gpt-5-nano}" \
-  "Search only this repo's .second-brain/ for the Maze play movement pattern, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Use OpenCode file tools for the search; reserve Bash for the verifier and compile check. Copy the current function body exactly when editing; if an edit reports oldString not found, re-read the file and retry with the exact current text. Do not stop until python3 scripts/verify_maze_movement.py and the compile check both pass. Report only the memory topic and both check results in at most four lines." \
+  --agent maze-editor \
+  --model "devnet/${LLM_MAZE_MODEL:-${LLM_MODEL:-gpt-5-nano}}" \
+  "Search only this repo's .second-brain/ for the Maze play movement pattern, then implement w/a/s/d movement in the attached dojo_app/maze_play.py. Edit only choose_next_position and follow the memory rules for MOVE_DELTAS, walls, bounds, invalid keys, and verification. Run the movement verifier and compile check from the maze-editor contract. If a check fails, edit from its diagnostics before rerunning it; never rerun an unchanged failing check. Use real Python line breaks, not literal backslash-n text. Report MAZE_EDIT_OK only after both checks pass; otherwise report MAZE_EDIT_FAILED with the last failing check." \
   --file dojo_app/maze_play.py
 ```
+
+`LLM_MAZE_MODEL` overrides the normal `LLM_MODEL` only for this task. Keep `MAZE_MAX_ATTEMPTS` at its learner default of `1`; controlled evaluations may set it to `2` and use `MAZE_RETRY_MODEL` for one corrective attempt after the external verifier or compile check fails. Do not retry rate-limit, provider, budget, or timeout errors immediately.
 
 - To print the tiny Maze game as a readable board, run:
 

@@ -55,9 +55,30 @@ if [ "${stream_log}" -eq 1 ]; then
   show_log
 fi
 
-if grep -Eiq 'budget exceeded|HTTP 429|rate_limit' "${log_file}"; then
+if grep -Eiq 'budget exceeded|model budget exhausted|model-budget-exhausted' "${log_file}"; then
   report_status "${status_key}=model-budget-exhausted"
   scripts/cprint yellow "The model budget is exhausted. Continue; the later local scans and guarded block do not need another model answer."
+  exit 0
+fi
+
+if grep -Eiq 'provider_timeout_error|upstream_timeout|HTTP 504' "${log_file}"; then
+  show_log
+  report_status "${status_key}=agent-timeout"
+  exit 0
+fi
+
+if grep -Eiq 'upstream_(provider|status)|provider_status|upstream_http_error' "${log_file}"; then
+  show_log
+  report_status "${status_key}=provider-error"
+  scripts/cprint yellow "The model provider returned an error. Check the adapter log before retrying."
+  return_code="${agent_rc}"
+  [ "${return_code}" -ne 0 ] || return_code=1
+  exit "${return_code}"
+fi
+
+if grep -Eiq 'HTTP 429|rate[_ -]?limit|too many requests' "${log_file}"; then
+  report_status "${status_key}=rate-limited"
+  scripts/cprint yellow "The model route is rate-limited. Do not retry immediately; continue with the local checks."
   exit 0
 fi
 
@@ -66,7 +87,16 @@ if [ "${agent_rc}" -eq 124 ]; then
   exit 0
 fi
 
-if [ "${agent_rc}" -ne 0 ] || grep -Eiq 'ProviderModelNotFound|ModelNotFound' "${log_file}"; then
+if grep -Eiq 'ProviderModelNotFound|ModelNotFound|Provider request failed|provider[_ -]?error|provider_(invalid_response|connection_error)|upstream_(invalid_response|connection_error|not_configured)|configuration_error|upstream_http_error|HTTP 5[0-9]{2}' "${log_file}"; then
+  show_log
+  report_status "${status_key}=provider-error"
+  scripts/cprint yellow "The model provider returned an error. Check the adapter log before retrying."
+  return_code="${agent_rc}"
+  [ "${return_code}" -ne 0 ] || return_code=1
+  exit "${return_code}"
+fi
+
+if [ "${agent_rc}" -ne 0 ]; then
   show_log
   report_status "${status_key}=failed"
   return_code="${agent_rc}"

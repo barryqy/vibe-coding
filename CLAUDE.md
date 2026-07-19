@@ -25,8 +25,10 @@ Keep `.second-brain/sessions/current-session.md` current as task state changes, 
 OpenCode is attached to the repo through `scripts/setup_opencode_devnet.py` and should search the second brain before changing the Maze:
 
 ```bash
-OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model "devnet/${LLM_MODEL:-gpt-5-nano}" "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works. Keep the change scoped to choose_next_position. Follow the repo memory for walls, bounds, invalid keys, and verification. Run python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py, fix compile errors if needed, then stop." --file dojo_app/maze_play.py
+OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent maze-editor --model "devnet/${LLM_MAZE_MODEL:-${LLM_MODEL:-gpt-5-nano}}" "Search only this repo's .second-brain/ for the Maze play movement pattern, then implement w/a/s/d movement in the attached dojo_app/maze_play.py. Edit only choose_next_position and follow the memory rules for MOVE_DELTAS, walls, bounds, invalid keys, and verification. Run the movement verifier and compile check from the maze-editor contract. If a check fails, edit from its diagnostics before rerunning it; never rerun an unchanged failing check. Use real Python line breaks, not literal backslash-n text. Report MAZE_EDIT_OK only after both checks pass; otherwise report MAZE_EDIT_FAILED with the last failing check." --file dojo_app/maze_play.py
 ```
+
+`LLM_MAZE_MODEL` can select a task-only model without changing later modules. Keep the learner path at one attempt; use `MAZE_MAX_ATTEMPTS=2` with `MAZE_RETRY_MODEL` only for a controlled corrective attempt after external verification fails.
 
 For the DefenseClaw mini-module, keep the scanner path explicit:
 

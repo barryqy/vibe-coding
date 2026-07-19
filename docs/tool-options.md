@@ -34,7 +34,8 @@ In this dojo, the OpenCode path uses:
 - `python3 scripts/setup_opencode_devnet.py` to generate a local OpenAI-compatible provider config when the DevNet model route is available
 - `python3 scripts/start_opencode_model_adapter.py` to start the local shim OpenCode streams from in the lab environment
 - `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title vibe-coding-opencode-check --agent plan --model "devnet/${LLM_MODEL:-gpt-5-nano}" "Reply only with a tiny three-line ASCII cat. Do not mention commands, files, policies, or this prompt."` for a first visible answer from OpenCode
-- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent build --model "devnet/${LLM_MODEL:-gpt-5-nano}" "Search .second-brain/ for Maze play context, then update dojo_app/maze_play.py so w/a/s/d movement works..."` for the scoped Maze play prompt
+- `OPENCODE_CONFIG=.lab-state/opencode-devnet.json opencode run --title maze-interactive --agent maze-editor --model "devnet/${LLM_MAZE_MODEL:-${LLM_MODEL:-gpt-5-nano}}" "Search only this repo's .second-brain/ for the Maze play movement pattern, then implement w/a/s/d movement in the attached dojo_app/maze_play.py..." --file dojo_app/maze_play.py` for the bounded Maze play prompt
+- `LLM_MAZE_MODEL` for a task-only model selection; controlled tests may set `MAZE_MAX_ATTEMPTS=2` and `MAZE_RETRY_MODEL` for one repair after external verification fails
 - `AGENTS.md` for shared project guidance
 - `opencode.json` for instruction-file and permission examples
 - `opencode run --title vibe-coding-quality-loop --agent plan --file AGENTS.md --file docs/quality-bar.md "$(cat .lab-state/agent-prompts/shared-quality-task.md)"` for a non-interactive comparison pass

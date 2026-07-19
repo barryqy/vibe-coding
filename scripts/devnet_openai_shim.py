@@ -24,7 +24,20 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-vibe-coding-20260702-budget"
+SHIM_VERSION = "opencode-vibe-coding-20260719-fail-closed"
+MAX_UPSTREAM_ERROR_BYTES = 4096
+
+
+class InvalidClientRequest(ValueError):
+    pass
+
+
+class ModelRouteConfigurationError(RuntimeError):
+    pass
+
+
+class ProviderInvalidResponseError(RuntimeError):
+    pass
 
 
 def output_limit() -> int:
@@ -41,6 +54,13 @@ def route() -> dict[str, str]:
         "api_key": os.getenv("LLM_API_KEY", ""),
         "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
     }
+
+
+def advertised_models() -> list[str]:
+    default_model = route()["model"]
+    maze_model = os.getenv("LLM_MAZE_MODEL") or default_model
+    retry_model = os.getenv("MAZE_RETRY_MODEL") or maze_model
+    return list(dict.fromkeys([default_model, maze_model, retry_model]))
 
 
 def flatten_content(content) -> str:
@@ -83,11 +103,18 @@ def normalize_messages(messages) -> list[dict]:
     return clean
 
 
-def json_response(handler: BaseHTTPRequestHandler, status: int, body: dict) -> None:
+def json_response(
+    handler: BaseHTTPRequestHandler,
+    status: int,
+    body: dict,
+    extra_headers: dict[str, str] | None = None,
+) -> None:
     data = json.dumps(body).encode("utf-8")
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json")
     handler.send_header("Content-Length", str(len(data)))
+    for name, value in (extra_headers or {}).items():
+        handler.send_header(name, value)
     handler.end_headers()
     handler.wfile.write(data)
 
@@ -98,14 +125,20 @@ def read_json(handler: BaseHTTPRequestHandler) -> dict:
         length = int(raw_len)
     except ValueError:
         length = 0
-    body = handler.rfile.read(length).decode("utf-8")
-    return json.loads(body or "{}")
+    try:
+        body = handler.rfile.read(length).decode("utf-8")
+        payload = json.loads(body or "{}")
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise InvalidClientRequest("request body is not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise InvalidClientRequest("request body must be a JSON object")
+    return payload
 
 
 def call_devnet(body: dict) -> dict:
     config = route()
     if not config["base_url"] or not config["api_key"]:
-        raise RuntimeError("LLM_BASE_URL or LLM_API_KEY is missing")
+        raise ModelRouteConfigurationError("LLM_BASE_URL or LLM_API_KEY is missing")
 
     clean_body = dict(body)
     clean_body["stream"] = False
@@ -130,15 +163,103 @@ def call_devnet(body: dict) -> dict:
         method="POST",
     )
     with urllib.request.urlopen(request, timeout=45) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+        try:
+            payload = json.loads(response.read().decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ProviderInvalidResponseError("upstream response is not valid JSON") from exc
+        if not isinstance(payload, dict):
+            raise ProviderInvalidResponseError("upstream response must be a JSON object")
+        choices = payload.get("choices")
+        if (
+            not isinstance(choices, list)
+            or not choices
+            or not isinstance(choices[0], dict)
+            or not isinstance(choices[0].get("message"), dict)
+        ):
+            raise ProviderInvalidResponseError("upstream response is missing a completion message")
         return payload
 
 
-def http_error_message(exc: urllib.error.HTTPError) -> str:
-    body = exc.read().decode("utf-8", "replace").strip()
-    if body:
-        return f"HTTP {exc.code}: {body[:500]}"
-    return f"HTTP {exc.code}: {exc.reason}"
+def safe_error_text(raw: bytes) -> str:
+    text = raw.decode("utf-8", "replace")
+    return "".join(char for char in text if char in "\r\n\t" or ord(char) >= 32).strip()
+
+
+def safe_header_value(value, limit: int) -> str:
+    text = str(value)
+    clean = "".join(char if char.isalnum() or char in "-._:/" else "_" for char in text)
+    return clean[:limit]
+
+
+def retry_after_seconds(value) -> str:
+    text = str(value or "").strip()
+    if not text.isdigit():
+        return ""
+    return str(min(int(text), 3600))
+
+
+def error_field(value, default):
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value if value not in ("", None) else default
+    return default
+
+
+def upstream_http_error(exc: urllib.error.HTTPError) -> tuple[int, dict, dict[str, str]]:
+    status = exc.code if isinstance(exc.code, int) and 400 <= exc.code <= 599 else 502
+    headers = exc.headers
+    reason = exc.reason
+    try:
+        raw = exc.read(MAX_UPSTREAM_ERROR_BYTES + 1)
+    finally:
+        exc.close()
+    truncated = len(raw) > MAX_UPSTREAM_ERROR_BYTES
+    body_text = safe_error_text(raw[:MAX_UPSTREAM_ERROR_BYTES])
+
+    upstream_error = {}
+    if body_text:
+        try:
+            parsed = json.loads(body_text)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict) and isinstance(parsed.get("error"), dict):
+            upstream_error = parsed["error"]
+
+    default_message = body_text or str(reason or "upstream request failed")
+    error = {
+        "message": error_field(upstream_error.get("message"), default_message),
+        "type": error_field(upstream_error.get("type"), "upstream_http_error"),
+        "param": error_field(upstream_error.get("param"), None),
+        "code": error_field(upstream_error.get("code"), f"upstream_http_{status}"),
+        "upstream_status": status,
+    }
+    if body_text:
+        error["upstream_body"] = body_text
+    if truncated:
+        error["upstream_body_truncated"] = True
+
+    response_headers = {}
+    if headers:
+        request_id = (
+            headers.get("x-upstream-request-id")
+            or headers.get("x-request-id")
+            or headers.get("apim-request-id")
+        )
+        cache_status = headers.get("x-llm-cache")
+        retry_after = retry_after_seconds(headers.get("retry-after"))
+        provider = headers.get("x-upstream-provider")
+        provider_status = str(headers.get("x-upstream-status") or "").strip()
+        if request_id:
+            error["upstream_request_id"] = safe_header_value(request_id, 128)
+        if cache_status:
+            error["cache_status"] = safe_header_value(cache_status, 64)
+        if provider:
+            error["upstream_provider"] = safe_header_value(provider, 64)
+        if provider_status.isdigit() and 400 <= int(provider_status) <= 599:
+            error["provider_status"] = int(provider_status)
+        if retry_after:
+            error["retry_after_seconds"] = int(retry_after)
+            response_headers["Retry-After"] = retry_after
+    return status, {"error": error}, response_headers
 
 
 def has_tool_result(body: dict) -> bool:
@@ -154,27 +275,6 @@ def has_tool_result(body: dict) -> bool:
             if isinstance(part, dict) and "tool" in str(part.get("type", "")).lower():
                 return True
     return False
-
-
-def tool_result_fallback(body: dict) -> dict:
-    model = body.get("model") or route()["model"]
-    return {
-        "id": "chatcmpl-devnet-shim-tool-result",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": "Done. Please run the verification commands next.",
-                },
-                "finish_reason": "stop",
-            }
-        ],
-        "usage": None,
-    }
 
 
 def event_chunk(payload: dict) -> bytes:
@@ -257,8 +357,11 @@ class ShimHandler(BaseHTTPRequestHandler):
             json_response(self, 200, {"version": SHIM_VERSION})
             return
         if self.path.rstrip("/") == "/v1/models":
-            model = route()["model"]
-            json_response(self, 200, {"object": "list", "data": [{"id": model, "object": "model"}]})
+            models = [
+                {"id": model, "object": "model"}
+                for model in advertised_models()
+            ]
+            json_response(self, 200, {"object": "list", "data": models})
             return
         json_response(self, 404, {"error": {"message": "not found"}})
 
@@ -267,19 +370,93 @@ class ShimHandler(BaseHTTPRequestHandler):
             json_response(self, 404, {"error": {"message": "not found"}})
             return
 
-        request_body = {}
         try:
             request_body = read_json(self)
+        except InvalidClientRequest:
+            json_response(
+                self,
+                400,
+                {
+                    "error": {
+                        "message": "request body must be valid JSON object",
+                        "type": "invalid_request_error",
+                        "code": "invalid_json",
+                    }
+                },
+            )
+            return
+
+        try:
             payload = call_devnet(request_body)
         except urllib.error.HTTPError as exc:
-            if has_tool_result(request_body):
-                payload = tool_result_fallback(request_body)
-            else:
-                message = http_error_message(exc)
-                json_response(self, 400, {"error": {"message": message}})
-                return
-        except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:
-            json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
+            status, error_body, response_headers = upstream_http_error(exc)
+            error = error_body["error"]
+            print(
+                " ".join(
+                    [
+                        "OPENCODE_UPSTREAM_HTTP_ERROR",
+                        f"status={status}",
+                        f"tool_result={'yes' if has_tool_result(request_body) else 'no'}",
+                        f"stream={'yes' if request_body.get('stream') else 'no'}",
+                        f"request_id={error.get('upstream_request_id', 'unknown')}",
+                        f"cache={error.get('cache_status', 'unknown')}",
+                    ]
+                ),
+                flush=True,
+            )
+            json_response(self, status, error_body, response_headers)
+            return
+        except TimeoutError:
+            json_response(
+                self,
+                504,
+                {
+                    "error": {
+                        "message": "the lab model request timed out",
+                        "type": "provider_timeout_error",
+                        "code": "upstream_timeout",
+                    }
+                },
+            )
+            return
+        except (urllib.error.URLError, OSError):
+            json_response(
+                self,
+                502,
+                {
+                    "error": {
+                        "message": "the lab model endpoint is unavailable",
+                        "type": "provider_connection_error",
+                        "code": "upstream_connection_error",
+                    }
+                },
+            )
+            return
+        except ProviderInvalidResponseError:
+            json_response(
+                self,
+                502,
+                {
+                    "error": {
+                        "message": "the lab model returned an invalid response",
+                        "type": "provider_invalid_response",
+                        "code": "upstream_invalid_response",
+                    }
+                },
+            )
+            return
+        except ModelRouteConfigurationError:
+            json_response(
+                self,
+                503,
+                {
+                    "error": {
+                        "message": "the lab model route is not configured",
+                        "type": "configuration_error",
+                        "code": "upstream_not_configured",
+                    }
+                },
+            )
             return
 
         if request_body.get("stream"):

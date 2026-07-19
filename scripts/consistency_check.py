@@ -49,8 +49,10 @@ REQUIRED_FILES = [
     Path("scripts/start_codex_model_adapter.py"),
     Path("scripts/setup_codex_devnet.py"),
     Path("scripts/devnet_openai_shim.py"),
+    Path("tests/test_devnet_openai_shim.py"),
     Path("scripts/start_opencode_model_adapter.py"),
     Path("scripts/setup_opencode_devnet.py"),
+    Path("tests/test_setup_opencode_devnet.py"),
     Path("scripts/first_agent_result.py"),
     Path("scripts/verify_ai_tools.py"),
     Path("scripts/install_defenseclaw_cli.sh"),
@@ -93,6 +95,7 @@ def main() -> int:
     claude = (root / "CLAUDE.md").read_text(encoding="utf-8") if (root / "CLAUDE.md").exists() else ""
     readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").exists() else ""
     quality = (root / "docs/quality-bar.md").read_text(encoding="utf-8") if (root / "docs/quality-bar.md").exists() else ""
+    tool_options = (root / "docs/tool-options.md").read_text(encoding="utf-8")
     install_script = (root / "scripts/install_ai_tools.sh").read_text(encoding="utf-8")
     codex_installer = (root / "scripts/install_codex_cli.sh").read_text(encoding="utf-8")
     opencode_installer = (root / "scripts/install_opencode_cli.sh").read_text(encoding="utf-8")
@@ -118,6 +121,9 @@ def main() -> int:
     dojo_setup = (root / "scripts/setup_dojo.sh").read_text(encoding="utf-8") if (root / "scripts/setup_dojo.sh").exists() else ""
     dojo_install = (root / "scripts/install_dojo_cli.sh").read_text(encoding="utf-8") if (root / "scripts/install_dojo_cli.sh").exists() else ""
     dojo_event = (root / "config/dojo-event.toml").read_text(encoding="utf-8") if (root / "config/dojo-event.toml").exists() else ""
+    maze_verifier = (root / "scripts/verify_maze_movement.py").read_text(encoding="utf-8")
+    opencode_shim = (root / "scripts/devnet_openai_shim.py").read_text(encoding="utf-8")
+    run_agent_checked = (root / "scripts/run_agent_checked.sh").read_text(encoding="utf-8")
 
     require("scripts/check_repo.py" in agents, "AGENTS.md must require the repo check command", errors)
     require("scripts/security_review.py" in agents, "AGENTS.md must mention the security review", errors)
@@ -361,6 +367,43 @@ def main() -> int:
         errors,
     )
     require(
+        'MAZE_AGENT_NAME = "maze-editor"' in opencode_setup
+        and "MAZE_AGENT_MAX_STEPS = 16" in opencode_setup
+        and "Never rerun an unchanged failing check" in opencode_setup,
+        "setup_opencode_devnet.py must keep the bounded Maze task agent",
+        errors,
+    )
+    require(
+        all("--agent maze-editor" in text for text in (agents, readme, claude, tool_options)),
+        "agent guidance must use the bounded Maze task agent",
+        errors,
+    )
+    require(
+        all(
+            "--file dojo_app/maze_play.py" in text
+            for text in (agents, readme, claude, tool_options)
+        ),
+        "agent guidance must attach the Maze play target",
+        errors,
+    )
+    require(
+        all(
+            "LLM_MAZE_MODEL" in text
+            and "MAZE_MAX_ATTEMPTS" in text
+            and "MAZE_RETRY_MODEL" in text
+            for text in (agents, readme, claude, tool_options)
+        ),
+        "agent guidance must keep the Maze model and bounded retry controls aligned",
+        errors,
+    )
+    require(
+        "MAZE_MOVEMENT_CHECK=pass" in maze_verifier
+        and "MAZE_MOVEMENT_CHECK=fail" in maze_verifier
+        and "expected={expected} actual={actual!r}" in maze_verifier,
+        "the Maze movement verifier must print actionable diagnostics",
+        errors,
+    )
+    require(
         "kb_search=.second-brain" in opencode_setup,
         "setup_opencode_devnet.py must tell learners OpenCode should search the KB",
         errors,
@@ -418,9 +461,28 @@ def main() -> int:
     )
     require(
         "LAB_LLM_MAX_OUTPUT_TOKENS" in codex_shim
-        and "LAB_LLM_MAX_OUTPUT_TOKENS"
-        in (root / "scripts/devnet_openai_shim.py").read_text(encoding="utf-8"),
+        and "LAB_LLM_MAX_OUTPUT_TOKENS" in opencode_shim,
         "both model adapters must enforce the lab output budget",
+        errors,
+    )
+    require(
+        "tool_result_fallback" not in opencode_shim
+        and "Done. Please run the verification commands next." not in opencode_shim
+        and "json_response(self, status, error_body, response_headers)" in opencode_shim,
+        "the OpenCode adapter must keep upstream HTTP errors fail-closed",
+        errors,
+    )
+    require(
+        "=model-budget-exhausted" in run_agent_checked
+        and "=rate-limited" in run_agent_checked
+        and "=provider-error" in run_agent_checked
+        and "=agent-timeout" in run_agent_checked,
+        "run_agent_checked.sh must classify budget, rate, provider, and timeout separately",
+        errors,
+    )
+    require(
+        "budget exceeded|HTTP 429|rate_limit" not in run_agent_checked,
+        "run_agent_checked.sh must not report rate limits as exhausted budget",
         errors,
     )
     require(
