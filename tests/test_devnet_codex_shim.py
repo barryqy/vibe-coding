@@ -1,14 +1,148 @@
 from __future__ import annotations
 
+import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts import devnet_codex_shim
+from scripts import devnet_codex_shim, setup_codex_devnet
 
 
 class DevnetCodexShimTests(unittest.TestCase):
+    def test_requested_model_reaches_the_upstream_proxy(self):
+        captured = {}
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def read(self):
+                return b'{"choices":[{"message":{"content":"ok"}}]}'
+
+        def fake_urlopen(request, timeout):
+            captured.update(json.loads(request.data.decode("utf-8")))
+            return FakeResponse()
+
+        route = {
+            "base_url": "https://llm.example.test/v1",
+            "api_key": "test-key",
+            "model": "gpt-5-nano-cache",
+        }
+        body = {
+            "model": "gpt-5-cache",
+            "input": [{"role": "user", "content": "test"}],
+        }
+
+        with patch.dict(
+            os.environ,
+            {"LLM_KEY_MODELS": "gpt-5-nano-cache,gpt-5-cache"},
+            clear=False,
+        ):
+            with patch.object(devnet_codex_shim, "route", return_value=route):
+                with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+                    devnet_codex_shim.call_devnet(body)
+
+        self.assertEqual(captured["model"], "gpt-5-cache")
+
+    def test_absent_model_uses_the_configured_default(self):
+        route = {
+            "base_url": "https://llm.example.test/v1",
+            "api_key": "test-key",
+            "model": "gpt-5-nano-cache",
+        }
+
+        self.assertEqual(
+            devnet_codex_shim.requested_model({}, route),
+            "gpt-5-nano-cache",
+        )
+
+    def test_unapproved_model_is_rejected(self):
+        route = {
+            "base_url": "https://llm.example.test/v1",
+            "api_key": "test-key",
+            "model": "gpt-5-nano-cache",
+        }
+        env = {"LLM_KEY_MODELS": "gpt-5-nano-cache,gpt-5-cache"}
+
+        with patch.dict(os.environ, env, clear=False):
+            with self.assertRaisesRegex(RuntimeError, "not allowed"):
+                devnet_codex_shim.requested_model(
+                    {"model": "unapproved-model"},
+                    route,
+                )
+
+    def test_codex_catalog_includes_key_allowed_models(self):
+        env = {
+            "LLM_KEY_MODELS": '["gpt-5-nano-cache", "gpt-5-cache"]',
+        }
+        with patch.dict(os.environ, env, clear=False):
+            models = setup_codex_devnet.configured_models("gpt-5-nano-cache")
+
+        catalog = setup_codex_devnet.model_catalog(models)
+        self.assertEqual(
+            [item["slug"] for item in catalog["models"]],
+            ["gpt-5-nano-cache", "gpt-5-cache"],
+        )
+
+    def test_route_fingerprint_changes_with_routing_environment(self):
+        base_env = {
+            "LLM_BASE_URL": "https://llm.example.test/v1",
+            "LLM_API_KEY": "first-key",
+            "LLM_MODEL": "gpt-5-nano-cache",
+            "LLM_KEY_MODELS": "gpt-5-nano-cache,gpt-5-cache",
+        }
+        with patch.dict(os.environ, base_env, clear=False):
+            first = devnet_codex_shim.route_fingerprint()
+
+        changed_env = {**base_env, "LLM_API_KEY": "second-key"}
+        with patch.dict(os.environ, changed_env, clear=False):
+            second = devnet_codex_shim.route_fingerprint()
+
+        self.assertNotEqual(first, second)
+
+    def test_ready_rejects_an_adapter_with_stale_routing(self):
+        class FakeResponse:
+            status = 200
+
+            def __init__(self, fingerprint):
+                self.fingerprint = fingerprint
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def read(self):
+                return json.dumps(
+                    {
+                        "version": devnet_codex_shim.SHIM_VERSION,
+                        "route_fingerprint": self.fingerprint,
+                    }
+                ).encode("utf-8")
+
+        with patch.object(
+            devnet_codex_shim,
+            "route_fingerprint",
+            return_value="current-route",
+        ):
+            with patch(
+                "urllib.request.urlopen",
+                return_value=FakeResponse("old-route"),
+            ):
+                self.assertFalse(devnet_codex_shim.ready("127.0.0.1", 8776))
+
+            with patch(
+                "urllib.request.urlopen",
+                return_value=FakeResponse("current-route"),
+            ):
+                self.assertTrue(devnet_codex_shim.ready("127.0.0.1", 8776))
+
     def test_developer_context_stays_out_of_user_content(self):
         body = {
             "input": [

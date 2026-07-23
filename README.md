@@ -241,6 +241,21 @@ python3 scripts/run_risky_skill_demo.py
 python3 scripts/run_risky_mcp_demo.py
 ```
 
+The controlled context-attack exercise uses `scripts/run_context_attack.sh`.
+It returns success only after the disclosure evidence is observed. A semantic
+`check-output` result gets one retry with a sanitized pod-specific session hint;
+empty responses and rate-limit, provider, budget, timeout, or configuration
+failures do not. The first request stays identical across learners so the normal
+cached workload is preserved.
+
+Codex uses `LLM_MODEL` as its default. If `LLM_KEY_MODELS` advertises additional
+aliases, `codex exec --model <alias>` can select one for a task; the local
+adapter rejects unlisted aliases and forwards an approved alias unchanged. Its
+readiness check also fingerprints the routing environment so setup restarts an
+adapter that still has stale model, key, URL, or output-limit settings.
+`LLM_CONTEXT_ATTACK_MODEL` applies an approved alias only to the controlled
+context-attack task.
+
 Then install the pinned DefenseClaw CLI path and scan one intentionally unsafe skill, one clean skill, and the malicious MCP server:
 
 ```bash

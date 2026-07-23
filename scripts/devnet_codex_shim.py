@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import signal
@@ -30,7 +31,7 @@ PID = STATE / "devnet-codex-shim.pid"
 GUARDRAIL_MARKER = STATE / "defenseclaw" / "guardrail-configured"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "vibe-coding-budget-guardrails-20260702"
+SHIM_VERSION = "vibe-coding-model-routing-20260723"
 
 
 def output_limit() -> int:
@@ -47,6 +48,53 @@ def route() -> dict[str, str]:
         "api_key": os.getenv("LLM_API_KEY", ""),
         "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
     }
+
+
+def configured_models(default_model: str) -> list[str]:
+    models = [default_model]
+    raw_models = os.getenv("LLM_KEY_MODELS", "")
+    try:
+        decoded = json.loads(raw_models)
+    except json.JSONDecodeError:
+        candidates = raw_models.replace(",", " ").split()
+    else:
+        candidates = decoded if isinstance(decoded, list) else [decoded]
+
+    for candidate in candidates:
+        if not isinstance(candidate, str):
+            continue
+        candidate = candidate.strip()
+        if not candidate or candidate == "*":
+            continue
+        if not all(char.isalnum() or char in "-._:/" for char in candidate):
+            continue
+        if candidate not in models:
+            models.append(candidate)
+    return models
+
+
+def requested_model(body: dict, config: dict[str, str] | None = None) -> str:
+    config = config or route()
+    requested = body.get("model") or config["model"]
+    if not isinstance(requested, str):
+        raise RuntimeError("requested model must be a string")
+
+    if requested not in configured_models(config["model"]):
+        raise RuntimeError(f"requested model is not allowed: {requested}")
+    return requested
+
+
+def route_fingerprint() -> str:
+    config = route()
+    fingerprint_data = {
+        "base_url": config["base_url"],
+        "key_hash": hashlib.sha256(config["api_key"].encode("utf-8")).hexdigest(),
+        "model": config["model"],
+        "models": configured_models(config["model"]),
+        "output_limit": output_limit(),
+    }
+    raw = json.dumps(fingerprint_data, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def json_response(handler: BaseHTTPRequestHandler, status: int, body: dict) -> None:
@@ -162,7 +210,7 @@ def call_devnet(body: dict) -> dict:
         raise RuntimeError("LLM_BASE_URL or LLM_API_KEY is missing")
 
     messages = response_input_to_messages(body)
-    model = config["model"]
+    model = requested_model(body, config)
     try:
         requested_tokens = int(body.get("max_output_tokens", output_limit()))
         max_tokens = min(max(requested_tokens, 1), output_limit())
@@ -693,11 +741,29 @@ class ShimHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path.rstrip("/") == "/v1/devnet-shim-info":
-            json_response(self, 200, {"version": SHIM_VERSION})
+            json_response(
+                self,
+                200,
+                {
+                    "version": SHIM_VERSION,
+                    "route_fingerprint": route_fingerprint(),
+                },
+            )
             return
         if self.path.rstrip("/") == "/v1/models":
-            model = route()["model"]
-            json_response(self, 200, {"object": "list", "data": [{"id": model, "object": "model"}]})
+            default_model = route()["model"]
+            models = configured_models(default_model)
+            json_response(
+                self,
+                200,
+                {
+                    "object": "list",
+                    "data": [
+                        {"id": model, "object": "model"}
+                        for model in models
+                    ],
+                },
+            )
             return
         json_response(self, 404, {"error": {"message": "not found"}})
 
@@ -708,6 +774,7 @@ class ShimHandler(BaseHTTPRequestHandler):
 
         try:
             request_body = read_json(self)
+            requested_model(request_body)
             guarded = guarded_response(request_body)
             if guarded is not None:
                 stream_responses_api(
@@ -780,7 +847,8 @@ class ShimHandler(BaseHTTPRequestHandler):
             json_response(self, 400, {"error": {"message": message}})
             return
         except (RuntimeError, urllib.error.URLError, json.JSONDecodeError) as exc:
-            json_response(self, 400, {"error": {"message": exc.__class__.__name__}})
+            message = str(exc) or exc.__class__.__name__
+            json_response(self, 400, {"error": {"message": message}})
             return
 
         stream_responses_api(self, request_body, payload)
@@ -792,7 +860,10 @@ def ready(host: str, port: int) -> bool:
             if response.status != 200:
                 return False
             body = json.loads(response.read().decode("utf-8"))
-            return body.get("version") == SHIM_VERSION
+            return (
+                body.get("version") == SHIM_VERSION
+                and body.get("route_fingerprint") == route_fingerprint()
+            )
     except Exception:
         return False
 

@@ -136,12 +136,35 @@ def ensure_mcp_config() -> None:
     CONFIG.write_text(mcp_config_text(), encoding="utf-8")
 
 
-def model_catalog(model: str) -> dict:
+def configured_models(model: str) -> list[str]:
+    models = [model]
+    raw_models = os.getenv("LLM_KEY_MODELS", "")
+    try:
+        decoded = json.loads(raw_models)
+    except json.JSONDecodeError:
+        candidates = raw_models.replace(",", " ").split()
+    else:
+        candidates = decoded if isinstance(decoded, list) else [decoded]
+
+    for candidate in candidates:
+        if not isinstance(candidate, str):
+            continue
+        candidate = candidate.strip()
+        if not candidate or candidate == "*":
+            continue
+        if not all(char.isalnum() or char in "-._:/" for char in candidate):
+            continue
+        if candidate not in models:
+            models.append(candidate)
+    return models
+
+
+def model_catalog(models: list[str]) -> dict:
     return {
         "models": [
             {
                 "slug": model,
-                "display_name": "DevNet Lab Model",
+                "display_name": f"DevNet Lab Model ({model})",
                 "description": "Model supplied by the DevNet learning lab.",
                 "default_reasoning_level": "none",
                 "supported_reasoning_levels": [],
@@ -169,6 +192,7 @@ def model_catalog(model: str) -> dict:
                     },
                 },
             }
+            for model in models
         ]
     }
 
@@ -177,6 +201,7 @@ def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
     model = os.getenv("LLM_MODEL", "gpt-5-nano")
+    models = configured_models(model)
     try:
         output_limit = int(os.getenv("LAB_LLM_MAX_OUTPUT_TOKENS", "512"))
     except ValueError:
@@ -195,7 +220,7 @@ def main() -> int:
     HOME.mkdir(parents=True, exist_ok=True)
     install_mazemaker_skill()
     MODEL_CATALOG.write_text(
-        json.dumps(model_catalog(model), indent=2) + "\n",
+        json.dumps(model_catalog(models), indent=2) + "\n",
         encoding="utf-8",
     )
     CONFIG.write_text(
@@ -226,6 +251,7 @@ def main() -> int:
     print_status(f"codex_home={HOME.relative_to(ROOT)}")
     print_status(f"config={CONFIG.relative_to(ROOT)}")
     print_status(f"model={model}")
+    print_status(f"models={','.join(models)}")
     print_status(f"model_output_limit={output_limit}")
     print_status(f"model_catalog={MODEL_CATALOG.relative_to(ROOT)}")
     print_status("model_context_window=128000")
