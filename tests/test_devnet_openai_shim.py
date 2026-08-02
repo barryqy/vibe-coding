@@ -155,6 +155,49 @@ class DevnetOpenAIShimTests(unittest.TestCase):
             response.close()
         return code, content_type, payload, retry_after
 
+    def test_cache_alias_rewrite_is_limited_to_production(self):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def read(self):
+                return b'{"choices":[{"message":{"content":"ok"}}]}'
+
+        body = {
+            "model": "gpt-5-nano-cache",
+            "messages": [{"role": "user", "content": "test"}],
+        }
+        cases = (
+            ("https://devnet.cisco.com/v1/llmproxy", "gpt-5-nano"),
+            (
+                "https://devnet-testing.cisco.com/v1/llmproxy",
+                "gpt-5-nano-cache",
+            ),
+        )
+
+        for base_url, expected_model in cases:
+            with self.subTest(base_url=base_url):
+                captured = {}
+
+                def fake_urlopen(request, timeout):
+                    captured.update(json.loads(request.data.decode("utf-8")))
+                    return FakeResponse()
+
+                route = {
+                    "base_url": base_url,
+                    "api_key": "test-key",
+                    "model": "gpt-5-nano-cache",
+                }
+                with patch.object(devnet_openai_shim, "route", return_value=route):
+                    with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+                        devnet_openai_shim.call_devnet(body)
+
+                self.assertEqual(captured["model"], expected_model)
+                self.assertEqual(body["model"], "gpt-5-nano-cache")
+
     def test_models_include_task_and_retry_overrides(self):
         env = {
             "LLM_MAZE_MODEL": "gpt-5-cache",

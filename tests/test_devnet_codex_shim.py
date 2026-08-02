@@ -11,6 +11,40 @@ from scripts import devnet_codex_shim, setup_codex_devnet
 
 
 class DevnetCodexShimTests(unittest.TestCase):
+    def test_production_cache_alias_reaches_upstream_as_supported_model(self):
+        captured = {}
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def read(self):
+                return b'{"choices":[{"message":{"content":"ok"}}]}'
+
+        def fake_urlopen(request, timeout):
+            captured.update(json.loads(request.data.decode("utf-8")))
+            return FakeResponse()
+
+        route = {
+            "base_url": "https://devnet.cisco.com/v1/llmproxy",
+            "api_key": "test-key",
+            "model": "gpt-5-nano-cache",
+        }
+        body = {
+            "model": "gpt-5-nano-cache",
+            "input": [{"role": "user", "content": "test"}],
+        }
+
+        with patch.dict(os.environ, {"LLM_KEY_MODELS": "gpt-5-nano-cache"}):
+            with patch.object(devnet_codex_shim, "route", return_value=route):
+                with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+                    devnet_codex_shim.call_devnet(body)
+
+        self.assertEqual(captured["model"], "gpt-5-nano")
+
     def test_requested_model_reaches_the_upstream_proxy(self):
         captured = {}
 
