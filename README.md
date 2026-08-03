@@ -62,7 +62,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `samples/guardrails/`, `samples/skills/`, and `samples/mcp/` contain the DefenseClaw scenario and admission-gate examples.
 - `.second-brain/` is a small durable-memory starter for reusable decisions, project notes, cross-tool session notes, and the MazeMaker skill pattern.
 
-The setup script installs `dojo` into `~/.local/bin`, assigns a unique player name, and joins the self-paced leaderboard. Player names cannot be changed. Use `player` to recall the assigned name, or run `dojo challenges`, `dojo status`, or `dojo leaderboard` at any point.
+The setup script installs `dojo` into `~/.local/bin`, assigns a unique player name, and joins the leaderboard selected in `config/dojo-event.toml`. Player names cannot be changed. Use `player` to recall the assigned name, or run `dojo challenges`, `dojo status`, or `dojo leaderboard` at any point.
 
 ## Optional Model Routes
 

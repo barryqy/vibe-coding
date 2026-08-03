@@ -21,6 +21,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
 - `scripts/check_repo.py` is the repo-level verification command.
+- `config/dojo-event.toml` is the only leaderboard event selector used by `dojo join`.
 - `scripts/devnet_model_route.py` contains the exact production-only cache alias fallback shared by the Codex and OpenCode adapters.
 
 ## Boundaries
@@ -31,6 +32,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - Do not add network calls, credential reads, shell clear commands, curses, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.
+- Keep event switches limited to `config/dojo-event.toml` and the matching repository guard.
 - Keep production model fallbacks exact to the known production endpoint. Staging and unrelated endpoints must pass requested models through unchanged.
 
 ## Verification

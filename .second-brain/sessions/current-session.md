@@ -17,6 +17,7 @@ status: active
 - The second brain is shared context for any agent that works in this repo.
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters apply a production-only fallback for cache model aliases that the production proxy does not yet accept. Staging aliases stay unchanged.
+- The active leaderboard event is `dry-run` for the August 3 staging rehearsal.
 
 ## Recent Work
 
@@ -25,6 +26,7 @@ status: active
 - OpenCode config should load only top-level repo instructions, not exact second-brain memory files.
 - The lab now keeps OpenCode visible in the play exercise: OpenCode adds movement, the command compiles the Maze files, and the same block launches the interactive Maze.
 - Added endpoint-aware model routing at both outbound adapter boundaries and bumped both adapter versions so setup replaces stale processes.
+- Switched `config/dojo-event.toml` and its repository guard from `self-paced` to `dry-run`; restore both after the rehearsal.
 
 ## Open Questions
 
