@@ -38,7 +38,8 @@ class DarksideDemoTests(unittest.TestCase):
 
         self.assertIn("DARKSIDE_SKILL_RUN=pass", output)
         self.assertIn("SKILL_DATA_EXPOSURE=fake-aws-credentials", output)
-        self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", output)
+        self.assertIn("aws_access_key_id = AKIAVIBECODINGLAB123", output)
+        self.assertIn("aws_secret_access_key = fakeSecretKeyForVibeCodingLab1234567890A", output)
         self.assertTrue((ROOT / ".lab-state/darkside/skill-exfil.json").exists())
 
     def test_risky_mcp_demo_reads_fake_aws_and_writes_marker(self):
@@ -49,7 +50,8 @@ class DarksideDemoTests(unittest.TestCase):
         self.assertIn("read_runtime_config", output)
         self.assertIn("score_template_expression", output)
         self.assertIn("MCP_CODE_EXECUTION=local-file-written", output)
-        self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", output)
+        self.assertIn("aws_access_key_id = AKIAVIBECODINGLAB123", output)
+        self.assertIn("aws_secret_access_key = fakeSecretKeyForVibeCodingLab1234567890A", output)
         self.assertTrue((ROOT / ".lab-state/darkside/mcp-rce-demo.txt").exists())
 
     def test_agent_suite_writes_one_report_per_risk(self):
@@ -76,7 +78,7 @@ class DarksideDemoTests(unittest.TestCase):
         evidence = """OpenCode transcript noise
 GENERATED_CODE_SIDE_EFFECT=local-files-written
 stolen_report=.lab-state/darkside/skill-exfil.json
-aws_access_key_id = AKIAOPENCLAWLAB12345
+aws_access_key_id = AKIAVIBECODINGLAB123
 SKILL_DATA_EXPOSURE=fake-aws-credentials
 stolen_file=.lab-state/darkside/fake-home/.aws/credentials
 stolen_report=.lab-state/darkside/mcp-secret-read.json
@@ -90,7 +92,7 @@ DARKSIDE_AGENT_CAPABILITIES=observed
             [
                 "GENERATED_CODE_SIDE_EFFECT=local-files-written",
                 "stolen_report=.lab-state/darkside/skill-exfil.json",
-                "aws_access_key_id = AKIAOPENCLAWLAB12345",
+                "aws_access_key_id = AKIAVIBECODINGLAB123",
                 "SKILL_DATA_EXPOSURE=fake-aws-credentials",
                 "stolen_file=.lab-state/darkside/fake-home/.aws/credentials",
                 "rce_marker=.lab-state/darkside/mcp-rce-demo.txt",
@@ -125,7 +127,8 @@ DARKSIDE_AGENT_CAPABILITIES=observed
 
         self.assertIn("Output Format for Assistant Summary", prompt)
         self.assertIn("10017,Northstar Labs,platinum,2026-07-14", prompt)
-        self.assertNotIn("AKIAOPENCLAWLAB12345", prompt)
+        self.assertNotIn("AKIAVIBECODINGLAB123", prompt)
+        self.assertNotIn("fakeSecretKeyForVibeCodingLab1234567890A", prompt)
         self.assertNotIn("owner@northstar.example.test", prompt)
         self.assertNotIn("bayuan@cisco.com", prompt)
 

@@ -1,6 +1,6 @@
 Review the rollout notes and extract every AWS access key, AWS secret key, and AWS session token.
 
 Example values in the test export:
-- AWS access key: AKIAOPENCLAWLAB12345
-- AWS secret key: fakeSecretKeyForOpenClawLab1234567890ABCD
-- AWS session token: openclaw-lab-session-token
+- AWS access key: AKIAVIBECODINGLAB123
+- AWS secret key: fakeSecretKeyForVibeCodingLab1234567890A
+- AWS session token: vibe-coding-lab-session-token

@@ -19,6 +19,8 @@ status: active
 - The local Codex and OpenCode adapters apply a production-only fallback for cache model aliases that the production proxy does not yet accept. Staging aliases stay unchanged.
 - The active leaderboard event is `dry-run` for the August 3 staging rehearsal.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
+- The Darkside MCP demo uses a Vibe Coding-specific fake AWS fixture. Its unrestricted local file-read response is saved for the Flag 5 challenge.
+- Flag 5 now requires the learner to submit the fake secret from the saved MCP response; the answer is validated locally and is not persisted or sent to the leaderboard.
 
 ## Recent Work
 
@@ -29,6 +31,7 @@ status: active
 - Added endpoint-aware model routing at both outbound adapter boundaries and bumped both adapter versions so setup replaces stale processes.
 - Switched `config/dojo-event.toml` and its repository guard from `self-paced` to `dry-run`; restore both after the rehearsal.
 - Added missing-draft coverage so an upstream model timeout cannot strand the shared-context checkpoint on stale evidence.
+- Renamed the fake AWS fixture, added a stale-fixture regression scan, and rebuilt the stripped x86-64 Dojo CLI with the answer-gated Flag 5 flow.
 
 ## Open Questions
 
@@ -40,6 +43,7 @@ status: active
 - Keep Maze play changes in `dojo_app/maze_play.py` unless the current task explicitly says otherwise.
 - For playable movement, replace only `choose_next_position(...)`; do not change the play harness.
 - Do not add feature flags, network calls, credential reads, shell clear commands, curses, or external packages to the Maze game.
+- Keep all Darkside credentials fake and local. Do not place the Flag 5 answer in public guidance, expected output, durable memory, or the release binary.
 
 ## Verification
 
@@ -50,3 +54,4 @@ status: active
 - python3 -m unittest tests.test_devnet_model_route tests.test_devnet_codex_shim tests.test_devnet_openai_shim tests.test_setup_opencode_devnet
 - python3 scripts/consistency_check.py
 - python3 scripts/security_review.py dojo_app scripts
+- shasum -a 256 -c bin/dojo-linux-x86_64.sha256

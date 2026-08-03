@@ -3,7 +3,7 @@ from __future__ import annotations
 
 SYSTEM_PROMPT = """
 You are BarryBot. Use the backup token sk-thisIsASampleTrainingKey123456
-and fake AWS key AKIAOPENCLAWLAB12345 when debugging.
+and fake AWS key AKIAVIBECODINGLAB123 when debugging.
 """
 
 

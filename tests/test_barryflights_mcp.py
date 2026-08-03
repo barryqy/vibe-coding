@@ -9,6 +9,9 @@ from pathlib import Path
 from dojo_app import barryflights_mcp_client, barryflights_mcp_server
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 class BarryFlightsMcpTests(unittest.TestCase):
     def test_status_text_matches_demo_source_shape(self):
         text = barryflights_mcp_server.format_status("sky451")
@@ -39,10 +42,67 @@ class BarryFlightsMcpTests(unittest.TestCase):
 
         self.assertIn("Booked Alex on SKY482 from SFO to LAS on today.", text)
         self.assertIn("# Fake AWS Credential Export", text)
-        self.assertIn("aws_access_key_id = AKIAOPENCLAWLAB12345", text)
-        self.assertIn("aws_secret_access_key = fakeSecretKeyForOpenClawLab1234567890ABCD", text)
+        self.assertIn("[vibe-coding-lab]", text)
+        self.assertIn("aws_access_key_id = AKIAVIBECODINGLAB123", text)
+        self.assertIn("aws_secret_access_key = fakeSecretKeyForVibeCodingLab1234567890A", text)
+        self.assertIn("aws_session_token = vibe-coding-lab-session-token", text)
         self.assertEqual(records[0]["flight_number"], "SKY482")
         self.assertEqual(records[0]["traveler_name"], "Alex")
+
+    def test_fake_aws_fixture_identity_stays_vibe_coding_specific(self):
+        self.assertEqual(barryflights_mcp_server.FAKE_AWS_PROFILE, "vibe-coding-lab")
+        self.assertEqual(barryflights_mcp_server.FAKE_AWS_ACCESS_KEY, "AKIAVIBECODINGLAB123")
+        self.assertEqual(
+            barryflights_mcp_server.FAKE_AWS_SECRET_KEY,
+            "fakeSecretKeyForVibeCodingLab1234567890A",
+        )
+        self.assertEqual(
+            barryflights_mcp_server.FAKE_AWS_SESSION_TOKEN,
+            "vibe-coding-lab-session-token",
+        )
+
+        fixture_paths = [
+            ROOT / "scripts/prepare_guardrail_fixtures.sh",
+            ROOT / "samples/guardrails/fake-aws-credentials.txt",
+            ROOT / "samples/guardrails/privacy-request.txt",
+        ]
+        for path in fixture_paths:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("AKIAVIBECODINGLAB123", text, path)
+            self.assertIn("fakeSecretKeyForVibeCodingLab1234567890A", text, path)
+            self.assertIn("vibe-coding-lab-session-token", text, path)
+
+    def test_legacy_fake_aws_literals_do_not_return(self):
+        legacy_literals = (
+            "AKIA" + "OPENCLAWLAB12345",
+            "fakeSecretKeyFor" + "OpenClawLab1234567890ABCD",
+            "openclaw-" + "lab-session-token",
+            "[" + "openclaw-lab" + "]",
+        )
+        text_suffixes = {".json", ".md", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
+        skip_dirs = {
+            ".git",
+            ".lab-state",
+            ".mypy_cache",
+            ".pytest_cache",
+            ".ruff_cache",
+            ".venv",
+            "__pycache__",
+            "bin",
+            "node_modules",
+            "venv",
+        }
+
+        for path in ROOT.rglob("*"):
+            if not path.is_file() or path.suffix not in text_suffixes:
+                continue
+            if any(part in skip_dirs for part in path.parts):
+                continue
+
+            text = path.read_text(encoding="utf-8")
+            for legacy_literal in legacy_literals:
+                with self.subTest(path=path.relative_to(ROOT), literal=legacy_literal):
+                    self.assertNotIn(legacy_literal, text)
 
     def test_evidence_file_is_small_and_stable(self):
         with tempfile.TemporaryDirectory() as tmp:

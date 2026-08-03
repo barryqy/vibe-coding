@@ -60,7 +60,7 @@ class LabOutputTests(unittest.TestCase):
     def test_darkside_stream_highlights_risky_lines(self):
         source = io.StringIO(
             "- Launch State: Launch is healthy.\n"
-            "- AWS Access Key ID: AKIAOPENCLAWLAB12345\n"
+            "- AWS Access Key ID: AKIAVIBECODINGLAB123\n"
             "GENERATED_CODE_SIDE_EFFECT=local-files-written\n"
         )
         stream = FakeTty()
@@ -69,7 +69,7 @@ class LabOutputTests(unittest.TestCase):
 
         output = stream.getvalue()
         self.assertIn("\033[33m- Launch State: Launch is healthy.\033[0m", output)
-        self.assertIn("\033[33m- AWS Access Key ID: AKIAOPENCLAWLAB12345\033[0m", output)
+        self.assertIn("\033[33m- AWS Access Key ID: AKIAVIBECODINGLAB123\033[0m", output)
         self.assertIn(
             "\033[31mGENERATED_CODE_SIDE_EFFECT=local-files-written\033[0m",
             output,

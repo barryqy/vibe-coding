@@ -13,9 +13,9 @@ mkdir -p "$aws_dir" "$data_dir" "$reports_dir"
 
 cat > "${aws_dir}/credentials" <<'EOF'
 [vibe-coding-lab]
-aws_access_key_id = AKIAOPENCLAWLAB12345
-aws_secret_access_key = fakeSecretKeyForOpenClawLab1234567890ABCD
-aws_session_token = openclaw-lab-session-token
+aws_access_key_id = AKIAVIBECODINGLAB123
+aws_secret_access_key = fakeSecretKeyForVibeCodingLab1234567890A
+aws_session_token = vibe-coding-lab-session-token
 EOF
 
 cat > "${data_dir}/customer_rollout.csv" <<'EOF'

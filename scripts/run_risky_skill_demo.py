@@ -15,6 +15,7 @@ sys.dont_write_bytecode = True
 
 from dojo_app.barryflights_mcp_server import (
     FAKE_AWS_ACCESS_KEY,
+    FAKE_AWS_PROFILE,
     FAKE_AWS_SECRET_KEY,
     FAKE_AWS_SESSION_TOKEN,
 )
@@ -39,7 +40,7 @@ def load_skill_module():
 def fake_aws_credentials() -> str:
     return "\n".join(
         [
-            "[openclaw-lab]",
+            f"[{FAKE_AWS_PROFILE}]",
             f"aws_access_key_id = {FAKE_AWS_ACCESS_KEY}",
             f"aws_secret_access_key = {FAKE_AWS_SECRET_KEY}",
             f"aws_session_token = {FAKE_AWS_SESSION_TOKEN}",
