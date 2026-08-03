@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+import io
+import os
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from promote_project_note import note_problems, select_note
+from promote_project_note import main, note_problems, select_note
 
 
 VALID_NOTE = """---
@@ -98,6 +103,44 @@ class PromoteProjectNoteTests(unittest.TestCase):
     def test_invalid_fallback_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "checked project note is invalid"):
             select_note(LIVE_NANO_OUTPUT, "# incomplete")
+
+    def test_missing_draft_restores_checked_note_and_refreshes_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            draft = tmp_path / "missing-draft.md"
+            target = tmp_path / "project-note.md"
+            target.write_text("old note\n", encoding="utf-8")
+            os.utime(target, ns=(1_000_000_000, 1_000_000_000))
+
+            stdout = io.StringIO()
+            argv = ["promote_project_note.py", str(draft), str(target)]
+            with patch.object(sys, "argv", argv):
+                with patch("promote_project_note.checked_repo_note", return_value=VALID_NOTE):
+                    with redirect_stdout(stdout):
+                        result = main()
+
+            self.assertEqual(result, 0)
+            self.assertEqual(target.read_text(encoding="utf-8"), VALID_NOTE)
+            self.assertGreater(target.stat().st_mtime_ns, 1_000_000_000)
+            self.assertIn("PROJECT_NOTE=restored-known-good", stdout.getvalue())
+
+    def test_unreadable_draft_stays_fatal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            draft = tmp_path / "draft.md"
+            target = tmp_path / "project-note.md"
+            target.write_text("old note\n", encoding="utf-8")
+
+            stdout = io.StringIO()
+            argv = ["promote_project_note.py", str(draft), str(target)]
+            with patch.object(sys, "argv", argv):
+                with patch.object(Path, "read_text", side_effect=PermissionError("denied")):
+                    with redirect_stdout(stdout):
+                        result = main()
+
+            self.assertEqual(result, 1)
+            self.assertEqual(target.read_text(encoding="utf-8"), "old note\n")
+            self.assertIn("PROJECT_NOTE=failed: denied", stdout.getvalue())
 
 
 if __name__ == "__main__":

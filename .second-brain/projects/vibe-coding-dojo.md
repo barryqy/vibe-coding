@@ -20,6 +20,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - `tests/test_maze_game.py` contains the direct Maze tests.
 - `dojo_app/barryflights_mcp_server.py` contains the clean local BarryFlights MCP server.
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
+- `scripts/promote_project_note.py` validates Codex drafts and restores the checked note when no usable draft is returned.
 - `scripts/check_repo.py` is the repo-level verification command.
 - `config/dojo-event.toml` is the only leaderboard event selector used by `dojo join`.
 - `scripts/devnet_model_route.py` contains the exact production-only cache alias fallback shared by the Codex and OpenCode adapters.
@@ -31,6 +32,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - When a task asks for playable Maze behavior, use the Maze play movement pattern and implement real movement in `dojo_app/maze_play.py`; do not edit the stable Maze loader, renderer, or play harness unless the task explicitly asks for it.
 - Do not add network calls, credential reads, shell clear commands, curses, or external packages.
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
+- A missing or schema-invalid Codex draft may enter the checked-note fallback; other file and Git errors stay fatal.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.
 - Keep event switches limited to `config/dojo-event.toml` and the matching repository guard.
 - Keep production model fallbacks exact to the known production endpoint. Staging and unrelated endpoints must pass requested models through unchanged.
