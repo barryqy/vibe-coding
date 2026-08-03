@@ -112,7 +112,10 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        draft = args.draft.read_text(encoding="utf-8")
+        try:
+            draft = args.draft.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            draft = ""
         fallback = checked_repo_note(args.target)
         note, source = select_note(draft, fallback)
         args.target.write_text(note, encoding="utf-8")
@@ -124,7 +127,10 @@ def main() -> int:
         print_color("PROJECT_NOTE=refreshed", "green")
     else:
         print_color("PROJECT_NOTE=restored-known-good", "yellow")
-        print_color("Codex missed the shared schema, so the checked project note was restored.", "yellow")
+        print_color(
+            "Codex did not produce a usable project note, so the checked project note was restored.",
+            "yellow",
+        )
     return 0
 
 

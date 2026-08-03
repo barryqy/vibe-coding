@@ -18,6 +18,7 @@ status: active
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters apply a production-only fallback for cache model aliases that the production proxy does not yet accept. Staging aliases stay unchanged.
 - The active leaderboard event is `dry-run` for the August 3 staging rehearsal.
+- Project-note promotion restores the checked note when Codex returns no usable draft.
 
 ## Recent Work
 
@@ -27,6 +28,7 @@ status: active
 - The lab now keeps OpenCode visible in the play exercise: OpenCode adds movement, the command compiles the Maze files, and the same block launches the interactive Maze.
 - Added endpoint-aware model routing at both outbound adapter boundaries and bumped both adapter versions so setup replaces stale processes.
 - Switched `config/dojo-event.toml` and its repository guard from `self-paced` to `dry-run`; restore both after the rehearsal.
+- Added missing-draft coverage so an upstream model timeout cannot strand the shared-context checkpoint on stale evidence.
 
 ## Open Questions
 
