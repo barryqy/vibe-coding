@@ -154,7 +154,7 @@ def main() -> int:
         errors,
     )
     require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
-    require('event = "self-paced"' in dojo_event, "the normal lab must use the self-paced event", errors)
+    require('event = "dry-run"' in dojo_event, "the rehearsal build must use the dry-run event", errors)
     require('"${HOME}/.local/bin/dojo" join' in dojo_setup, "setup_dojo.sh must join after setup output", errors)
     require('scripts/player"' in dojo_install, "the challenge installer must install the player command", errors)
     require(
