@@ -191,12 +191,12 @@ OPENCODE_CONFIG=.lab-state/opencode-devnet.json \
 opencode run \
   --title maze-interactive \
   --agent maze-editor \
-  --model "devnet/${LLM_MAZE_MODEL:-${LLM_MODEL:-gpt-5-nano}}" \
+  --model "devnet/${LLM_MAZE_MODEL:-${LLM_HIGH_MODEL:-${LLM_MODEL:-gpt-5-nano}}}" \
   "Search only this repo's .second-brain/ for the Maze play movement pattern, then implement w/a/s/d movement in the attached dojo_app/maze_play.py. Edit only choose_next_position and follow the memory rules for MOVE_DELTAS, walls, bounds, invalid keys, and verification. Run the movement verifier and compile check from the maze-editor contract. If a check fails, edit from its diagnostics before rerunning it; never rerun an unchanged failing check. Use real Python line breaks, not literal backslash-n text. Report MAZE_EDIT_OK only after both checks pass; otherwise report MAZE_EDIT_FAILED with the last failing check." \
   --file dojo_app/maze_play.py
 ```
 
-The Maze command prefers `LLM_MAZE_MODEL`, then falls back to `LLM_MODEL`. The learner flow makes one attempt by default. Controlled evaluations can set `MAZE_MAX_ATTEMPTS=2` and `MAZE_RETRY_MODEL` for one repair attempt, but only after the external movement verifier or compile check fails.
+The Maze command prefers `LLM_MAZE_MODEL`, then falls back to `LLM_HIGH_MODEL` and `LLM_MODEL`. The learner flow makes one attempt by default. Controlled evaluations can set `MAZE_MAX_ATTEMPTS=2` and `MAZE_RETRY_MODEL` for one repair attempt, but only after the external movement verifier or compile check fails.
 
 Print the tiny Maze as a readable board:
 

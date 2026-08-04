@@ -46,7 +46,7 @@ def main() -> int:
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     api_key = os.getenv("LLM_API_KEY", "")
     model = os.getenv("LLM_MODEL", "gpt-5-nano")
-    maze_model = os.getenv("LLM_MAZE_MODEL") or model
+    maze_model = os.getenv("LLM_MAZE_MODEL") or os.getenv("LLM_HIGH_MODEL") or model
     retry_model = os.getenv("MAZE_RETRY_MODEL") or maze_model
     configured_models = list(dict.fromkeys([model, maze_model, retry_model]))
     try:

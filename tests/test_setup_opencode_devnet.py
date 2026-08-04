@@ -13,12 +13,43 @@ from scripts import setup_opencode_devnet
 
 
 class SetupOpenCodeDevnetTests(unittest.TestCase):
+    def test_production_high_model_is_used_for_the_maze(self):
+        env = {
+            "LLM_BASE_URL": "https://model.example/v1",
+            "LLM_API_KEY": "test-key",
+            "LLM_MODEL": "gpt-5-nano-cache",
+            "LLM_HIGH_MODEL": "gpt-5-cache",
+        }
+        state_dir = setup_opencode_devnet.ROOT / ".lab-state"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=state_dir) as tmp:
+            output_path = Path(tmp) / "opencode-devnet.json"
+            stdout = io.StringIO()
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch.object(setup_opencode_devnet, "OUT", output_path),
+                patch.object(setup_opencode_devnet, "install_lab_commands"),
+                redirect_stdout(stdout),
+            ):
+                result = setup_opencode_devnet.main()
+
+            config = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            set(config["provider"]["devnet"]["models"]),
+            {"gpt-5-nano-cache", "gpt-5-cache"},
+        )
+        self.assertIn("maze_model=devnet/gpt-5-cache", stdout.getvalue())
+        self.assertIn("maze_retry_model=devnet/gpt-5-cache", stdout.getvalue())
+
     def test_generated_config_has_bounded_maze_agent(self):
         env = {
             "LLM_BASE_URL": "https://model.example/v1",
             "LLM_API_KEY": "test-key",
             "LLM_MODEL": "gpt-5-nano",
             "LLM_MAZE_MODEL": "gpt-5-cache",
+            "LLM_HIGH_MODEL": "ignored-high-model",
             "MAZE_RETRY_MODEL": "gpt-5-nano-cache",
         }
         state_dir = setup_opencode_devnet.ROOT / ".lab-state"

@@ -25,7 +25,7 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-vibe-coding-20260803-cache-alias"
+SHIM_VERSION = "opencode-vibe-coding-20260803-maze-high-model"
 MAX_UPSTREAM_ERROR_BYTES = 4096
 
 
@@ -59,7 +59,11 @@ def route() -> dict[str, str]:
 
 def advertised_models() -> list[str]:
     default_model = route()["model"]
-    maze_model = os.getenv("LLM_MAZE_MODEL") or default_model
+    maze_model = (
+        os.getenv("LLM_MAZE_MODEL")
+        or os.getenv("LLM_HIGH_MODEL")
+        or default_model
+    )
     retry_model = os.getenv("MAZE_RETRY_MODEL") or maze_model
     return list(dict.fromkeys([default_model, maze_model, retry_model]))
 
