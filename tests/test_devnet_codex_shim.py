@@ -11,7 +11,7 @@ from scripts import devnet_codex_shim, setup_codex_devnet
 
 
 class DevnetCodexShimTests(unittest.TestCase):
-    def test_production_cache_alias_reaches_upstream_as_supported_model(self):
+    def test_production_cache_alias_reaches_upstream_unchanged(self):
         captured = {}
 
         class FakeResponse:
@@ -33,17 +33,23 @@ class DevnetCodexShimTests(unittest.TestCase):
             "api_key": "test-key",
             "model": "gpt-5-nano-cache",
         }
-        body = {
-            "model": "gpt-5-nano-cache",
-            "input": [{"role": "user", "content": "test"}],
-        }
-
-        with patch.dict(os.environ, {"LLM_KEY_MODELS": "gpt-5-nano-cache"}):
+        with patch.dict(
+            os.environ,
+            {"LLM_KEY_MODELS": "gpt-5-nano-cache,gpt-5-cache"},
+        ):
             with patch.object(devnet_codex_shim, "route", return_value=route):
                 with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-                    devnet_codex_shim.call_devnet(body)
+                    for model in ("gpt-5-nano-cache", "gpt-5-cache"):
+                        with self.subTest(model=model):
+                            captured.clear()
+                            devnet_codex_shim.call_devnet(
+                                {
+                                    "model": model,
+                                    "input": [{"role": "user", "content": "test"}],
+                                }
+                            )
 
-        self.assertEqual(captured["model"], "gpt-5-nano")
+                            self.assertEqual(captured["model"], model)
 
     def test_requested_model_reaches_the_upstream_proxy(self):
         captured = {}
@@ -143,8 +149,9 @@ class DevnetCodexShimTests(unittest.TestCase):
         class FakeResponse:
             status = 200
 
-            def __init__(self, fingerprint):
+            def __init__(self, fingerprint, version=devnet_codex_shim.SHIM_VERSION):
                 self.fingerprint = fingerprint
+                self.version = version
 
             def __enter__(self):
                 return self
@@ -155,7 +162,7 @@ class DevnetCodexShimTests(unittest.TestCase):
             def read(self):
                 return json.dumps(
                     {
-                        "version": devnet_codex_shim.SHIM_VERSION,
+                        "version": self.version,
                         "route_fingerprint": self.fingerprint,
                     }
                 ).encode("utf-8")
@@ -176,6 +183,15 @@ class DevnetCodexShimTests(unittest.TestCase):
                 return_value=FakeResponse("current-route"),
             ):
                 self.assertTrue(devnet_codex_shim.ready("127.0.0.1", 8776))
+
+            with patch(
+                "urllib.request.urlopen",
+                return_value=FakeResponse(
+                    "current-route",
+                    "vibe-coding-model-routing-20260802-prod-fallback",
+                ),
+            ):
+                self.assertFalse(devnet_codex_shim.ready("127.0.0.1", 8776))
 
     def test_developer_context_stays_out_of_user_content(self):
         body = {

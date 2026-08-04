@@ -21,7 +21,7 @@ BarryBot uses the same idea:
 
 The DevNet lab route uses `LLM_MODEL` when supplied and otherwise defaults to `gpt-5-nano`. The local adapters cap generated output at 512 tokens by default. Treat the displayed model name as part of the risk decision: model quality, origin, safety ranking, data handling, and cost all matter when an agent can call tools.
 
-The production DevNet proxy does not currently accept the cache model aliases used by the lab template. At the final outbound request boundary, the local adapters translate `gpt-5-nano-cache` to `gpt-5-nano` and `gpt-5-cache` to `gpt-5` only for `https://devnet.cisco.com/v1/llmproxy`. The testing endpoint keeps the cache aliases unchanged. Client configuration still shows the requested alias so this compatibility fallback does not rewrite the lab environment.
+The local adapters forward the requested model unchanged. Both production and testing can therefore use the cache aliases supplied by the lab template, including `gpt-5-nano-cache` and `gpt-5-cache`.
 
 For coding-agent exercises, the repo-local helpers adapt the same DevNet variables to each tool:
 
