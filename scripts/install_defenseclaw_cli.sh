@@ -10,6 +10,15 @@ lab_status() {
     || printf '%s\n' "$1"
 }
 
+show_lab_versions() {
+  local cli="$1"
+
+  # This lab does not install OpenClaw, so its optional plugin status is noise here.
+  CLICOLOR_FORCE= FORCE_COLOR= NO_COLOR=1 "$cli" version \
+    | sed -E '/^[[:space:]]*plugin[[:space:]]+\(not installed\)[[:space:]]+missing[[:space:]]+~\/\.openclaw\/extensions\/defenseclaw[[:space:]]*$/d' \
+    || true
+}
+
 DEFENSECLAW_VERSION="${DEFENSECLAW_VERSION:-0.8.0}"
 DEFENSECLAW_TUI_TEXTUAL_VERSION="${DEFENSECLAW_TUI_TEXTUAL_VERSION:-8.2.7}"
 state_dir="${repo_root}/.lab-state/defenseclaw"
@@ -289,7 +298,7 @@ if [ -x "$cli_path" ] && version_ok "${venv_dir}/bin/python"; then
   lab_status "DEFENSECLAW_INSTALL=already-present"
   lab_status "DEFENSECLAW_CLI=${cli_path}"
   lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
-  "$cli_path" version || true
+  show_lab_versions "$cli_path"
   exit 0
 fi
 
@@ -302,7 +311,7 @@ if command -v defenseclaw >/dev/null 2>&1 && global_cli_version_ok; then
   lab_status "DEFENSECLAW_INSTALL=using-existing"
   lab_status "DEFENSECLAW_CLI=$(command -v defenseclaw)"
   lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
-  defenseclaw version || true
+  show_lab_versions "$(command -v defenseclaw)"
   exit 0
 fi
 
@@ -338,4 +347,4 @@ ensure_lab_home "$cli_path"
 lab_status "DEFENSECLAW_INSTALL=complete"
 lab_status "DEFENSECLAW_CLI=${cli_path}"
 lab_status "DEFENSECLAW_HOME=${DEFENSECLAW_HOME}"
-"$cli_path" version || true
+show_lab_versions "$cli_path"
