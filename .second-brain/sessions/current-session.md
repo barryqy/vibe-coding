@@ -16,7 +16,7 @@ status: active
 - `dojo_app/maze_play.py` is the scoped coding-agent file. Its play harness handles single-key input and redraw; the movement function is the placeholder a coding agent fills.
 - The second brain is shared context for any agent that works in this repo.
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
-- The local Codex and OpenCode adapters apply a production-only fallback for cache model aliases that the production proxy does not yet accept. Staging aliases stay unchanged.
+- The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
 - The active leaderboard event is `dry-run` for the August 3 staging rehearsal.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
 
@@ -26,7 +26,7 @@ status: active
 - Agents should search `.second-brain/` for relevant notes before editing and update this note when task state changes.
 - OpenCode config should load only top-level repo instructions, not exact second-brain memory files.
 - The lab now keeps OpenCode visible in the play exercise: OpenCode adds movement, the command compiles the Maze files, and the same block launches the interactive Maze.
-- Added endpoint-aware model routing at both outbound adapter boundaries and bumped both adapter versions so setup replaces stale processes.
+- Removed the temporary production alias fallback and bumped both adapter versions so the next adapter start or `--ensure` replaces stale fallback processes.
 - Switched `config/dojo-event.toml` and its repository guard from `self-paced` to `dry-run`; restore both after the rehearsal.
 - Added missing-draft coverage so an upstream model timeout cannot strand the shared-context checkpoint on stale evidence.
 
@@ -47,6 +47,6 @@ status: active
 - python3 -m unittest tests.test_maze_game
 - python3 -m py_compile dojo_app/maze_game.py dojo_app/maze_play.py
 - python3 scripts/check_repo.py
-- python3 -m unittest tests.test_devnet_model_route tests.test_devnet_codex_shim tests.test_devnet_openai_shim tests.test_setup_opencode_devnet
+- python3 -m unittest tests.test_devnet_codex_shim tests.test_devnet_openai_shim tests.test_setup_opencode_devnet
 - python3 scripts/consistency_check.py
 - python3 scripts/security_review.py dojo_app scripts

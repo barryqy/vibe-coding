@@ -112,6 +112,24 @@ class DevnetOpenAIShimTests(unittest.TestCase):
         self.upstream.server_close()
         self.upstream_thread.join(3)
 
+    def test_ready_rejects_the_old_production_fallback_adapter(self):
+        class FakeResponse:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def read(self):
+                return json.dumps(
+                    {"version": "opencode-vibe-coding-20260802-prod-fallback"}
+                ).encode("utf-8")
+
+        with patch("urllib.request.urlopen", return_value=FakeResponse()):
+            self.assertFalse(devnet_openai_shim.ready("127.0.0.1", 8765))
+
     def post_tool_result(self, stream: bool) -> tuple[int, str, dict, str]:
         body = {
             "model": "gpt-5-nano",
@@ -155,7 +173,7 @@ class DevnetOpenAIShimTests(unittest.TestCase):
             response.close()
         return code, content_type, payload, retry_after
 
-    def test_cache_alias_rewrite_is_limited_to_production(self):
+    def test_cache_alias_reaches_both_proxies_unchanged(self):
         class FakeResponse:
             def __enter__(self):
                 return self
@@ -166,37 +184,35 @@ class DevnetOpenAIShimTests(unittest.TestCase):
             def read(self):
                 return b'{"choices":[{"message":{"content":"ok"}}]}'
 
-        body = {
-            "model": "gpt-5-nano-cache",
-            "messages": [{"role": "user", "content": "test"}],
-        }
-        cases = (
-            ("https://devnet.cisco.com/v1/llmproxy", "gpt-5-nano"),
-            (
-                "https://devnet-testing.cisco.com/v1/llmproxy",
-                "gpt-5-nano-cache",
-            ),
+        base_urls = (
+            "https://devnet.cisco.com/v1/llmproxy",
+            "https://devnet-testing.cisco.com/v1/llmproxy",
         )
 
-        for base_url, expected_model in cases:
-            with self.subTest(base_url=base_url):
-                captured = {}
+        for base_url in base_urls:
+            for model in ("gpt-5-nano-cache", "gpt-5-cache"):
+                with self.subTest(base_url=base_url, model=model):
+                    captured = {}
+                    body = {
+                        "model": model,
+                        "messages": [{"role": "user", "content": "test"}],
+                    }
 
-                def fake_urlopen(request, timeout):
-                    captured.update(json.loads(request.data.decode("utf-8")))
-                    return FakeResponse()
+                    def fake_urlopen(request, timeout):
+                        captured.update(json.loads(request.data.decode("utf-8")))
+                        return FakeResponse()
 
-                route = {
-                    "base_url": base_url,
-                    "api_key": "test-key",
-                    "model": "gpt-5-nano-cache",
-                }
-                with patch.object(devnet_openai_shim, "route", return_value=route):
-                    with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-                        devnet_openai_shim.call_devnet(body)
+                    route = {
+                        "base_url": base_url,
+                        "api_key": "test-key",
+                        "model": "gpt-5-nano-cache",
+                    }
+                    with patch.object(devnet_openai_shim, "route", return_value=route):
+                        with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+                            devnet_openai_shim.call_devnet(body)
 
-                self.assertEqual(captured["model"], expected_model)
-                self.assertEqual(body["model"], "gpt-5-nano-cache")
+                    self.assertEqual(captured["model"], model)
+                    self.assertEqual(body["model"], model)
 
     def test_models_include_task_and_retry_overrides(self):
         env = {

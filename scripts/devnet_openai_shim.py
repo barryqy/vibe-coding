@@ -18,14 +18,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from dojo_app.lab_output import print_status
-from scripts.devnet_model_route import upstream_model
+
 
 STATE = ROOT / ".lab-state"
 LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-vibe-coding-20260802-prod-fallback"
+SHIM_VERSION = "opencode-vibe-coding-20260803-cache-alias"
 MAX_UPSTREAM_ERROR_BYTES = 4096
 
 
@@ -145,10 +145,6 @@ def call_devnet(body: dict) -> dict:
     clean_body["stream"] = False
     clean_body["messages"] = normalize_messages(clean_body.get("messages", []))
     clean_body.pop("stream_options", None)
-    requested_model = clean_body.get("model")
-    if isinstance(requested_model, str):
-        clean_body["model"] = upstream_model(config["base_url"], requested_model)
-
     try:
         requested_tokens = int(clean_body.get("max_tokens", output_limit()))
         clean_body["max_tokens"] = min(max(requested_tokens, 1), output_limit())

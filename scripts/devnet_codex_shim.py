@@ -24,7 +24,7 @@ from dojo_app.barryflights_mcp_server import (
     FAKE_AWS_SECRET_KEY,
     FAKE_AWS_SESSION_TOKEN,
 )
-from scripts.devnet_model_route import upstream_model
+
 
 STATE = ROOT / ".lab-state"
 LOG = STATE / "devnet-codex-shim.log"
@@ -32,7 +32,7 @@ PID = STATE / "devnet-codex-shim.pid"
 GUARDRAIL_MARKER = STATE / "defenseclaw" / "guardrail-configured"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "vibe-coding-model-routing-20260802-prod-fallback"
+SHIM_VERSION = "vibe-coding-model-routing-20260803-cache-alias"
 
 
 def output_limit() -> int:
@@ -211,10 +211,7 @@ def call_devnet(body: dict) -> dict:
         raise RuntimeError("LLM_BASE_URL or LLM_API_KEY is missing")
 
     messages = response_input_to_messages(body)
-    model = upstream_model(
-        config["base_url"],
-        requested_model(body, config),
-    )
+    model = requested_model(body, config)
     try:
         requested_tokens = int(body.get("max_output_tokens", output_limit()))
         max_tokens = min(max(requested_tokens, 1), output_limit())
