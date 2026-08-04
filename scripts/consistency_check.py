@@ -389,6 +389,7 @@ def main() -> int:
     require(
         all(
             "LLM_MAZE_MODEL" in text
+            and "LLM_HIGH_MODEL" in text
             and "MAZE_MAX_ATTEMPTS" in text
             and "MAZE_RETRY_MODEL" in text
             for text in (agents, readme, claude, tool_options)

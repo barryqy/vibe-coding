@@ -112,9 +112,12 @@ class DevnetOpenAIShimTests(unittest.TestCase):
         self.upstream.server_close()
         self.upstream_thread.join(3)
 
-    def test_ready_rejects_the_old_production_fallback_adapter(self):
+    def test_ready_rejects_stale_adapters(self):
         class FakeResponse:
             status = 200
+
+            def __init__(self, version):
+                self.version = version
 
             def __enter__(self):
                 return self
@@ -123,12 +126,18 @@ class DevnetOpenAIShimTests(unittest.TestCase):
                 return False
 
             def read(self):
-                return json.dumps(
-                    {"version": "opencode-vibe-coding-20260802-prod-fallback"}
-                ).encode("utf-8")
+                return json.dumps({"version": self.version}).encode("utf-8")
 
-        with patch("urllib.request.urlopen", return_value=FakeResponse()):
-            self.assertFalse(devnet_openai_shim.ready("127.0.0.1", 8765))
+        stale_versions = (
+            "opencode-vibe-coding-20260802-prod-fallback",
+            "opencode-vibe-coding-20260803-cache-alias",
+        )
+        for version in stale_versions:
+            with (
+                self.subTest(version=version),
+                patch("urllib.request.urlopen", return_value=FakeResponse(version)),
+            ):
+                self.assertFalse(devnet_openai_shim.ready("127.0.0.1", 8765))
 
     def post_tool_result(self, stream: bool) -> tuple[int, str, dict, str]:
         body = {
@@ -217,6 +226,7 @@ class DevnetOpenAIShimTests(unittest.TestCase):
     def test_models_include_task_and_retry_overrides(self):
         env = {
             "LLM_MAZE_MODEL": "gpt-5-cache",
+            "LLM_HIGH_MODEL": "ignored-high-model",
             "MAZE_RETRY_MODEL": "gpt-5-nano-cache",
         }
         url = f"http://127.0.0.1:{self.shim.server_port}/v1/models"
@@ -230,6 +240,16 @@ class DevnetOpenAIShimTests(unittest.TestCase):
             [item["id"] for item in payload["data"]],
             ["gpt-5-nano", "gpt-5-cache", "gpt-5-nano-cache"],
         )
+
+    def test_models_include_production_high_model_without_maze_override(self):
+        env = {
+            "LLM_MODEL": "gpt-5-nano-cache",
+            "LLM_HIGH_MODEL": "gpt-5-cache",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            models = devnet_openai_shim.advertised_models()
+
+        self.assertEqual(models, ["gpt-5-nano-cache", "gpt-5-cache"])
 
     def test_log_metadata_cannot_add_lines(self):
         self.assertEqual(
