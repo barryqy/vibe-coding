@@ -35,6 +35,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.
 - Keep event switches limited to `config/dojo-event.toml` and the matching repository guard.
 - Keep model names unchanged at the adapter boundary so production and staging can exercise the cache aliases supplied by their templates.
+- Allow 90 seconds for upstream model responses in both local adapters and the direct baseline guardrail demo. Keep readiness checks and the local DefenseClaw inspection timeout short.
 
 ## Verification
 

@@ -32,7 +32,8 @@ PID = STATE / "devnet-codex-shim.pid"
 GUARDRAIL_MARKER = STATE / "defenseclaw" / "guardrail-configured"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8776
-SHIM_VERSION = "vibe-coding-model-routing-20260803-cache-alias"
+SHIM_VERSION = "vibe-coding-model-routing-20260811-timeout-90s"
+UPSTREAM_TIMEOUT_SECONDS = 90
 
 
 def output_limit() -> int:
@@ -235,7 +236,7 @@ def call_devnet(body: dict) -> dict:
         headers=headers,
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=45) as response:
+    with urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT_SECONDS) as response:
         payload = json.loads(response.read().decode("utf-8"))
         return payload
 

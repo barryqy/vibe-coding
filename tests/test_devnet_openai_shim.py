@@ -131,6 +131,7 @@ class DevnetOpenAIShimTests(unittest.TestCase):
         stale_versions = (
             "opencode-vibe-coding-20260802-prod-fallback",
             "opencode-vibe-coding-20260803-cache-alias",
+            "opencode-vibe-coding-20260803-maze-high-model",
         )
         for version in stale_versions:
             with (

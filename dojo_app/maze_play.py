@@ -22,6 +22,8 @@ MAZE_SOLVED_MARKER = ROOT / ".lab-state" / "dojo" / "maze-solved"
 SAVE_CURSOR = "\033[s"
 RESTORE_CURSOR = "\033[u"
 ERASE_LINE = "\033[2K"
+CONTROL_LEGEND = "W=up  A=left  S=down  D=right  Q=quit"
+INVALID_INPUT_HINT = "Input not recognized. Use W/A/S/D or Q."
 
 
 def choose_next_position(maze: list[str], position: Position, command: str) -> Position:
@@ -78,8 +80,20 @@ def read_command(single_key: bool) -> str:
     sys.stdout.write("move> ")
     sys.stdout.flush()
     command = sys.stdin.read(1)
+    if command == "":
+        raise EOFError
     print()
     return command.strip().lower()
+
+
+def print_input_contract(single_key: bool) -> None:
+    if single_key:
+        print_status("MAZE_INPUT_MODE=single-key")
+        print("Press a movement key. Enter is not required.")
+        return
+
+    print_status("MAZE_INPUT_MODE=line")
+    print("Enter a movement key, then press Enter.")
 
 
 def draw_frame(
@@ -95,7 +109,7 @@ def draw_frame(
     if not redraw:
         if show_header:
             print_status("MAZE_PLAY=ready")
-            print("controls=w/a/s/d, q to quit")
+            print(CONTROL_LEGEND)
         if status:
             print_status(status)
         print(render_maze(maze_with_player(maze, player), render))
@@ -104,7 +118,7 @@ def draw_frame(
     target = sys.stdout
     lines = [
         format_status("MAZE_PLAY=ready", target),
-        "controls=w/a/s/d, q to quit",
+        CONTROL_LEGEND,
         format_status(status, target) if status else "",
         *render_maze(maze_with_player(maze, player), render).splitlines(),
     ]
@@ -149,6 +163,7 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
     won = False
 
     try:
+        print_input_contract(single_key)
         while True:
             draw_frame(
                 maze,
@@ -170,13 +185,13 @@ def run_play_maze(maze: list[str], render_maze: MazeRenderer, render: str = "ama
                 return 0
 
             if not command:
-                status = "move=ignored"
+                status = INVALID_INPUT_HINT
                 continue
             if command == "q":
                 print_status("MAZE_PLAY=quit")
                 return 0
             if command not in MOVE_DELTAS:
-                status = "move=ignored"
+                status = INVALID_INPUT_HINT
                 continue
 
             try:
