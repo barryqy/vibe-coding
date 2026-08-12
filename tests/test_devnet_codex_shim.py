@@ -188,7 +188,7 @@ class DevnetCodexShimTests(unittest.TestCase):
                 "urllib.request.urlopen",
                 return_value=FakeResponse(
                     "current-route",
-                    "vibe-coding-model-routing-20260802-prod-fallback",
+                    "vibe-coding-model-routing-20260803-cache-alias",
                 ),
             ):
                 self.assertFalse(devnet_codex_shim.ready("127.0.0.1", 8776))

@@ -17,6 +17,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 REPORT_DIR = ROOT_DIR / ".lab-state" / "defenseclaw" / "reports"
 DEMO_DIR = ROOT_DIR / ".lab-state" / "guardrail-demo"
 PREVIEW_LIMIT = 600
+MODEL_REQUEST_TIMEOUT_SECONDS = 90
 PROVIDER_POLICY_MARKERS = (
     "content filter",
     "content filtering",
@@ -471,7 +472,7 @@ def main() -> None:
                 "Content-Type": "application/json",
             },
             json=payload,
-            timeout=45,
+            timeout=MODEL_REQUEST_TIMEOUT_SECONDS,
         )
     except requests.RequestException as exc:
         if args.mode.startswith("guarded-"):

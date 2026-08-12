@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import io
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
+from scripts import run_guardrail_demo
 from scripts.build_rollout_review_prompt import build_prompt
 from scripts.run_guardrail_demo import summarize_guardrail_verdict
 from scripts.show_darkside_capability_preview import capability_preview
@@ -119,6 +125,34 @@ DARKSIDE_AGENT_CAPABILITIES=observed
         self.assertEqual(blocked["guardrail_mode"], "action")
         self.assertFalse(observed["blocked"])
         self.assertEqual(observed["guardrail_mode"], "observe")
+
+    def test_baseline_model_request_allows_ninety_seconds(self):
+        class Response:
+            status_code = 200
+            text = ""
+
+            def json(self):
+                return {"choices": [{"message": {"content": "ok"}}]}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "reports"
+            report_path = report_dir / "baseline.json"
+            env = {
+                "LLM_BASE_URL": "http://model.test/v1",
+                "LLM_API_KEY": "test",
+                "LLM_MODEL": "gpt-5-nano",
+            }
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch.object(sys, "argv", ["run_guardrail_demo.py", "baseline-injection"]),
+                patch.object(run_guardrail_demo, "REPORT_DIR", report_dir),
+                patch.object(run_guardrail_demo, "build_request", return_value=({}, report_path)),
+                patch.object(run_guardrail_demo.requests, "post", return_value=Response()) as post,
+                redirect_stdout(io.StringIO()),
+            ):
+                run_guardrail_demo.main()
+
+        self.assertEqual(post.call_args.kwargs["timeout"], 90)
 
     def test_rollout_prompt_combines_injection_and_fake_customer_data(self):
         prompt = build_prompt()

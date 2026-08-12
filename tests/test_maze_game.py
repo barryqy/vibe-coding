@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import io
 import inspect
+import os
+import pty
+import termios
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -311,9 +314,142 @@ class MazeGameTests(unittest.TestCase):
         text = output.getvalue()
         self.assertEqual(result, 0)
         capture.assert_not_called()
+        self.assertIn("MAZE_INPUT_MODE=line", text)
+        self.assertIn("Enter a movement key, then press Enter.", text)
+        self.assertIn("W=up  A=left  S=down  D=right  Q=quit", text)
         self.assertIn("MAZE_PLAY=ready", text)
         self.assertIn("MAZE_PLAY=quit", text)
         self.assertNotIn("\033[H\033[2J", text)
+
+    def test_play_mode_explains_invalid_and_empty_line_input(self):
+        output = io.StringIO()
+
+        with (
+            mock.patch("sys.stdin", io.StringIO("x\n\nq\n")),
+            mock.patch.object(maze_play, "capture_maze_escape") as capture,
+            redirect_stdout(output),
+        ):
+            result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        self.assertEqual(result, 0)
+        capture.assert_not_called()
+        self.assertEqual(output.getvalue().count(maze_play.INVALID_INPUT_HINT), 2)
+
+    def test_single_key_input_normalizes_uppercase_and_ignores_enter(self):
+        output = io.StringIO()
+
+        with mock.patch("sys.stdin", io.StringIO("W\n")), redirect_stdout(output):
+            self.assertEqual(maze_play.read_command(single_key=True), "w")
+            self.assertEqual(maze_play.read_command(single_key=True), "")
+
+    def test_single_key_input_reports_eof(self):
+        with mock.patch("sys.stdin", io.StringIO("")), redirect_stdout(io.StringIO()):
+            with self.assertRaises(EOFError):
+                maze_play.read_command(single_key=True)
+
+    def test_play_mode_reports_single_key_mode_and_restores_terminal(self):
+        output = io.StringIO()
+        old_settings = object()
+
+        with (
+            mock.patch.object(maze_play, "live_terminal", return_value=True),
+            mock.patch.object(
+                maze_play,
+                "enable_single_key_input",
+                return_value=old_settings,
+            ),
+            mock.patch.object(maze_play, "read_command", return_value="q"),
+            mock.patch.object(maze_play, "restore_input_mode") as restore,
+            redirect_stdout(output),
+        ):
+            result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        self.assertEqual(result, 0)
+        self.assertIn("MAZE_INPUT_MODE=single-key", output.getvalue())
+        self.assertIn("Enter is not required", output.getvalue())
+        restore.assert_called_once_with(old_settings)
+
+    def test_play_mode_falls_back_to_line_input_when_cbreak_is_unavailable(self):
+        output = io.StringIO()
+
+        with (
+            mock.patch("sys.stdin", io.StringIO("q\n")),
+            mock.patch.object(maze_play, "live_terminal", return_value=True),
+            mock.patch.object(maze_play, "enable_single_key_input", return_value=None),
+            redirect_stdout(output),
+        ):
+            result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        self.assertEqual(result, 0)
+        self.assertIn("MAZE_INPUT_MODE=line", output.getvalue())
+        self.assertIn("press Enter", output.getvalue())
+        self.assertIn("MAZE_PLAY=quit", output.getvalue())
+
+    def test_single_key_mode_restores_real_terminal_settings(self):
+        master_fd, slave_fd = pty.openpty()
+        before = termios.tcgetattr(slave_fd)
+
+        try:
+            with os.fdopen(
+                os.dup(slave_fd),
+                "r",
+                encoding="utf-8",
+                closefd=True,
+            ) as terminal, mock.patch("sys.stdin", terminal):
+                old_settings = maze_play.enable_single_key_input()
+                changed = termios.tcgetattr(slave_fd)
+                maze_play.restore_input_mode(old_settings)
+        finally:
+            after = termios.tcgetattr(slave_fd)
+            os.close(master_fd)
+            os.close(slave_fd)
+
+        self.assertIsNotNone(old_settings)
+        self.assertNotEqual(changed, before)
+        for flag in (termios.ICANON, termios.ECHO, termios.ISIG, termios.IEXTEN):
+            self.assertEqual(after[3] & flag, before[3] & flag)
+        self.assertEqual(after[:3], before[:3])
+        self.assertEqual(after[4:], before[4:])
+
+    def test_play_mode_restores_terminal_after_single_key_eof(self):
+        output = io.StringIO()
+        old_settings = object()
+
+        with (
+            mock.patch.object(maze_play, "live_terminal", return_value=True),
+            mock.patch.object(
+                maze_play,
+                "enable_single_key_input",
+                return_value=old_settings,
+            ),
+            mock.patch.object(maze_play, "read_command", side_effect=EOFError),
+            mock.patch.object(maze_play, "restore_input_mode") as restore,
+            redirect_stdout(output),
+        ):
+            result = maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        self.assertEqual(result, 0)
+        self.assertIn("MAZE_PLAY=quit", output.getvalue())
+        restore.assert_called_once_with(old_settings)
+
+    def test_play_mode_restores_terminal_after_render_failure(self):
+        old_settings = object()
+
+        with (
+            mock.patch.object(maze_play, "live_terminal", return_value=True),
+            mock.patch.object(
+                maze_play,
+                "enable_single_key_input",
+                return_value=old_settings,
+            ),
+            mock.patch.object(maze_play, "draw_frame", side_effect=RuntimeError("render failed")),
+            mock.patch.object(maze_play, "restore_input_mode") as restore,
+            redirect_stdout(io.StringIO()),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "render failed"):
+                maze_play.run_play_maze(maze_game.DEFAULT_MAZE, maze_game.render_maze)
+
+        restore.assert_called_once_with(old_settings)
 
     def test_play_mode_captures_flag_after_win(self):
         maze = ["#####", "#SE##", "#####"]

@@ -25,7 +25,8 @@ LOG = STATE / "devnet-openai-shim.log"
 PID = STATE / "devnet-openai-shim.pid"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
-SHIM_VERSION = "opencode-vibe-coding-20260803-maze-high-model"
+SHIM_VERSION = "opencode-vibe-coding-20260811-timeout-90s"
+UPSTREAM_TIMEOUT_SECONDS = 90
 MAX_UPSTREAM_ERROR_BYTES = 4096
 
 
@@ -166,7 +167,7 @@ def call_devnet(body: dict) -> dict:
         headers=headers,
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=45) as response:
+    with urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT_SECONDS) as response:
         try:
             payload = json.loads(response.read().decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:

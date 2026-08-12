@@ -26,6 +26,7 @@ class ModelBudgetTests(unittest.TestCase):
 
     def test_adapters_cap_forwarded_output_tokens(self):
         captured = []
+        timeouts = []
 
         class Response:
             status = 200
@@ -41,6 +42,7 @@ class ModelBudgetTests(unittest.TestCase):
 
         def fake_urlopen(request, timeout):
             captured.append(json.loads(request.data.decode("utf-8")))
+            timeouts.append(timeout)
             return Response()
 
         env = {
@@ -62,6 +64,7 @@ class ModelBudgetTests(unittest.TestCase):
                 )
 
         self.assertEqual([body["max_tokens"] for body in captured], [512, 512])
+        self.assertEqual(timeouts, [90, 90])
 
 
 if __name__ == "__main__":
