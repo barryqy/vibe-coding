@@ -31,11 +31,12 @@ status: active
 - Added missing-draft coverage so an upstream model timeout cannot strand the shared-context checkpoint on stale evidence.
 - Made the Maze input mode and W/A/S/D/Q controls explicit, added invalid-input recovery, and preserved terminal restoration across quit, EOF, and failures.
 - Updated the bundled Dojo CLI so fresh evidence for each flag is independent of earlier captures while duplicate captures remain harmless.
+- Staged a rebuilt Dojo CLI candidate with bounded capture retries, pending-capture reconciliation, and honest sync status reporting.
 - Raised the upstream model-response timeout from 45 to 90 seconds in both local adapters and the direct baseline guardrail demo. Both adapter versions were bumped so `--ensure` replaces already-running 45-second processes.
 
 ## Open Questions
 
-- The updated helper and image still need published DevNet terminal validation before release.
+- The capture-reliability CLI candidate still needs helper publication, an image rebuild, and published DevNet terminal validation before release.
 
 ## Boundaries
 
