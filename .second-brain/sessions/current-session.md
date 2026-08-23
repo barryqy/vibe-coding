@@ -17,7 +17,7 @@ status: active
 - The second brain is shared context for any agent that works in this repo.
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
-- The active leaderboard event is `self-paced`.
+- This event build selects the `teil39-1` leaderboard for TEIL39-1.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
 
 ## Recent Work
@@ -33,6 +33,7 @@ status: active
 - Updated the bundled Dojo CLI so fresh evidence for each flag is independent of earlier captures while duplicate captures remain harmless.
 - Staged a rebuilt Dojo CLI candidate with bounded capture retries, pending-capture reconciliation, and honest sync status reporting.
 - Raised the upstream model-response timeout from 45 to 90 seconds in both local adapters and the direct baseline guardrail demo. Both adapter versions were bumped so `--ensure` replaces already-running 45-second processes.
+- Switched `config/dojo-event.toml` and its repository guard to `teil39-1` for the August 24 TEIL39-1 lab.
 
 ## Open Questions
 

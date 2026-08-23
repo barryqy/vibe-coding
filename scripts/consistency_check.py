@@ -155,8 +155,8 @@ def main() -> int:
     )
     require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
     require(
-        'event = "self-paced"' in dojo_event,
-        "the normal lab build must use the self-paced event",
+        'event = "teil39-1"' in dojo_event,
+        "the TEIL39-1 event build must use the teil39-1 event",
         errors,
     )
     require('"${HOME}/.local/bin/dojo" join' in dojo_setup, "setup_dojo.sh must join after setup output", errors)
