@@ -17,7 +17,7 @@ status: active
 - The second brain is shared context for any agent that works in this repo.
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
-- The active leaderboard event is `self-paced`.
+- Setup selects the active leaderboard at runtime. No argument uses `self-paced`; event labs pass their short event code.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
 
 ## Recent Work
@@ -27,7 +27,7 @@ status: active
 - OpenCode config should load only top-level repo instructions, not exact second-brain memory files.
 - The lab now keeps OpenCode visible in the play exercise: OpenCode adds movement, the command compiles the Maze files, and the same block launches the interactive Maze.
 - Removed the temporary production alias fallback and bumped both adapter versions so the next adapter start or `--ensure` replaces stale fallback processes.
-- Restored `config/dojo-event.toml` and its repository guard to `self-paced` after the final rehearsal.
+- Replaced event-specific image configuration with a fail-closed placeholder and a runtime event selected by `scripts/setup_dojo.sh [event-code]`.
 - Added missing-draft coverage so an upstream model timeout cannot strand the shared-context checkpoint on stale evidence.
 - Made the Maze input mode and W/A/S/D/Q controls explicit, added invalid-input recovery, and preserved terminal restoration across quit, EOF, and failures.
 - Updated the bundled Dojo CLI so fresh evidence for each flag is independent of earlier captures while duplicate captures remain harmless.
@@ -36,7 +36,7 @@ status: active
 
 ## Open Questions
 
-- The capture-reliability CLI candidate still needs helper publication, an image rebuild, and published DevNet terminal validation before release.
+- Runtime event selection still needs a rebuilt Dojo binary, helper publication, one reusable image build, and fresh DevNet terminal validation before the lab can use the shorter setup block.
 
 ## Boundaries
 

@@ -3,6 +3,12 @@
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root" || exit 1
 
+python3 "${repo_root}/scripts/configure_dojo_event.py" "$@"
+event_status=$?
+if [ "$event_status" -ne 0 ]; then
+  exit "$event_status"
+fi
+
 lab_status() {
   PYTHONPATH="$repo_root${PYTHONPATH:+:$PYTHONPATH}" python3 -m dojo_app.lab_output status "$1" 2>/dev/null \
     || printf '%s\n' "$1"
