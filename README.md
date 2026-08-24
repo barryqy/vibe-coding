@@ -50,6 +50,7 @@ Then continue with the DevNet guide. The lab starts with Codex CLI, then brings 
 - `scripts/security_review.py` catches risky code patterns that AI tools often introduce when prompts are too broad.
 - `scripts/consistency_check.py` verifies the agent instructions and tool configs still point at the same quality bar.
 - `scripts/setup_dojo.sh` initializes dependencies, local state, and the repo-local Codex model route.
+- `scripts/prepare_teil39_lab.sh` keeps the guarded TEIL39-1 checkout and setup flow in the dojo instead of the learner guide.
 - `bin/dojo-linux-x86_64` is the stripped challenge CLI binary. It verifies fresh challenge evidence before clearing the terminal for a flag celebration; its private Rust source is maintained outside this public helper repo.
 - `config/dojo-event.toml` selects the leaderboard event. The normal lab uses `self-paced`; event builds may replace it with a short event code.
 - `scripts/player` is installed as `player` and prints the assigned leaderboard name.

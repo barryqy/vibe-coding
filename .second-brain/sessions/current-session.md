@@ -18,6 +18,7 @@ status: active
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
 - This event build selects the `teil39-1` leaderboard for TEIL39-1.
+- `scripts/prepare_teil39_lab.sh` owns the guarded event checkout, exact commit verification, and dojo setup so the learner guide can stay short.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
 
 ## Recent Work
@@ -34,6 +35,7 @@ status: active
 - Staged a rebuilt Dojo CLI candidate with bounded capture retries, pending-capture reconciliation, and honest sync status reporting.
 - Raised the upstream model-response timeout from 45 to 90 seconds in both local adapters and the direct baseline guardrail demo. Both adapter versions were bumped so `--ensure` replaces already-running 45-second processes.
 - Switched `config/dojo-event.toml` and its repository guard to `teil39-1` for the August 24 TEIL39-1 lab.
+- Added focused coverage for the TEIL39-1 helper's preinstalled checkout, clone fallback, dirty-worktree refusal, invalid target, and commit validation paths.
 
 ## Open Questions
 
@@ -55,3 +57,4 @@ status: active
 - python3 -m unittest tests.test_devnet_codex_shim tests.test_devnet_openai_shim tests.test_setup_opencode_devnet
 - python3 scripts/consistency_check.py
 - python3 scripts/security_review.py dojo_app scripts
+- python3 -m unittest tests.test_prepare_teil39_lab
