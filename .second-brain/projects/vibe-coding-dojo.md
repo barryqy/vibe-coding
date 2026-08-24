@@ -22,7 +22,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - `dojo_app/barryflights_mcp_client.py` calls the local MCP server over stdio.
 - `scripts/promote_project_note.py` validates Codex drafts and restores the checked note when no usable draft is returned.
 - `scripts/check_repo.py` is the repo-level verification command.
-- `config/dojo-event.toml` is the only leaderboard event selector used by `dojo join`.
+- `config/dojo-event.toml` is the fail-closed image placeholder. Setup writes the selected event to `.lab-state/dojo/event.toml`, which the Dojo CLI reads first.
 
 ## Boundaries
 
@@ -33,7 +33,7 @@ This repo is a small AI coding dojo. Coding agents use the supplied lab model ro
 - Keep the local BarryFlights MCP server clean; risky MCP behavior belongs in the security module.
 - A missing or schema-invalid Codex draft may enter the checked-note fallback; other file and Git errors stay fatal.
 - Keep changes scoped to the game and its direct tests unless the current task says otherwise.
-- Keep event switches limited to `config/dojo-event.toml` and the matching repository guard.
+- Keep event selection in `scripts/setup_dojo.sh [event-code]`; do not create event-specific image branches.
 - Keep model names unchanged at the adapter boundary so production and staging can exercise the cache aliases supplied by their templates.
 - Allow 90 seconds for upstream model responses in both local adapters and the direct baseline guardrail demo. Keep readiness checks and the local DefenseClaw inspection timeout short.
 

@@ -38,6 +38,7 @@ REQUIRED_FILES = [
     Path("scripts/install_opencode_cli.sh"),
     Path("scripts/check_repo.py"),
     Path("scripts/setup_dojo.sh"),
+    Path("scripts/configure_dojo_event.py"),
     Path("scripts/install_dojo_cli.sh"),
     Path("scripts/player"),
     Path("scripts/promote_project_note.py"),
@@ -65,6 +66,7 @@ REQUIRED_FILES = [
     Path("tests/test_maze_movement_verifier.py"),
     Path("tests/test_player_command.py"),
     Path("tests/test_offline_cli_installers.py"),
+    Path("tests/test_configure_dojo_event.py"),
     Path("samples/guardrails/rollout-note.md"),
     Path("samples/guardrails/privacy-request.txt"),
     Path("samples/unsafe_report_patch.py"),
@@ -119,6 +121,9 @@ def main() -> int:
     mazemaker_skill = (root / "skills/mazemaker/SKILL.md").read_text(encoding="utf-8") if (root / "skills/mazemaker/SKILL.md").exists() else ""
     mazemaker_script = (root / "skills/mazemaker/scripts/build_maze.py").read_text(encoding="utf-8") if (root / "skills/mazemaker/scripts/build_maze.py").exists() else ""
     dojo_setup = (root / "scripts/setup_dojo.sh").read_text(encoding="utf-8") if (root / "scripts/setup_dojo.sh").exists() else ""
+    dojo_event_configure = (
+        root / "scripts/configure_dojo_event.py"
+    ).read_text(encoding="utf-8") if (root / "scripts/configure_dojo_event.py").exists() else ""
     dojo_install = (root / "scripts/install_dojo_cli.sh").read_text(encoding="utf-8") if (root / "scripts/install_dojo_cli.sh").exists() else ""
     dojo_event = (root / "config/dojo-event.toml").read_text(encoding="utf-8") if (root / "config/dojo-event.toml").exists() else ""
     maze_verifier = (root / "scripts/verify_maze_movement.py").read_text(encoding="utf-8")
@@ -155,11 +160,28 @@ def main() -> int:
     )
     require("install_dojo_cli.sh" in dojo_setup, "setup_dojo.sh must install the challenge CLI", errors)
     require(
-        'event = "self-paced"' in dojo_event,
-        "the normal lab build must use the self-paced event",
+        dojo_event == 'event = "__event_required__"\n',
+        "the reusable image build must require setup to select an event",
+        errors,
+    )
+    event_configure_call = 'configure_dojo_event.py" "$@"'
+    require(
+        event_configure_call in dojo_setup,
+        "setup_dojo.sh must pass its optional event argument to the event configurator",
+        errors,
+    )
+    require(
+        "DEFAULT_EVENT = \"self-paced\"" in dojo_event_configure
+        and 'Path(".lab-state/dojo/event.toml")' in dojo_event_configure,
+        "the event configurator must preserve self-paced setup and write runtime state",
         errors,
     )
     require('"${HOME}/.local/bin/dojo" join' in dojo_setup, "setup_dojo.sh must join after setup output", errors)
+    require(
+        dojo_setup.find(event_configure_call) < dojo_setup.find('"${HOME}/.local/bin/dojo" join'),
+        "setup_dojo.sh must configure the event before dojo join",
+        errors,
+    )
     require('scripts/player"' in dojo_install, "the challenge installer must install the player command", errors)
     require(
         'rm -f "${HOME}/.local/bin/change-name.py"' in dojo_install,
