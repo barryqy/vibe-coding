@@ -19,7 +19,7 @@ status: active
 - The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
 - Setup selects the active leaderboard at runtime. No argument uses `self-paced`; event labs pass their short event code.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
-- The bundled Dojo CLI has eight flags worth up to 120 points. Two are interactive knowledge questions whose value drops by 2 after each submitted wrong answer.
+- For `teil39-2`, the bundled Dojo CLI has eight flags worth up to 120 points. Two are interactive knowledge questions whose value drops by 2 after each submitted wrong answer. Existing events retain six flags worth 100 points.
 
 ## Recent Work
 
@@ -34,7 +34,7 @@ status: active
 - Updated the bundled Dojo CLI so fresh evidence for each flag is independent of earlier captures while duplicate captures remain harmless.
 - Staged a rebuilt Dojo CLI candidate with bounded capture retries, pending-capture reconciliation, and honest sync status reporting.
 - Raised the upstream model-response timeout from 45 to 90 seconds in both local adapters and the direct baseline guardrail demo. Both adapter versions were bumped so `--ensure` replaces already-running 45-second processes.
-- Rebuilt the Linux Dojo CLI with the two knowledge flags and server-authoritative answer scoring.
+- Rebuilt the production Linux Dojo CLI with the two knowledge flags and server-authoritative answer scoring. The release binary uses `https://barrysecure.com/vc`; staging uses a separately built candidate.
 
 ## Open Questions
 
