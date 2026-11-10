@@ -17,9 +17,9 @@ status: active
 - The second brain is shared context for any agent that works in this repo.
 - Codex should create the static Maze file first; OpenCode should only make that Maze playable.
 - The local Codex and OpenCode adapters forward cache model aliases unchanged in both production and staging.
-- Setup selects the active leaderboard at runtime. No argument uses `self-paced`; event labs pass their short event code.
+- Setup joins the event selected in the Dojo dashboard. Run setup without an event argument; rerunning it keeps the saved player in their assigned event. Staff can still supply a specific event code.
 - Project-note promotion restores the checked note when Codex returns no usable draft.
-- For `teil39-2`, the bundled Dojo CLI has eight flags worth up to 120 points. Two are interactive knowledge questions whose value drops by 2 after each submitted wrong answer. Existing events retain six flags worth 100 points.
+- Each event has either six flags worth 100 points or eight flags worth 120 points. The event supplies its challenge set. Events with eight flags include two interactive knowledge questions whose value drops by 2 after each submitted wrong answer.
 
 ## Recent Work
 
